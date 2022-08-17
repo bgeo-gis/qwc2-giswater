@@ -12,11 +12,11 @@ import PropTypes from 'prop-types';
 import xml2js from 'xml2js';
 import uuid from 'uuid';
 import isEmpty from 'lodash.isempty';
-import Spinner from './Spinner';
-import LocaleUtils from '../utils/LocaleUtils';
-import MiscUtils from '../utils/MiscUtils';
+import Spinner from 'qwc2/components/Spinner';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
+import MiscUtils from 'qwc2/utils/MiscUtils';
 
-import './style/QtDesignerForm.css';
+import 'qwc2/components/style/QtDesignerForm.css';
 
 
 class GwInfoQtDesignerForm extends React.Component {

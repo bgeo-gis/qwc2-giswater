@@ -1,0 +1,31 @@
+{
+    "name": "qwc2-giswater",
+    "version": "1.1.0",
+    "description": "Giswater modules for QGIS Web Client 2",
+    "author": "BGEO",
+    "license": "BSD-2-Clause",
+    "repository": "git@github.com:bgeo-gis/qwc2-giswater.git",
+    "dependencies": {
+    },
+    "peerDependencies": {
+      "react": "^16.14.0",
+      "react-redux": "^7.2.0"
+    },
+    "devDependencies": {
+    },
+    "babel": {
+        "plugins": [
+            "@babel/plugin-proposal-class-properties",
+            "@babel/plugin-proposal-object-rest-spread"
+        ],
+        "presets": [
+            [
+                "@babel/preset-env",
+                {
+                    "modules": false
+                }
+            ],
+            "@babel/preset-react"
+        ]
+    }
+}

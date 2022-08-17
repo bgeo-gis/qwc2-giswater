@@ -12,17 +12,18 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
-import {LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures} from '../actions/layers';
-import {changeSelectionState} from '../actions/selection';
-import ResizeableWindow from '../components/ResizeableWindow';
-import TaskBar from '../components/TaskBar';
-import IdentifyUtils from '../utils/IdentifyUtils';
-import LocaleUtils from '../utils/LocaleUtils';
-import MapUtils from '../utils/MapUtils';
+import {LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures} from 'qwc2/actions/layers';
+import {changeSelectionState} from 'qwc2/actions/selection';
+import ResizeableWindow from 'qwc2/components/ResizeableWindow';
+import TaskBar from 'qwc2/components/TaskBar';
+import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
+import MapUtils from 'qwc2/utils/MapUtils';
+import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
+import {panTo} from 'qwc2/actions/map';
+
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
-import VectorLayerUtils from '../utils/VectorLayerUtils';
-import ConfigUtils from '../utils/ConfigUtils';
-import {panTo} from '../actions/map';
 
 class GwInfo extends React.Component {
     static propTypes = {
