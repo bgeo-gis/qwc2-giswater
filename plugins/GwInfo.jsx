@@ -72,10 +72,16 @@ class GwInfo extends React.Component {
             case "featureLink":
                 this.props.removeLayer("searchselection");
                 let pendingRequests = false;
+                const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
+                    return l.url === "http://qwc2.bgeo.es/ogc/qgisserver" // TODO: Hardcoded
+                });
 
                 const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
-                if (!isEmpty(request_url)) {
+                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+                    const layer = queryableLayers[0];
+
                     const params = {
+                        "theme": layer.title,
                         "id": action.params.id,
                         "tableName": action.params.tableName
                     }
@@ -119,6 +125,7 @@ class GwInfo extends React.Component {
                 const epsg = this.crsStrToInt(this.props.map.projection)
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom)
                 const params = {
+                    "theme": layer.title,
                     "epsg": epsg,
                     "xcoord": clickPoint[0],
                     "ycoord": clickPoint[1],
