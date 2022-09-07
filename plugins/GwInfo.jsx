@@ -73,11 +73,16 @@ class GwInfo extends React.Component {
                 this.props.removeLayer("searchselection");
                 let pendingRequests = false;
                 const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                    return l.url === "http://qwc2.bgeo.es/ogc/qgisserver" // TODO: Hardcoded
+                    // TODO: If there are some wms external layers this would select more than one layer
+                    return l.type === "wms" 
                 });
 
                 const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
                 if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+                    if (queryableLayers.length > 1) {
+                        console.warn("There are multiple giswater queryable layers")
+                    }
+
                     const layer = queryableLayers[0];
 
                     const params = {
@@ -112,7 +117,8 @@ class GwInfo extends React.Component {
             this.props.removeLayer("searchselection");
             let pendingRequests = false;
             const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                return l.url === "http://qwc2.bgeo.es/ogc/qgisserver" // TODO: Hardcoded
+                // TODO: If there are some wms external layers this would select more than one layer
+                return l.type === "wms" 
             });
 
             const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
