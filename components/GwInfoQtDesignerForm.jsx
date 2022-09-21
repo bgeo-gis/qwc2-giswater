@@ -28,7 +28,7 @@ class GwInfoQtDesignerForm extends React.Component {
         dispatchButton: PropTypes.func
     }
     static defaultProps = {
-        updateField: (name, value) => {console.log(name, value)},
+        updateField: (name, value, params) => {console.log(name, value, params)},
         dispatchButton: (action) => {}
     }
     static defaultState = {
@@ -222,10 +222,10 @@ class GwInfoQtDesignerForm extends React.Component {
         } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const type = widget.class === "QCheckBox" ? "checkbox" : "radio";
             const inGroup = attr.buttonGroup;
-            const checked = prop.checked === true || prop.checked === "true";
+            const checked = prop.checked === true || prop.checked === "true" || prop.checked === "True";
             return (
                 <label style={fontStyle}>
-                    <input checked={checked} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={ev => updateField(this.groupOrName(widget), inGroup ? widget.name : ev.target.checked)} {...inputConstraints} type={type} value={widget.name} />
+                    <input checked={checked} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget.name, ev.target.value, JSON.parse(prop.action))} {...inputConstraints} type={type} value={widget.name} />
                     {prop.text}
                 </label>
             );
