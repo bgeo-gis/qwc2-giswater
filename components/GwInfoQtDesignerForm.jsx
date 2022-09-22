@@ -29,7 +29,7 @@ class GwInfoQtDesignerForm extends React.Component {
     }
     static defaultProps = {
         updateField: (name, value, params) => {console.log(name, value, params)},
-        dispatchButton: (action) => {}
+        dispatchButton: (action) => {console.log(action)}
     }
     static defaultState = {
         activetabs: {},

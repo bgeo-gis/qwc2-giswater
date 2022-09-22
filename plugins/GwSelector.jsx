@@ -6,6 +6,7 @@ import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
+import {zoomToExtent} from 'qwc2/actions/map';
 
 import QtDesignerForm from 'qwc2/components/QtDesignerForm';
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
@@ -43,22 +44,97 @@ class GwSelector extends React.Component {
         const parts = crs.split(':')
         return parseInt(parts.slice(-1))
     }
-    filterLayers = () => {
+    filterLayers = (result) => {
+        // TODO: get layers dynamically & make it work if filter column doesn't exist in layer
+        const layerFilters = {
+            "v_edit_arc": ["expl_id", "state"],
+            "v_edit_node": ["expl_id", "state"],
+            "v_edit_connec": ["expl_id", "state"],
+            "v_edit_link": ["expl_id", "state"],
+            "v_edit_gully": ["expl_id", "state"]
+        }
+        const filterNames = {
+            "tab_exploitation": {"key": "expl_id", "column": "expl_id"},
+            "tab_network_state": {"key": "id", "column": "state"}
+        }
         const queryableLayers = this.getQueryableLayers();
 
         if (!isEmpty(queryableLayers)) {
-            // Get request paramas
+            // TODO: Get values
+            var values = this.getFilterValues(result, filterNames);
+            // Get filter query
+            var filter = this.getFilterStr(values, layerFilters);
+            console.log("filter query =", filter);
+
+            // Apply filter, zoom to extent & refresh map
             const layer = queryableLayers[0];
-            console.log(queryableLayers);
-            layer.params.FILTER = "v_edit_link:\"expl_id\" = '1';v_edit_arc:\"expl_id\" = '1';v_edit_gully:\"expl_id\" = '1';v_edit_connec:\"expl_id\" = '1';v_edit_node:\"expl_id\" = '1'";
-            // this.panToResult();
+            layer.params.FILTER = filter;
+            this.panToResult(result);
+            // TODO: refresh map
         }
+    }
+    getFilterValues = (result, filterNames) => {
+        let values = {}
+
+        console.log(result.form.formTabs);
+        for (let i = 0; i < result.form.formTabs.length; i++) {
+            const tab = result.form.formTabs[i];
+            let tabname = filterNames[tab.tabName];
+            console.log(tab.tabName, "->", tabname);
+            if (tabname === undefined) {
+                continue;
+            }
+            let key = tabname.key;
+            let columnname = tabname.column;
+            values[columnname] = []
+            for (let j = 0; j < tab.fields.length; j++) {
+                const v = tab.fields[j];
+                if (v.value == true) {
+                    let value;
+                    for (var k in v) {
+                        if (k == key) {
+                            value = v[k]
+                            break;
+                        }
+                    }
+                    console.log("value =", value);
+                    values[columnname].push(value);
+                }
+            }
+        }
+
+        return values;
+    }
+    getFilterStr = (values, layerFilters) => {
+        let filterStr = "";
+        for (var lyr in layerFilters) {
+            filterStr += lyr + ": ";
+            var fields = layerFilters[lyr];
+            for (let i = 0; i < fields.length; i++) {
+                if (i > 0) {
+                    filterStr += " AND ";
+                }
+                var field = fields[i];
+                var value = values[field];
+                filterStr += "\"" + field + "\" IN ( " + value.join(' , ') + " )";
+            }
+            filterStr += ";";
+        }
+        return filterStr;
     }
     panToResult = (result) => {
         // TODO: Maybe we should zoom to the result as well
         if (!isEmpty(result)) {
-            // const center = this.getGeometryCenter(result.feature.geometry)
-            // this.props.panTo(center, this.props.map.projection)
+            const x1 = result.data.geometry.x1;
+            const y1 = result.data.geometry.y1;
+            const x2 = result.data.geometry.x2;
+            const y2 = result.data.geometry.y2;
+            console.log("Zoom to:", x1, y1, x2, y2);
+            const extent = [x1, y1, x2, y2];
+            if (extent.includes(undefined)) {
+                return
+            }
+            this.props.zoomToExtent(extent, this.props.map.projection);
         }
     }
     componentDidUpdate(prevProps, prevState) {
@@ -118,56 +194,16 @@ class GwSelector extends React.Component {
             axios.get(request_url + "setselector", {params: params}).then(response => {
                 const result = response.data
                 this.setState({selectorResult: result, pendingRequests: false});
+                this.filterLayers(result);
             }).catch((e) => {
                 console.log(e);
                 this.setState({pendingRequests: false});
             });
         }
     }
-    dispatchButton = (action, ev = null) => {
+    dispatchButton = (action) => {
         let pendingRequests = false;
         switch (action.name) {
-            case "setSelectors":
-                // this.filterLayers();
-
-                const queryableLayers = this.getQueryableLayers();
-                const request_url = ConfigUtils.getConfigProp("gwSelectorServiceUrl")
-                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                    // Get request paramas
-                    const layer = queryableLayers[0];
-                    const epsg = this.crsStrToInt(this.props.map.projection)
-                    const selectorType = "selector_basic"; // TODO: get this from json key 'selectorType'
-                    const tabName = action.params.tabName;
-                    const id = action.params.id;
-                    const isAlone = false;
-                    const disableParent = false; // TODO?: get if shift is pressed (depending on)
-                    console.log("ev =", ev);
-                    const value = ev == 0;
-                    const addSchema = "NULL"; // TODO?: allow addSchema
-                    const params = {
-                        "theme": layer.title,
-                        "epsg": epsg,
-                        "selectorType": selectorType,
-                        "tabName": tabName,
-                        "id": id,
-                        "isAlone": isAlone,
-                        "disableParent": disableParent,
-                        "value": value,
-                        "addSchema": addSchema
-                    }
-        
-                    // Send request
-                    pendingRequests = true
-                    axios.get(request_url + "setselector", {params: params}).then(response => {
-                        const result = response.data
-                        this.setState({selectorResult: result, pendingRequests: false});
-                    }).catch((e) => {
-                        console.log(e);
-                        this.setState({pendingRequests: false});
-                    });
-                }
-                break;
-
             default:
                 console.warn(`Action \`${action.name}\` cannot be handled.`)
                 break;
@@ -244,4 +280,5 @@ const selector = (state) => ({
 });
 
 export default connect(selector, {
+    zoomToExtent: zoomToExtent
 })(GwSelector);
