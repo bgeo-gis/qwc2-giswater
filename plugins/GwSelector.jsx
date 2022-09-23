@@ -45,14 +45,7 @@ class GwSelector extends React.Component {
         return parseInt(parts.slice(-1))
     }
     filterLayers = (result) => {
-        // TODO: get layers dynamically & make it work if filter column doesn't exist in layer
-        const layerFilters = {
-            "v_edit_arc": ["expl_id", "state"],
-            "v_edit_node": ["expl_id", "state"],
-            "v_edit_connec": ["expl_id", "state"],
-            "v_edit_link": ["expl_id", "state"],
-            "v_edit_gully": ["expl_id", "state"]
-        }
+        const layerFilters = ["test", "expl_id", "state", "blablabla", "node_1"]
         const filterNames = {
             "tab_exploitation": {"key": "expl_id", "column": "expl_id"},
             "tab_network_state": {"key": "id", "column": "state"}
@@ -63,10 +56,11 @@ class GwSelector extends React.Component {
             // TODO: Get values
             var values = this.getFilterValues(result, filterNames);
             // Get filter query
-            var filter = this.getFilterStr(values, layerFilters);
+            var filter = this.getFilterStr(values, layerFilters, result.data.layerColumns);
             console.log("filter query =", filter);
 
             // Apply filter, zoom to extent & refresh map
+            console.log("queryable layers =", queryableLayers);
             const layer = queryableLayers[0];
             layer.params.FILTER = filter;
             this.panToResult(result);
@@ -80,7 +74,6 @@ class GwSelector extends React.Component {
         for (let i = 0; i < result.form.formTabs.length; i++) {
             const tab = result.form.formTabs[i];
             let tabname = filterNames[tab.tabName];
-            console.log(tab.tabName, "->", tabname);
             if (tabname === undefined) {
                 continue;
             }
@@ -97,7 +90,6 @@ class GwSelector extends React.Component {
                             break;
                         }
                     }
-                    console.log("value =", value);
                     values[columnname].push(value);
                 }
             }
@@ -105,25 +97,32 @@ class GwSelector extends React.Component {
 
         return values;
     }
-    getFilterStr = (values, layerFilters) => {
+    getFilterStr = (values, layerFilters, layerColumns) => {
+        console.log("values ->", values);
+        console.log("layerFilters ->", layerFilters);
+        console.log("layerColumns ->", layerColumns);
         let filterStr = "";
-        for (var lyr in layerFilters) {
+        for (var lyr in layerColumns) {
+            const cols = layerColumns[lyr];  // Get columns for layer
             filterStr += lyr + ": ";
-            var fields = layerFilters[lyr];
+            var fields = layerFilters;  // Get columns to filter
+            let fieldsFilterStr = "";
             for (let i = 0; i < fields.length; i++) {
-                if (i > 0) {
-                    filterStr += " AND ";
+                var field = fields[i];  // Column to filter
+                var value = values[field];  // Value to filter
+                if (value === undefined || !cols.includes(field)) {  // If no value defined or layer doesn't have column to filter
+                    continue;
                 }
-                var field = fields[i];
-                var value = values[field];
-                filterStr += "\"" + field + "\" IN ( " + value.join(' , ') + " )";
+                if (i > 0 && fieldsFilterStr.length > 0) {
+                    fieldsFilterStr += " AND ";
+                }
+                fieldsFilterStr += "\"" + field + "\" IN ( " + value.join(' , ') + " )";
             }
-            filterStr += ";";
+            filterStr += fieldsFilterStr + ";";
         }
         return filterStr;
     }
     panToResult = (result) => {
-        // TODO: Maybe we should zoom to the result as well
         if (!isEmpty(result)) {
             const x1 = result.data.geometry.x1;
             const y1 = result.data.geometry.y1;
@@ -186,7 +185,8 @@ class GwSelector extends React.Component {
                 "isAlone": isAlone,
                 "disableParent": disableParent,
                 "value": value,
-                "addSchema": addSchema
+                "addSchema": addSchema,
+                "layers": String(layer.queryLayers)
             }
 
             // Send request
@@ -223,7 +223,8 @@ class GwSelector extends React.Component {
                 "theme": layer.title,
                 "epsg": epsg,
                 "currentTab": "tab_exploitation",
-                "selectorType": "selector_basic"
+                "selectorType": "selector_basic",
+                "layers": String(layer.queryLayers)
             }
 
             // Send request
