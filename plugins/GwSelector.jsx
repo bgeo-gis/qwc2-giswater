@@ -116,7 +116,11 @@ class GwSelector extends React.Component {
                 if (i > 0 && fieldsFilterStr.length > 0) {
                     fieldsFilterStr += " AND ";
                 }
-                fieldsFilterStr += "\"" + field + "\" IN ( " + value.join(' , ') + " )";
+                if (value.length > 0) {
+                    fieldsFilterStr += "\"" + field + "\" IN ( " + value.join(' , ') + " )";
+                } else {
+                    fieldsFilterStr += "\"" + field + "\" = -1";
+                }
             }
             filterStr += fieldsFilterStr + ";";
         }
@@ -252,12 +256,6 @@ class GwSelector extends React.Component {
                 }
             } else {
                 const result = this.state.selectorResult
-                // body = (
-                //     <div className="selector-body" role="body">
-                //         <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={true} dispatchButton={this.dispatchButton} />
-                //     </div>
-                // )
-                // console.log(result.form_xml);
                 body = (
                     <div className="selector-body" role="body">
                         <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField}/>
