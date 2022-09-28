@@ -53,7 +53,7 @@ class GwSelector extends React.Component {
         const queryableLayers = this.getQueryableLayers();
 
         if (!isEmpty(queryableLayers)) {
-            // TODO: Get values
+            // Get values
             var values = this.getFilterValues(result, filterNames);
             // Get filter query
             var filter = this.getFilterStr(values, layerFilters, result.data.layerColumns);
@@ -163,13 +163,41 @@ class GwSelector extends React.Component {
             return l.url === "http://162.55.167.202/qgisserver" // TODO: Hardcoded
         });
     }
-    updateField = (widgetName, ev, action) => {
-        
-        let pendingRequests = false;
-
-        const queryableLayers = this.getQueryableLayers();
+    getSelectors = (params) => {
         const request_url = ConfigUtils.getConfigProp("gwSelectorServiceUrl")
-        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+        if (isEmpty(request_url)) {
+            return false;
+        }
+
+        // Send request
+        axios.get(request_url + "getselector", {params: params}).then(response => {
+            const result = response.data
+            this.setState({selectorResult: result, pendingRequests: false});
+            this.filterLayers(result);
+        }).catch((e) => {
+            console.log(e);
+            this.setState({pendingRequests: false});
+        });
+    }
+    setSelectors = (params) => {
+        const request_url = ConfigUtils.getConfigProp("gwSelectorServiceUrl")
+        if (isEmpty(request_url)) {
+            return false;
+        }
+
+        // Send request
+        axios.get(request_url + "setselector", {params: params}).then(response => {
+            const result = response.data
+            this.setState({selectorResult: result, pendingRequests: false});
+            this.filterLayers(result);
+        }).catch((e) => {
+            console.log(e);
+            this.setState({pendingRequests: false});
+        });
+    }
+    updateField = (widgetName, ev, action) => {
+        const queryableLayers = this.getQueryableLayers();
+        if (!isEmpty(queryableLayers)) {
             // Get request paramas
             const layer = queryableLayers[0];
             const epsg = this.crsStrToInt(this.props.map.projection)
@@ -193,16 +221,8 @@ class GwSelector extends React.Component {
                 "layers": String(layer.queryLayers)
             }
 
-            // Send request
-            pendingRequests = true
-            axios.get(request_url + "setselector", {params: params}).then(response => {
-                const result = response.data
-                this.setState({selectorResult: result, pendingRequests: false});
-                this.filterLayers(result);
-            }).catch((e) => {
-                console.log(e);
-                this.setState({pendingRequests: false});
-            });
+            // Call setselectors
+            this.setSelectors(params);
         }
     }
     dispatchButton = (action) => {
@@ -233,13 +253,7 @@ class GwSelector extends React.Component {
 
             // Send request
             pendingRequests = true
-            axios.get(request_url + "getselector", {params: params}).then(response => {
-                const result = response.data
-                this.setState({selectorResult: result, pendingRequests: false});
-            }).catch((e) => {
-                console.log(e);
-                this.setState({pendingRequests: false});
-            });
+            this.getSelectors(params);
         }
         // Set "Waiting for request..." message
         this.setState({selectorResult: {}, pendingRequests: pendingRequests});
