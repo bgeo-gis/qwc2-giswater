@@ -37,7 +37,8 @@ class GwSelector extends React.Component {
     }
     state = {
         selectorResult: null,
-        pendingRequests: false
+        pendingRequests: false,
+        filteredSelectors: false
     }
 
     crsStrToInt = (crs) => {
@@ -141,7 +142,10 @@ class GwSelector extends React.Component {
         }
     }
     componentDidUpdate(prevProps, prevState) {
-        // this.setState({selectorResult: {}, pendingRequests: false})
+        if (!this.state.filteredSelectors && !isEmpty(this.getQueryableLayers())) {
+            this.makeRequest();
+            this.state.filteredSelectors = true;
+        }
     }
     onShow = () => {
         // Make service request
