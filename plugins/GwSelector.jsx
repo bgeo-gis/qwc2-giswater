@@ -252,7 +252,8 @@ class GwSelector extends React.Component {
                 "epsg": epsg,
                 "currentTab": "tab_exploitation",
                 "selectorType": "selector_basic",
-                "layers": String(layer.queryLayers)
+                "layers": String(layer.queryLayers),
+                "loadProject": !this.state.filteredSelectors
             }
 
             // Send request
