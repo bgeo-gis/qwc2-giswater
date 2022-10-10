@@ -9,11 +9,11 @@
 import axios from 'axios';
 import React from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
-import {LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures} from 'qwc2/actions/layers';
-import {changeSelectionState} from 'qwc2/actions/selection';
+import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
+import { changeSelectionState } from 'qwc2/actions/selection';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
@@ -21,7 +21,7 @@ import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
-import {panTo} from 'qwc2/actions/map';
+import { panTo } from 'qwc2/actions/map';
 
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
 
@@ -45,7 +45,7 @@ class GwInfo extends React.Component {
     }
     static defaultProps = {
         replaceImageUrls: true,
-        initialWidth: 240,
+        initialWidth: 480,
         initialHeight: 320,
         initialX: 0,
         initialY: 0
@@ -74,7 +74,7 @@ class GwInfo extends React.Component {
                 let pendingRequests = false;
                 const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
                     // TODO: If there are some wms external layers this would select more than one layer
-                    return l.type === "wms" 
+                    return l.type === "wms"
                 });
 
                 const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
@@ -91,20 +91,20 @@ class GwInfo extends React.Component {
                         "tableName": action.params.tableName
                     }
                     pendingRequests = true
-                    axios.get(request_url + "fromid", {params: params}).then((response) => {
+                    axios.get(request_url + "fromid", { params: params }).then((response) => {
                         const result = response.data
-                        this.setState({identifyResult: result, pendingRequests: false});
+                        this.setState({ identifyResult: result, pendingRequests: false });
                         this.highlightResult(result)
                         this.addMarkerToResult(result)
                         this.panToResult(result)
                     }).catch((e) => {
                         console.log(e);
-                        this.setState({pendingRequests: false});
+                        this.setState({ pendingRequests: false });
                     });
                 }
-                this.setState({identifyResult: {}, prevIdentifyResult: this.state.identifyResult, pendingRequests: pendingRequests});
+                this.setState({ identifyResult: {}, prevIdentifyResult: this.state.identifyResult, pendingRequests: pendingRequests });
                 break;
-        
+
             default:
                 console.warn(`Action \`${action.name}\` cannot be handled.`)
                 break;
@@ -118,7 +118,7 @@ class GwInfo extends React.Component {
             let pendingRequests = false;
             const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
                 // TODO: If there are some wms external layers this would select more than one layer
-                return l.type === "wms" 
+                return l.type === "wms"
             });
 
             const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
@@ -127,7 +127,7 @@ class GwInfo extends React.Component {
                     console.warn("There are multiple giswater queryable layers")
                 }
                 const layer = queryableLayers[0];
-                
+
                 const epsg = this.crsStrToInt(this.props.map.projection)
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom)
                 const params = {
@@ -138,19 +138,19 @@ class GwInfo extends React.Component {
                     "zoomRatio": zoomRatio,
                     "layers": layer.queryLayers.join(',')
                 }
-                
+
                 pendingRequests = true
-                axios.get(request_url + "fromcoordinates", {params: params}).then(response => {
+                axios.get(request_url + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data
-                    this.setState({identifyResult: result, prevIdentifyResult: null, pendingRequests: false});
+                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
                     this.highlightResult(result)
                 }).catch((e) => {
                     console.log(e);
-                    this.setState({pendingRequests: false});
+                    this.setState({ pendingRequests: false });
                 });
             }
             this.props.addMarker('identify', clickPoint, '', this.props.map.projection);
-            this.setState({identifyResult: {}, prevIdentifyResult: null, pendingRequests: pendingRequests});
+            this.setState({ identifyResult: {}, prevIdentifyResult: null, pendingRequests: pendingRequests });
         }
     }
     highlightResult = (result) => {
@@ -188,29 +188,29 @@ class GwInfo extends React.Component {
         const type = geometry.getType();
         let center = null;
         switch (type) {
-        case "Polygon":
-            center = geometry.getInteriorPoint().getCoordinates();
-            break;
-        case "MultiPolygon":
-            center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-            break;
-        case "Point":
-            center = geometry.getCoordinates();
-            break;
-        case "MultiPoint":
-            center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-            break;
-        case "LineString":
-            center = geometry.getCoordinateAt(0.5);
-            break;
-        case "MultiLineString":
-            center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-            break;
-        case "Circle":
-            center = geometry.getCenter();
-            break;
-        default:
-            break;
+            case "Polygon":
+                center = geometry.getInteriorPoint().getCoordinates();
+                break;
+            case "MultiPolygon":
+                center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+                break;
+            case "Point":
+                center = geometry.getCoordinates();
+                break;
+            case "MultiPoint":
+                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+                break;
+            case "LineString":
+                center = geometry.getCoordinateAt(0.5);
+                break;
+            case "MultiLineString":
+                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+                break;
+            case "Circle":
+                center = geometry.getCenter();
+                break;
+            default:
+                break;
         }
         return center;
     }
@@ -227,17 +227,17 @@ class GwInfo extends React.Component {
     onToolClose = () => {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
-        this.props.changeSelectionState({geomType: undefined});
-        this.setState({identifyResult: null, pendingRequests: false});
+        this.props.changeSelectionState({ geomType: undefined });
+        this.setState({ identifyResult: null, pendingRequests: false });
     }
     clearResults = () => {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
-        this.setState({identifyResult: null, pendingRequests: false});
+        this.setState({ identifyResult: null, pendingRequests: false });
     }
     showPrevResult = () => {
         const result = this.state.prevIdentifyResult
-        this.setState({identifyResult: result, prevIdentifyResult: null})
+        this.setState({ identifyResult: result, prevIdentifyResult: null })
         this.highlightResult(result)
         this.addMarkerToResult(result)
         this.panToResult(result)
@@ -284,7 +284,7 @@ class GwInfo extends React.Component {
 }
 
 const selector = (state) => ({
-    click: state.map.click || {modifiers: {}},
+    click: state.map.click || { modifiers: {} },
     currentTask: state.task.id,
     currentIdentifyTool: state.identify.tool,
     layers: state.layers.flat,

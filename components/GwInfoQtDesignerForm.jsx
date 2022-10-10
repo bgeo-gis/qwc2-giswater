@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import xml2js from 'xml2js';
 import uuid from 'uuid';
@@ -28,8 +28,8 @@ class GwInfoQtDesignerForm extends React.Component {
         dispatchButton: PropTypes.func
     }
     static defaultProps = {
-        updateField: (name, value, params) => {console.log(name, value, params)},
-        dispatchButton: (action) => {console.log(action)}
+        updateField: (name, value, params) => { console.log(name, value, params) },
+        dispatchButton: (action) => { console.log(action) }
     }
     static defaultState = {
         activetabs: {},
@@ -202,7 +202,7 @@ class GwInfoQtDesignerForm extends React.Component {
                             <span
                                 className={tab.name === activetab ? "qt-designer-form-tab-active" : ""}
                                 key={tab.name}
-                                onClick={() => this.setState({activetabs: {...this.state.activetabs, [widget.name]: tab.name}})}
+                                onClick={() => this.setState({ activetabs: { ...this.state.activetabs, [widget.name]: tab.name } })}
                             >
                                 {tab.attribute.title}
                             </span>
@@ -230,7 +230,11 @@ class GwInfoQtDesignerForm extends React.Component {
                 </label>
             );
         } else if (widget.class === "QComboBox") {
-            const haveEmpty = (widget.item || []).map((item) => (item.property.value || item.property.text) === "");
+            let items = widget.item;
+            if (!Array.isArray(widget.item)) {
+                items = [widget.item];
+            }
+            const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
             return (
                 <select disabled={inputConstraints.readOnly} name={elname} onChange={ev => updateField(widget.name, ev.target.value)} {...inputConstraints} style={fontStyle} value={prop.value}>
                     {!haveEmpty ? (
@@ -238,7 +242,7 @@ class GwInfoQtDesignerForm extends React.Component {
                             {inputConstraints.placeholder || LocaleUtils.tr("editing.select")}
                         </option>
                     ) : null}
-                    {(widget.item || []).map((item) => {
+                    {(items || []).map((item) => {
                         const optval = item.property.value || item.property.text;
                         return (
                             <option key={optval} value={optval}>{item.property.text}</option>
@@ -295,7 +299,7 @@ class GwInfoQtDesignerForm extends React.Component {
             mergeAttrs: true
         };
         const loadingReqId = uuid.v1();
-        this.setState({loading: true, loadingReqId: loadingReqId});
+        this.setState({ loading: true, loadingReqId: loadingReqId });
         xml2js.parseString(data, options, (err, json) => {
             const externalFields = {};
             const fields = {};
@@ -306,20 +310,20 @@ class GwInfoQtDesignerForm extends React.Component {
             this.reformatWidget(json.ui.widget, fields, externalFields, counters);
             json.externalFields = externalFields;
             json.fields = fields;
-            this.setState({formData: json, loading: false, loadingReqId: null});
+            this.setState({ formData: json, loading: false, loadingReqId: null });
         });
     }
     reformatWidget = (widget, fields, externalFields, counters) => {
         if (widget.property) {
             widget.property = MiscUtils.ensureArray(widget.property).reduce((res, prop) => {
-                return ({...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")]});
+                return ({ ...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")] });
             }, {});
         } else {
             widget.property = {};
         }
         if (widget.attribute) {
             widget.attribute = MiscUtils.ensureArray(widget.attribute).reduce((res, prop) => {
-                return ({...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")]});
+                return ({ ...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")] });
             }, {});
         } else {
             widget.attribute = {};

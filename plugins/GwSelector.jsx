@@ -1,12 +1,12 @@
 import axios from 'axios';
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
-import {zoomToExtent} from 'qwc2/actions/map';
+import { zoomToExtent } from 'qwc2/actions/map';
 
 import QtDesignerForm from 'qwc2/components/QtDesignerForm';
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
@@ -46,10 +46,10 @@ class GwSelector extends React.Component {
         return parseInt(parts.slice(-1))
     }
     filterLayers = (result) => {
-        const layerFilters = ["test", "expl_id", "state", "blablabla", "node_1"]
+        const layerFilters = ["expl_id", "state"]
         const filterNames = {
-            "tab_exploitation": {"key": "expl_id", "column": "expl_id"},
-            "tab_network_state": {"key": "id", "column": "state"}
+            "tab_exploitation": { "key": "expl_id", "column": "expl_id" },
+            "tab_network_state": { "key": "id", "column": "state" }
         }
         const queryableLayers = this.getQueryableLayers();
 
@@ -152,10 +152,10 @@ class GwSelector extends React.Component {
         this.makeRequest();
     }
     onToolClose = () => {
-        this.setState({selectorResult: null, pendingRequests: false});
+        this.setState({ selectorResult: null, pendingRequests: false });
     }
     clearResults = () => {
-        this.setState({selectorResult: null, pendingRequests: false});
+        this.setState({ selectorResult: null, pendingRequests: false });
     }
     getQueryableLayers = () => {
         if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
@@ -164,7 +164,8 @@ class GwSelector extends React.Component {
         }
 
         return IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-            return l.url === "http://162.55.167.202/qgisserver" // TODO: Hardcoded
+            // TODO: If there are some wms external layers this would select more than one layer
+            return l.type === "wms"
         });
     }
     getSelectors = (params) => {
@@ -174,13 +175,13 @@ class GwSelector extends React.Component {
         }
 
         // Send request
-        axios.get(request_url + "getselector", {params: params}).then(response => {
+        axios.get(request_url + "getselector", { params: params }).then(response => {
             const result = response.data
-            this.setState({selectorResult: result, pendingRequests: false});
+            this.setState({ selectorResult: result, pendingRequests: false });
             this.filterLayers(result);
         }).catch((e) => {
             console.log(e);
-            this.setState({pendingRequests: false});
+            this.setState({ pendingRequests: false });
         });
     }
     setSelectors = (params) => {
@@ -190,13 +191,13 @@ class GwSelector extends React.Component {
         }
 
         // Send request
-        axios.get(request_url + "setselector", {params: params}).then(response => {
+        axios.get(request_url + "setselector", { params: params }).then(response => {
             const result = response.data
-            this.setState({selectorResult: result, pendingRequests: false});
+            this.setState({ selectorResult: result, pendingRequests: false });
             this.filterLayers(result);
         }).catch((e) => {
             console.log(e);
-            this.setState({pendingRequests: false});
+            this.setState({ pendingRequests: false });
         });
     }
     updateField = (widgetName, ev, action) => {
@@ -261,7 +262,7 @@ class GwSelector extends React.Component {
             this.getSelectors(params);
         }
         // Set "Waiting for request..." message
-        this.setState({selectorResult: {}, pendingRequests: pendingRequests});
+        this.setState({ selectorResult: {}, pendingRequests: pendingRequests });
     }
     render() {
         // Create window
@@ -277,14 +278,14 @@ class GwSelector extends React.Component {
                 const result = this.state.selectorResult
                 body = (
                     <div className="selector-body" role="body">
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField}/>
+                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} />
                     </div>
                 )
             }
         }
         return (
             <SideBar icon="selector" id="GwSelector" title="GW Selector"
-            key="GwSelectorNull" onShow={this.onShow}>
+                key="GwSelectorNull" onShow={this.onShow}>
                 {body}
             </SideBar>
         );

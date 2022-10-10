@@ -3,6 +3,7 @@
     "editing.select",
     "identify.noresults",
     "identify.querying",
+    "importlayer.nofeatures",
     "infotool.clickhelpPoint",
     "qtdesignerform.loading"
   ]
