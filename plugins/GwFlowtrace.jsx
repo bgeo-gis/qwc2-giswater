@@ -231,10 +231,12 @@ class GwFlowtrace extends React.Component {
             // Get request paramas
             const layer = queryableLayers[0];
             const epsg = this.crsStrToInt(this.props.mapObj.projection)
+            const zoom = this.props.mapObj.scales[this.props.mapObj.zoom]
             const params = {
                 "theme": layer.title,
                 "epsg": epsg,
-                "coords": String(clickPoint)
+                "coords": String(clickPoint),
+                "zoom": zoom
             }
             // Send request
             pendingRequests = true;
