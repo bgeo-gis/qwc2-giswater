@@ -146,6 +146,9 @@ class GwSelector extends React.Component {
             this.makeRequest();
             this.state.filteredSelectors = true;
         }
+        if (prevProps.currentTask === "ThemeSwitcher") {
+            this.state.filteredSelectors = false;
+        }
     }
     onShow = () => {
         // Make service request
