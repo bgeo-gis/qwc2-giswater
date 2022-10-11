@@ -332,13 +332,19 @@ class GwFlowtrace extends React.Component {
                 };
             });
             this.props.addLayerFeatures({
+                id: filename,
                 name: filename,
                 title: filename.replace(/\.[^/.]+$/, "").replaceAll(/_+/g, " "),
                 zoomToExtent: true
             }, features, true);
         } else {
-            alert(LocaleUtils.tr("importlayer.nofeatures"));
-            return null;
+            this.props.addLayerFeatures({
+                id: filename,
+                name: filename,
+                title: filename.replace(/\.[^/.]+$/, "").replaceAll(/_+/g, " "),
+                zoomToExtent: false
+            }, [], true);
+            // TODO: send message to map, but not alert(LocaleUtils.tr("importlayer.nofeatures"));
         }
     }
     searchFlowtraceLayer = () => {
