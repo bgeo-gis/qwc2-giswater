@@ -17,7 +17,6 @@ import { changeSelectionState } from 'qwc2/actions/selection';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
-import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
@@ -36,7 +35,6 @@ class GwFlowtrace extends React.Component {
         initiallyDocked: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
-        mapObj: PropTypes.object,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object
@@ -62,7 +60,6 @@ class GwFlowtrace extends React.Component {
             this.clearResults();
         }
         if (this.props.currentTask === "GwFlowtrace" || this.props.currentIdentifyTool === "GwFlowtrace") {
-            console.log(this.state.mode);
             this.identifyPoint(prevProps);
         }
     }
@@ -75,7 +72,7 @@ class GwFlowtrace extends React.Component {
             case "featureLink":
                 this.props.removeLayer("searchselection");
                 let pendingRequests = false;
-                const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.mapObj).filter(l => {
+                const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
                     // TODO: If there are some wms external layers this would select more than one layer
                     return l.type === "wms"
                 });
@@ -116,7 +113,7 @@ class GwFlowtrace extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            console.log("flowtrace identifyPoint:", clickPoint);
+            console.log("flowtrace clickPoint:", clickPoint);
             // Remove any search selection layer to avoid confusion
             this.props.removeLayer("searchselection");
             let pendingRequests = 0;
@@ -124,11 +121,11 @@ class GwFlowtrace extends React.Component {
             // Call fct upstream/downstream & get geojson response
             this.makeRequest(clickPoint);
 
-            this.props.addMarker('identify', clickPoint, '', this.props.mapObj.projection);
+            this.props.addMarker('identify', clickPoint, '', this.props.map.projection);
         }
     }
     parseResult = (response, layer, format, clickPoint) => {
-        const newResults = IdentifyUtils.parseResponse(response, layer, format, clickPoint, this.props.mapObj.projection, this.props.featureInfoReturnsLayerName, this.props.layers);
+        const newResults = IdentifyUtils.parseResponse(response, layer, format, clickPoint, this.props.map.projection, this.props.featureInfoReturnsLayerName, this.props.layers);
         // Merge with previous
         const identifyResult = { ...this.state.identifyResult };
         Object.keys(newResults).map(layername => {
@@ -148,7 +145,7 @@ class GwFlowtrace extends React.Component {
                 id: "identifyslection",
                 role: LayerRole.SELECTION
             };
-            const crs = this.props.mapObj.projection
+            const crs = this.props.map.projection
             const geometry = VectorLayerUtils.wktToGeoJSON(result.feature.geometry, crs, crs)
             const feature = {
                 id: result.feature.id,
@@ -161,13 +158,13 @@ class GwFlowtrace extends React.Component {
         // TODO: Maybe we should zoom to the result as well
         if (!isEmpty(result)) {
             const center = this.getGeometryCenter(result.feature.geometry)
-            this.props.panTo(center, this.props.mapObj.projection)
+            this.props.panTo(center, this.props.map.projection)
         }
     }
     addMarkerToResult = (result) => {
         if (!isEmpty(result)) {
             const center = this.getGeometryCenter(result.feature.geometry)
-            this.props.addMarker('identify', center, '', this.props.mapObj.projection);
+            this.props.addMarker('identify', center, '', this.props.map.projection);
         }
     }
     getGeometryCenter = (geom) => {
@@ -212,12 +209,11 @@ class GwFlowtrace extends React.Component {
         return this.props.click.coordinate;
     }
     getQueryableLayers = () => {
-        if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.mapObj === 'undefined' || this.props.mapObj === null)) {
-            console.log("return", this.props.layers, this.props.mapObj);
+        if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
             return [];
         }
 
-        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.mapObj).filter(l => {
+        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
             return l.type === "wms"
         });
     }
@@ -230,8 +226,8 @@ class GwFlowtrace extends React.Component {
         if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
             // Get request paramas
             const layer = queryableLayers[0];
-            const epsg = this.crsStrToInt(this.props.mapObj.projection)
-            const zoom = this.props.mapObj.scales[this.props.mapObj.zoom]
+            const epsg = this.crsStrToInt(this.props.map.projection)
+            const zoom = this.props.map.scales[this.props.map.zoom]
             const params = {
                 "theme": layer.title,
                 "epsg": epsg,
@@ -255,10 +251,8 @@ class GwFlowtrace extends React.Component {
         this.setState({ identifyResult: {}, pendingRequests: pendingRequests });
     }
     addFlowtraceLayers = (result) => {
+        // Lines
         let line = result.body.data.line;
-        let point = result.body.data.point;
-        let polygon = result.body.data.polygon;
-        let layer_lines = null;
         let lines_style = {
             strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
             strokeWidth: 6,
@@ -269,7 +263,9 @@ class GwFlowtrace extends React.Component {
             textFont: '20pt sans-serif'
         }
         this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_lines.geojson", line, 'default', lines_style);
-        let layer_points = null;
+
+        // Points
+        let point = result.body.data.point;
         let points_style = {
             strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
             strokeWidth: 2,
@@ -280,16 +276,6 @@ class GwFlowtrace extends React.Component {
             textFont: '20pt sans-serif'
         }
         this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_points.geojson", point, 'default', points_style);
-        // let layer_polygons = null;
-        // this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_polygons.geojson", polygon);
-        console.log(this.props.mapObj);
-        let flowtraceLayers = this.searchFlowtraceLayer();
-        console.log(flowtraceLayers);
-        // flowtraceLayers = null;
-        this.props.map.getLayers().forEach(olLayer => {
-            console.log(olLayer.getProperties())
-        });
-        return flowtraceLayers;
     }
     addGeoJSONLayer = (filename, data, styleName=undefined, styleOptions=undefined) => {
         if (!isEmpty(data.features)) {
@@ -390,7 +376,7 @@ const selector = (state) => ({
     currentTask: state.task.id,
     currentIdentifyTool: state.identify.tool,
     layers: state.layers.flat,
-    mapObj: state.map,
+    map: state.map,
     selection: state.selection
 });
 
