@@ -1,0 +1,17 @@
+table.qtablewidget {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+/* table.qtablewidget,
+td.qtablewidget {
+    border: 1px solid;
+} */
+
+td.qtablewidget {
+    padding: 0.5em;
+}
+
+tr.qtablewidget:nth-child(even) {
+    background-color: #c9c9c9;
+}

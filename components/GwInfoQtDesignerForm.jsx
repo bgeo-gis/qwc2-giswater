@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import axios from 'axios';
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -15,8 +16,10 @@ import isEmpty from 'lodash.isempty';
 import Spinner from 'qwc2/components/Spinner';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MiscUtils from 'qwc2/utils/MiscUtils';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 import 'qwc2/components/style/QtDesignerForm.css';
+import 'qwc2-giswater/components/style/GwInfoQtDesignerForm.css';
 
 
 class GwInfoQtDesignerForm extends React.Component {
@@ -24,6 +27,8 @@ class GwInfoQtDesignerForm extends React.Component {
         form_xml: PropTypes.string,
         locale: PropTypes.string,
         readOnly: PropTypes.bool,
+        listJson: PropTypes.object,
+        theme: PropTypes.string,
         updateField: PropTypes.func,
         dispatchButton: PropTypes.func
     }
@@ -46,7 +51,10 @@ class GwInfoQtDesignerForm extends React.Component {
     }
     componentDidUpdate(prevProps, prevState) {
         // Query form
+        console.log("componentDidUpdate");
+        console.log(this.state);
         if (this.props.form_xml !== prevProps.form_xml) {
+            console.log("form_xml changed");
             this.setState({
                 ...GwInfoQtDesignerForm.defaultState,
                 activetabs: this.props.form_xml === prevProps.form_xml ? this.state.activetabs : {}
@@ -151,6 +159,54 @@ class GwInfoQtDesignerForm extends React.Component {
         }
         return columns;
     }
+    tabChanged = (tab, widget) => {
+        this.setState({ activetabs: { ...this.state.activetabs, [widget.name]: tab.name } });
+        // Check if tab has table
+        // if so, call getlist
+        var request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl");
+        console.log("TEST tabChanged 10", widget);
+        var filtered = widget.widget.filter(child => {
+            return child.layout;
+        }).filter(child => {
+            return child.layout.item[0].layout.item.some((child2) => child2.widget.class === "QTableWidget")
+        });
+        console.log("TEST tabChanged 20", filtered);
+        if (isEmpty(filtered) || isEmpty(request_url)) {
+            return null;
+        }
+        var tableWidgets = [];
+        filtered.forEach(childTab => {
+            childTab.layout.item[0].layout.item.forEach(child => {
+                if (child.widget.class === "QTableWidget") {
+                    tableWidgets.push(child.widget);
+                }
+            })
+        })
+        console.log("TEST tabChanged 25", tableWidgets);
+        const prop = tableWidgets[0].property || {};
+        const action = JSON.parse(prop.action);
+        console.log("TEST tabChanged 30", action);
+
+        const params = {
+            "theme": this.props.theme,
+            "tabName": action.params.tabName,
+            "widgetname": action.params.tabName,
+            //"formtype": action.params.formtype,
+            "tableName": action.params.tableName,
+            "idName": action.params.idName,
+            "id": action.params.id
+            //"filterSign": action.params.tabName
+        }
+        console.log("TEST tabChanged 40", params);
+        axios.get(request_url + "getlist", { params: params }).then((response) => {
+            const result = response.data
+            console.log("getlist done:", result);
+            this.setState({ listJson: result });
+        }).catch((e) => {
+            console.log(e);
+            // this.setState({  });
+        })
+    }
     renderWidget = (widget, updateField, nametransform = (name) => name) => {
         const prop = widget.property || {};
         const attr = widget.attribute || {};
@@ -170,7 +226,36 @@ class GwInfoQtDesignerForm extends React.Component {
 
         const elname = nametransform(widget.name);
 
-        if (widget.class === "QLabel") {
+        if (widget.class === "QTableWidget") {
+            console.log("test 10", this.state.listJson);
+            if (!this.state.listJson) {
+                return null;
+            }
+            console.log("test 20");
+            const values = this.state.listJson.body.data.fields[0].value;
+            console.log("test 30", values);
+            if (!values) {
+                return (<span>No results found</span>)
+            }
+            return (
+                <div>
+                    <table class="qtablewidget">
+                        {values.map(value => (
+                            <tr class="qtablewidget">
+                                <td class="qtablewidget">
+                                    <ul>
+                                        {Object.keys(value).map(field => (
+                                            <li><b>{field}</b>: {value[field]}</li>
+                                        ))}
+                                    </ul>
+                                </td>
+                            </tr>
+                        ))}
+                    </table>
+                </div>
+            );
+        }
+        else if (widget.class === "QLabel") {
             return (<span style={fontStyle}>{prop.text}</span>);
         } else if (widget.class === "Line") {
             const linetype = (widget.property || {}).orientation === "Qt::Vertical" ? "vline" : "hline";
@@ -202,7 +287,7 @@ class GwInfoQtDesignerForm extends React.Component {
                             <span
                                 className={tab.name === activetab ? "qt-designer-form-tab-active" : ""}
                                 key={tab.name}
-                                onClick={() => this.setState({ activetabs: { ...this.state.activetabs, [widget.name]: tab.name } })}
+                                onClick={() => this.tabChanged(tab, widget)}
                             >
                                 {tab.attribute.title}
                             </span>
@@ -299,8 +384,12 @@ class GwInfoQtDesignerForm extends React.Component {
             mergeAttrs: true
         };
         const loadingReqId = uuid.v1();
+        console.log(data);
         this.setState({ loading: true, loadingReqId: loadingReqId });
         xml2js.parseString(data, options, (err, json) => {
+            if (err !== null) {
+                console.warn(err);
+            }
             const externalFields = {};
             const fields = {};
             const counters = {

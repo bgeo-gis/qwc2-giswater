@@ -14,18 +14,14 @@ import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import { changeSelectionState } from 'qwc2/actions/selection';
-import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
-import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
 
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
-
-class GwInfo extends React.Component {
+class GwProfileTool extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
         changeSelectionState: PropTypes.func,
@@ -38,6 +34,7 @@ class GwInfo extends React.Component {
         initialY: PropTypes.number,
         initiallyDocked: PropTypes.bool,
         layers: PropTypes.array,
+        markers: PropTypes.array,
         map: PropTypes.object,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
@@ -45,23 +42,25 @@ class GwInfo extends React.Component {
     }
     static defaultProps = {
         replaceImageUrls: true,
-        initialWidth: 480,
+        initialWidth: 240,
         initialHeight: 320,
         initialX: 0,
         initialY: 0
     }
     state = {
+        mode: 'trace',
         identifyResult: null,
         prevIdentifyResult: null,
-        pendingRequests: false,
-        listJson: null,
-        theme: null
+        pendingRequests: false
+    }
+    constructor(props) {
+        super(props);
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
             this.clearResults();
         }
-        if (this.props.currentTask === "GwInfo" || this.props.currentIdentifyTool === "GwInfo") {
+        if (this.props.currentTask === "GwProfileTool" || this.props.currentIdentifyTool === "GwProfileTool") {
             this.identifyPoint(prevProps);
         }
     }
@@ -70,18 +69,16 @@ class GwInfo extends React.Component {
         return parseInt(parts.slice(-1))
     }
     dispatchButton = (action) => {
-        var queryableLayers;
-        var request_url;
-        let pendingRequests = false;
         switch (action.name) {
             case "featureLink":
                 this.props.removeLayer("searchselection");
-                queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
+                let pendingRequests = false;
+                const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
                     // TODO: If there are some wms external layers this would select more than one layer
                     return l.type === "wms"
                 });
 
-                request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
+                const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
                 if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
                     if (queryableLayers.length > 1) {
                         console.warn("There are multiple giswater queryable layers")
@@ -109,43 +106,6 @@ class GwInfo extends React.Component {
                 this.setState({ identifyResult: {}, prevIdentifyResult: this.state.identifyResult, pendingRequests: pendingRequests });
                 break;
 
-            case "getlist":
-                queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                    // TODO: If there are some wms external layers this would select more than one layer
-                    return l.type === "wms"
-                });
-
-                request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
-                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                    if (queryableLayers.length > 1) {
-                        console.warn("There are multiple giswater queryable layers")
-                    }
-
-                    const layer = queryableLayers[0];
-
-                    const params = {
-                        "theme": layer.title,
-                        "tabName": action.params.tabName,
-                        "widgetname": action.params.tabName,
-                        //"formtype": action.params.formtype,
-                        "tableName": action.params.tableName,
-                        "idName": action.params.idName,
-                        "id": action.params.id
-                        //"filterSign": action.params.tabName
-                    }
-                    pendingRequests = true
-                    axios.get(request_url + "getlist", { params: params }).then((response) => {
-                        const result = response.data
-                        console.log("getlist done:", this.state.identifyResult, result);
-                        this.setState({ identifyResult: this.state.identifyResult, listJson: result, pendingRequests: false });
-                    }).catch((e) => {
-                        console.log(e);
-                        this.setState({ pendingRequests: false });
-                    });
-                }
-                // TODO: maybe set pending results state
-                // this.setState({ identifyResult: {}, prevIdentifyResult: this.state.identifyResult, pendingRequests: pendingRequests });
-                break;
             default:
                 console.warn(`Action \`${action.name}\` cannot be handled.`)
                 break;
@@ -154,46 +114,31 @@ class GwInfo extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            console.log("Prueba");
+            console.log("flowtrace clickPoint:", clickPoint);
+            // TODO fix array add and have two pointer at the same time
+            //this.props.markers.add
+            console.log(this.props.markers);
             // Remove any search selection layer to avoid confusion
-            this.props.removeLayer("searchselection");
-            let pendingRequests = false;
-            const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                // TODO: If there are some wms external layers this would select more than one layer
-                return l.type === "wms"
-            });
+            //this.props.removeLayer("searchselection");
+            let pendingRequests = 0;
+            // Call fct upstream/downstream & get geojson response
+            //this.makeRequest(clickPoint);
 
-            const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
-            if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                if (queryableLayers.length > 1) {
-                    console.warn("There are multiple giswater queryable layers")
-                }
-                const layer = queryableLayers[0];
-
-                const epsg = this.crsStrToInt(this.props.map.projection)
-                const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom)
-                const params = {
-                    "theme": layer.title,
-                    "epsg": epsg,
-                    "xcoord": clickPoint[0],
-                    "ycoord": clickPoint[1],
-                    "zoomRatio": zoomRatio,
-                    "layers": layer.queryLayers.join(',')
-                }
-
-                pendingRequests = true
-                axios.get(request_url + "fromcoordinates", { params: params }).then(response => {
-                    const result = response.data
-                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, theme: layer.title });
-                    this.highlightResult(result)
-                }).catch((e) => {
-                    console.log(e);
-                    this.setState({ pendingRequests: false });
-                });
-            }
-            this.props.addMarker('identify', clickPoint, '', this.props.map.projection);
-            this.setState({ identifyResult: {}, prevIdentifyResult: null, pendingRequests: pendingRequests });
+            this.props.addMarker('profile', clickPoint, '', this.props.map.projection);
         }
+    }
+    parseResult = (response, layer, format, clickPoint) => {
+        const newResults = IdentifyUtils.parseResponse(response, layer, format, clickPoint, this.props.map.projection, this.props.featureInfoReturnsLayerName, this.props.layers);
+        // Merge with previous
+        const identifyResult = { ...this.state.identifyResult };
+        Object.keys(newResults).map(layername => {
+            const newFeatureIds = newResults[layername].map(feature => feature.id);
+            identifyResult[layername] = [
+                ...(identifyResult[layername] || []).filter(feature => !newFeatureIds.includes(feature.id)),
+                ...newResults[layername]
+            ];
+        });
+        this.setState({ identifyResult: identifyResult });
     }
     highlightResult = (result) => {
         if (isEmpty(result)) {
@@ -222,7 +167,7 @@ class GwInfo extends React.Component {
     addMarkerToResult = (result) => {
         if (!isEmpty(result)) {
             const center = this.getGeometryCenter(result.feature.geometry)
-            this.props.addMarker('identify', center, '', this.props.map.projection);
+            this.props.addMarker('profile', center, '', this.props.map.projection);
         }
     }
     getGeometryCenter = (geom) => {
@@ -266,14 +211,148 @@ class GwInfo extends React.Component {
         }
         return this.props.click.coordinate;
     }
+    getQueryableLayers = () => {
+        if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
+            return [];
+        }
+
+        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
+            return l.type === "wms"
+        });
+    }
+    makeRequest(clickPoint) {
+        let pendingRequests = false;
+
+        const queryableLayers = this.getQueryableLayers();
+        const request_url = ConfigUtils.getConfigProp("gwProfileToolServiceUrl")
+
+        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+            // Get request paramas
+            const layer = queryableLayers[0];
+            const epsg = this.crsStrToInt(this.props.map.projection)
+            const zoom = this.props.map.scales[this.props.map.zoom]
+            const params = {
+                "theme": layer.title,
+                "epsg": epsg,
+                "coords": String(clickPoint),
+                "zoom": zoom
+            }
+            // Send request
+            pendingRequests = true;
+            let mode = this.state.mode === "trace" ? "upstream" : "downstream";
+            axios.get(request_url + mode, { params: params }).then(response => {
+                const result = response.data
+                console.log("flowtrace", mode, "result", result);
+                this.addFlowtraceLayers(result);
+                this.setState({ identifyResult: result, pendingRequests: false });
+            }).catch((e) => {
+                console.log(e);
+                this.setState({ pendingRequests: false });
+            });
+        }
+        // Set "Waiting for request..." message
+        this.setState({ identifyResult: {}, pendingRequests: pendingRequests });
+    }
+    addFlowtraceLayers = (result) => {
+        // Lines
+        let line = result.body.data.line;
+        let lines_style = {
+            strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
+            strokeWidth: 6,
+            strokeDash: [1],
+            fillColor: [255, 255, 255, 0.33],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_lines.geojson", line, 'default', lines_style);
+
+        // Points
+        let point = result.body.data.point;
+        let points_style = {
+            strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
+            strokeWidth: 2,
+            strokeDash: [4],
+            fillColor: [191, 156, 40, 0.33],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_points.geojson", point, 'default', points_style);
+    }
+    addGeoJSONLayer = (filename, data, styleName = undefined, styleOptions = undefined) => {
+        if (!isEmpty(data.features)) {
+            let defaultCrs = "EPSG:25831";
+            let defaultStyleName = 'default'
+            let defaultStyleOptions = {
+                strokeColor: [255, 0, 0, 1],
+                strokeWidth: 4,
+                strokeDash: [4],
+                fillColor: [255, 255, 255, 0.33],
+                textFill: "blue",
+                textStroke: "white",
+                textFont: '20pt sans-serif'
+            }
+            if (styleName) {
+                defaultStyleName = styleName;
+            }
+            if (styleOptions) {
+                defaultStyleOptions = styleOptions;
+            }
+            if (data.crs && data.crs.properties && data.crs.properties.name) {
+                // Extract CRS from FeatureCollection crs
+                defaultCrs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
+            }
+            const features = data.features.map(feature => {
+                let crs = defaultCrs;
+                if (feature.crs && feature.crs.properties && feature.crs.properties.name) {
+                    crs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
+                } else if (typeof feature.crs === "string") {
+                    crs = feature.crs;
+                }
+                if (feature.geometry && feature.geometry.coordinates) {
+                    feature.geometry.coordinates = feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d);
+                }
+
+                return {
+                    ...feature,
+                    crs: crs,
+                    styleName: defaultStyleName,
+                    styleOptions: defaultStyleOptions
+                };
+            });
+            this.props.addLayerFeatures({
+                id: filename,
+                name: filename,
+                title: filename.replace(/\.[^/.]+$/, "").replaceAll(/_+/g, " "),
+                zoomToExtent: true
+            }, features, true);
+        } else {
+            this.props.addLayerFeatures({
+                id: filename,
+                name: filename,
+                title: filename.replace(/\.[^/.]+$/, "").replaceAll(/_+/g, " "),
+                zoomToExtent: false
+            }, [], true);
+            // TODO: send message to map, but not alert(LocaleUtils.tr("importlayer.nofeatures"));
+        }
+    }
+    searchFlowtraceLayer = () => {
+        let flowtraceLayers = null;
+        flowtraceLayers = this.props.layers.filter(l => /flowtrace_(points|lines|polygons)\.geojson/.test(l.name));
+        return flowtraceLayers;
+    }
+    onShow = (mode) => {
+        this.setState({ mode: mode || 'trace' });
+    }
     onToolClose = () => {
-        this.props.removeMarker('identify');
+        this.props.removeMarker('profile');
         this.props.removeLayer("identifyslection");
         this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ identifyResult: null, pendingRequests: false });
+        this.setState({ identifyResult: null, pendingRequests: false, mode: 'trace' });
     }
     clearResults = () => {
-        this.props.removeMarker('identify');
+        this.props.removeMarker('profile');
         this.props.removeLayer("identifyslection");
         this.setState({ identifyResult: null, pendingRequests: false });
     }
@@ -286,38 +365,8 @@ class GwInfo extends React.Component {
     }
     render() {
         let resultWindow = null;
-        if (this.state.pendingRequests === true || this.state.identifyResult !== null) {
-            let body = null;
-            if (isEmpty(this.state.identifyResult)) {
-                if (this.state.pendingRequests === true) {
-                    body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
-                } else {
-                    body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
-                }
-            } else {
-                console.log("render()", this.state);
-                const result = this.state.identifyResult
-                const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null
-                body = (
-                    <div className="identify-body" role="body">
-                        {prevResultButton}
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} listJson={this.state.listJson} theme={this.state.theme} />
-                    </div>
-                )
-            }
-            resultWindow = (
-                <ResizeableWindow icon="info-sign"
-                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
-                    initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
-                    key="GwInfoWindow"
-                    onClose={this.clearResults} title="Giswater Info"
-                >
-                    {body}
-                </ResizeableWindow>
-            );
-        }
         return [resultWindow, (
-            <TaskBar key="GwInfoTaskBar" onHide={this.onToolClose} task="GwInfo">
+            <TaskBar key="GwProfileToolTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwProfileTool">
                 {() => ({
                     body: LocaleUtils.tr("infotool.clickhelpPoint")
                 })}
@@ -341,5 +390,6 @@ export default connect(selector, {
     changeSelectionState: changeSelectionState,
     panTo: panTo,
     removeMarker: removeMarker,
-    removeLayer: removeLayer
-})(GwInfo);
+    removeLayer: removeLayer,
+    addLayerFeatures: addLayerFeatures
+})(GwProfileTool);
