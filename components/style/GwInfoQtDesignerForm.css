@@ -13,5 +13,5 @@ td.qtablewidget {
 }
 
 tr.qtablewidget:nth-child(even) {
-    background-color: #c9c9c9;
+    background-color: #e2e2e2;
 }

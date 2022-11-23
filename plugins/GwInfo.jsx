@@ -54,8 +54,11 @@ class GwInfo extends React.Component {
         identifyResult: null,
         prevIdentifyResult: null,
         pendingRequests: false,
+        theme: null,
+        currentTab: {},
+        feature_id: null,
         listJson: null,
-        theme: null
+        filters: {}
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
@@ -63,6 +66,10 @@ class GwInfo extends React.Component {
         }
         if (this.props.currentTask === "GwInfo" || this.props.currentIdentifyTool === "GwInfo") {
             this.identifyPoint(prevProps);
+        }
+        // Check if list need to update (current tab or filters changed)
+        if ((prevState.currentTab !== this.state.currentTab) || (prevState.filters !== this.state.filters)) {
+            this.getList(this.state.currentTab.tab, this.state.currentTab.widget);
         }
     }
     crsStrToInt = (crs) => {
@@ -151,10 +158,74 @@ class GwInfo extends React.Component {
                 break;
         }
     }
+    updateField = (widget, value) => {
+        // Get filterSign
+        var filterSign = "=";
+        console.log(widget.property.widgetcontrols);
+        if (widget.property.widgetcontrols !== "null") {
+            filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
+        }
+        console.log("TEST updateField, filter:", {[widget.name]: {value: value, filterSign: filterSign}});
+        // Update filters
+        this.setState({ filters: {...this.state.filters, [widget.name]: {value: value, filterSign: filterSign}} });
+    }
+    onTabChanged = (tab, widget) => {
+        this.setState({ currentTab: {tab: tab, widget: widget} });
+    }
+    getList = (tab, widget) => {
+        console.log("TEST getList, filters:", this.state.filters);
+        var request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl");
+        console.log("TEST tabChanged 10", widget);
+        var filtered = widget.widget.filter(child => {
+            return child.name === tab.name;
+        }).filter(child => {
+            return child.layout;
+        }).filter(child => {
+            return child.layout.item[0].layout.item.some((child2) => child2.widget.class === "QTableWidget");
+        });
+        console.log("TEST tabChanged 20", filtered);
+        if (isEmpty(filtered) || isEmpty(request_url)) {
+            return null;
+        }
+        var tableWidgets = [];
+        filtered.forEach(childTab => {
+            childTab.layout.item[0].layout.item.forEach(child => {
+                if (child.widget.class === "QTableWidget") {
+                    tableWidgets.push(child.widget);
+                }
+            })
+        })
+        console.log("TEST tabChanged 25", tableWidgets);
+        const prop = tableWidgets[0].property || {};
+        const action = JSON.parse(prop.action);
+        console.log("TEST tabChanged 30", action);
+        console.log("tab.name", tab.name);
+        console.log("tableWidgets[0].name", tableWidgets[0].name);
+
+        const params = {
+            "theme": this.state.theme,
+            "tabName": tab.name,  // tab.name, no? o widget.name?
+            "widgetname": tableWidgets[0].name,  // tabname_ prefix cal?
+            //"formtype": this.props.formtype,
+            "tableName": prop.linkedobject,
+            "idName": this.state.identifyResult.feature.idName,
+            "id": this.state.identifyResult.feature.id,
+            "filterFields": this.state.filters
+            //"filterSign": action.params.tabName
+        }
+        console.log("TEST tabChanged 40", params);
+        axios.get(request_url + "getlist", { params: params }).then((response) => {
+            const result = response.data
+            console.log("getlist done:", result);
+            this.setState({ listJson: result });
+        }).catch((e) => {
+            console.log(e);
+            // this.setState({  });
+        })
+    }
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            console.log("Prueba");
             // Remove any search selection layer to avoid confusion
             this.props.removeLayer("searchselection");
             let pendingRequests = false;
@@ -301,7 +372,11 @@ class GwInfo extends React.Component {
                 body = (
                     <div className="identify-body" role="body">
                         {prevResultButton}
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} listJson={this.state.listJson} theme={this.state.theme} />
+                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} 
+                            theme={this.state.theme} idName={result.feature.idName} featureId={result.feature.id}
+                            dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
+                            listJson={this.state.listJson} filters={this.state.filters}
+                        />
                     </div>
                 )
             }
