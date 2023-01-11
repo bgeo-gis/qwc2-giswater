@@ -12,6 +12,8 @@ import { setCurrentTask } from 'qwc2/actions/task';
 import QtDesignerForm from 'qwc2/components/QtDesignerForm';
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
 
+import './style/GwDateSelector.css';
+
 class GwDateSelector extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
@@ -39,10 +41,10 @@ class GwDateSelector extends React.Component {
     }
     state = {
         dateSelectorResult: null,
+        getDatesResult: null,
         pendingRequests: false,
-        filteredSelectors: false,
-        date_from: null,
-        date_to: null
+        dockerLoaded: false,
+        filters: {}
     }
 
     crsStrToInt = (crs) => {
@@ -146,30 +148,35 @@ class GwDateSelector extends React.Component {
         }
     }
     componentDidUpdate(prevProps, prevState) {
-        // if (!this.state.filteredSelectors && !isEmpty(this.getQueryableLayers())) {
-        //     this.makeRequest();
-        //     this.state.filteredSelectors = true;
-        // }
-        // if (prevProps.currentTask === "ThemeSwitcher") {
-        //     this.state.filteredSelectors = false;
-        // }
-        if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "DateSelector") {
-            this.makeRequest();
+        // Load docker initially
+        if (!this.state.dockerLoaded && !isEmpty(this.getQueryableLayers())) {
+            this.getDates();
+            this.state.dockerLoaded = true;
         }
+        // Reload docker if switched theme
+        if (prevProps.currentTask === "ThemeSwitcher") {
+            this.state.dockerLoaded = false;
+        }
+
+        // Manage open tool
+        if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "DateSelector") {
+            this.getDialog();
+        }
+        // Manage close tool
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === null) {
             this.onClose();
         }
     }
     onShow = () => {
         // Make service request
-        this.makeRequest();
+        this.getDialog();
     }
     onClose = () => {
-        this.setState({ dateSelectorResult: null, pendingRequests: false, date_from: null, date_to: null });
+        this.setState({ dateSelectorResult: null, pendingRequests: false, filters: {} });
         this.props.setCurrentTask(null);
     }
     onToolClose = () => {
-        this.setState({ dateSelectorResult: null, pendingRequests: false, date_from: null, date_to: null });
+        this.setState({ dateSelectorResult: null, pendingRequests: false, filters: {} });
         this.props.setCurrentTask(null);
     }
     clearResults = () => {
@@ -186,25 +193,51 @@ class GwDateSelector extends React.Component {
             return l.type === "wms"
         });
     }
-    getDates = (params) => {
-        console.log("getDates()");
-        const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl")
-        if (isEmpty(request_url)) {
-            return false;
-        }
+    getDialog = () => {
+        let pendingRequests = false;
 
-        // Send request
-        axios.get(request_url + "getdates", { params: params }).then(response => {
-            const result = response.data
-            this.setState({ dateSelectorResult: result, pendingRequests: false });
-            // this.filterLayers(result);
-        }).catch((e) => {
-            console.log(e);
-            this.setState({ pendingRequests: false });
-        });
+        const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl");
+        if (!isEmpty(request_url)) {
+            // Send request
+            pendingRequests = true
+            axios.get(request_url + "getdialog", { params: {} }).then(response => {
+                const result = response.data
+                this.setState({ dateSelectorResult: result, pendingRequests: false });
+                // this.filterLayers(result);
+            }).catch((e) => {
+                console.log(e);
+                this.setState({ pendingRequests: false });
+            });
+        }
+        // Set "Waiting for request..." message
+        this.setState({ dateSelectorResult: {}, pendingRequests: pendingRequests });
+    }
+    getDates = () => {
+        const queryableLayers = this.getQueryableLayers();
+
+        const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl");
+        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+            // Get request paramas
+            const layer = queryableLayers[0];
+            const epsg = this.crsStrToInt(this.props.map.projection)
+            const params = {
+                "theme": layer.title
+            }
+
+            // Send request
+            axios.get(request_url + "getdates", { params: params }).then(response => {
+                const result = response.data
+                this.setState({ getDatesResult: result, dateSelectorResult: null });
+                // this.filterLayers(result);
+            }).catch((e) => {
+                console.log(e);
+                this.setState({  });
+            });
+        }
+        // Set "Waiting for request..." message
+        this.setState({ getDatesResult: {}, dateSelectorResult: null });
     }
     setDates = (params) => {
-        console.log("setDates()");
         const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl")
         if (isEmpty(request_url)) {
             return false;
@@ -213,7 +246,7 @@ class GwDateSelector extends React.Component {
         // Send request
         axios.get(request_url + "setdates", { params: params }).then(response => {
             const result = response.data
-            this.setState({ dateSelectorResult: result, pendingRequests: false });
+            this.setState({ dateSelectorResult: result, getDatesResult: result, pendingRequests: false });
             // this.filterLayers(result);
             this.props.setCurrentTask(null);
         }).catch((e) => {
@@ -221,13 +254,8 @@ class GwDateSelector extends React.Component {
             this.setState({ pendingRequests: false });
         });
     }
-    updateField = (widgetName, ev, action) => {
-        console.log("updateField()");
-        console.log("widgetName", widgetName);
-        console.log("ev", ev);
-        console.log("action", action);
-        this.setState({ [widgetName]: ev });
-        return;
+    updateField = (widget, ev, action) => {
+        this.setState({ filters: {...this.state.filters, [widget.name]: ev} });
     }
     dispatchButton = (action) => {
         let pendingRequests = false;
@@ -237,9 +265,10 @@ class GwDateSelector extends React.Component {
                 const queryableLayers = this.getQueryableLayers();
                 if (!isEmpty(queryableLayers)) {
                     // Get request paramas
+                    console.log(this.state.filters);
                     const layer = queryableLayers[0];
-                    const dateFrom = this.state.date_from;
-                    const dateTo = this.state.date_to;
+                    const dateFrom = this.state.filters.date_from;
+                    const dateTo = this.state.filters.date_to;
                     const params = {
                         "theme": layer.title,
                         "dateFrom": dateFrom,
@@ -259,35 +288,19 @@ class GwDateSelector extends React.Component {
                 break;
         }
     }
-    makeRequest() {
-        console.log("makeRequest()");
-        let pendingRequests = false;
-
-        const queryableLayers = this.getQueryableLayers();
-        console.log("queryableLayers =", queryableLayers);
-
-        const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl");
-        console.log("request_url =", request_url);
-        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-            // Get request paramas
-            const layer = queryableLayers[0];
-            const epsg = this.crsStrToInt(this.props.map.projection)
-            const params = {
-                "theme": layer.title
-            }
-
-            // Send request
-            pendingRequests = true
-            this.getDates(params);
-        }
-        // Set "Waiting for request..." message
-        this.setState({ dateSelectorResult: {}, pendingRequests: pendingRequests });
-    }
     render() {
-        // console.log("render()", this.state);
-        // console.log("props", this.props);
-        // Create window
         let datesWindow = null;
+        let datesDocker = null;
+        let dockerBody = null;
+        // Docker
+        if (this.state.getDatesResult !== null) {
+            if (!isEmpty(this.state.getDatesResult)) {
+                dockerBody = (
+                    <span>Dates: {this.state.getDatesResult.data.date_from} - {this.state.getDatesResult.data.date_to}</span>
+                )
+            }
+        }
+        // Dialog
         if (this.state.pendingRequests === true || this.state.dateSelectorResult !== null) {
             let body = null;
             if (isEmpty(this.state.dateSelectorResult)) {
@@ -298,11 +311,20 @@ class GwDateSelector extends React.Component {
                 }
             } else {
                 const result = this.state.dateSelectorResult
-                body = (
-                    <div className="date-selector-body" role="body">
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} />
-                    </div>
-                )
+                if (!isEmpty(result.form_xml)) {
+                    body = (
+                        <div className="date-selector-body" role="body">
+                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} filters={this.state.filters} />
+                        </div>
+                    )
+                }
+
+                if (!isEmpty(result.data?.date_from) && !isEmpty(result.data?.date_to)) {
+                    dockerBody = (
+                        <span>Dates: {result.data.date_from} - {result.data.date_to}</span>
+                    )
+                }
+
             }
             datesWindow = (
                 <ResizeableWindow icon="date_selector" key="GwDateSelectorWindow" title="GW Date Selector" id="GwDateSelector"
@@ -314,7 +336,12 @@ class GwDateSelector extends React.Component {
             )
         }
 
-        return datesWindow;
+        datesDocker = (
+            <div id="DatesDocker">
+                {dockerBody}
+            </div>
+        )
+        return [datesWindow, datesDocker];
     }
 }
 
