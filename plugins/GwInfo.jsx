@@ -161,21 +161,22 @@ class GwInfo extends React.Component {
     updateField = (widget, value) => {
         // Get filterSign
         var filterSign = "=";
-        console.log(widget.property.widgetcontrols);
         if (widget.property.widgetcontrols !== "null") {
             filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
         }
-        console.log("TEST updateField, filter:", {[widget.name]: {value: value, filterSign: filterSign}});
+        var columnname = widget.name;
+        if (widget.property.widgetfunction !== "null") {
+            columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
+        }
+        columnname = columnname ?? widget.name;
         // Update filters
-        this.setState({ filters: {...this.state.filters, [widget.name]: {value: value, filterSign: filterSign}} });
+        this.setState({ filters: {...this.state.filters, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}} });
     }
     onTabChanged = (tab, widget) => {
         this.setState({ currentTab: {tab: tab, widget: widget} });
     }
     getList = (tab, widget) => {
-        console.log("TEST getList, filters:", this.state.filters);
         var request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl");
-        console.log("TEST tabChanged 10", widget);
         var filtered = widget.widget.filter(child => {
             return child.name === tab.name;
         }).filter(child => {
@@ -183,7 +184,6 @@ class GwInfo extends React.Component {
         }).filter(child => {
             return child.layout.item[0].layout.item.some((child2) => child2.widget.class === "QTableWidget");
         });
-        console.log("TEST tabChanged 20", filtered);
         if (isEmpty(filtered) || isEmpty(request_url)) {
             return null;
         }
@@ -195,12 +195,8 @@ class GwInfo extends React.Component {
                 }
             })
         })
-        console.log("TEST tabChanged 25", tableWidgets);
         const prop = tableWidgets[0].property || {};
         const action = JSON.parse(prop.action);
-        console.log("TEST tabChanged 30", action);
-        console.log("tab.name", tab.name);
-        console.log("tableWidgets[0].name", tableWidgets[0].name);
 
         const params = {
             "theme": this.state.theme,
@@ -213,7 +209,7 @@ class GwInfo extends React.Component {
             "filterFields": this.state.filters
             //"filterSign": action.params.tabName
         }
-        console.log("TEST tabChanged 40", params);
+        console.log("TEST getList, params:", params);
         axios.get(request_url + "getlist", { params: params }).then((response) => {
             const result = response.data
             console.log("getlist done:", result);
@@ -366,7 +362,6 @@ class GwInfo extends React.Component {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
                 }
             } else {
-                console.log("render()", this.state);
                 const result = this.state.identifyResult
                 const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null
                 body = (

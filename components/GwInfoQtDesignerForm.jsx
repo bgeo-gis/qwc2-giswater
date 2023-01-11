@@ -39,7 +39,8 @@ class GwInfoQtDesignerForm extends React.Component {
     static defaultProps = {
         updateField: (name, value, widget) => { console.log(name, value, widget) },
         dispatchButton: (action) => { console.log(action) },
-        onTabChanged: (tab, widget) => { console.log(tab, widget) }
+        onTabChanged: (tab, widget) => { console.log(tab, widget) },
+        filters: {}
     }
     static defaultState = {
         activetabs: {},
@@ -56,10 +57,7 @@ class GwInfoQtDesignerForm extends React.Component {
     }
     componentDidUpdate(prevProps, prevState) {
         // Query form
-        console.log("componentDidUpdate");
-        console.log(this.state);
         if (this.props.form_xml !== prevProps.form_xml) {
-            console.log("form_xml changed");
             this.setState({
                 ...GwInfoQtDesignerForm.defaultState,
                 activetabs: this.props.form_xml === prevProps.form_xml ? this.state.activetabs : {}
@@ -188,13 +186,10 @@ class GwInfoQtDesignerForm extends React.Component {
         const elname = nametransform(widget.name);
 
         if (widget.class === "QTableWidget") {
-            console.log("test 10", this.props.listJson);
             if (isEmpty(this.props.listJson)) {
                 return null;
             }
-            console.log("test 20");
             const values = this.props.listJson.body.data.fields[0].value;
-            console.log("test 30", values);
             if (!values) {
                 return (<span>No results found</span>)
             }
@@ -262,13 +257,16 @@ class GwInfoQtDesignerForm extends React.Component {
                 </div>
             );
         } else if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit") {
-            return (<textarea name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={prop.text} />);
+            const value = (this.props.filters[widget.name]?.value || prop.text);
+            return (<textarea name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value} />);
         } else if (widget.class === "QLineEdit") {
-            return (<input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} type="text" value={prop.text} />);
+            const value = (this.props.filters[widget.name]?.value || prop.text)
+            return (<input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} type="text" value={value} />);
         } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const type = widget.class === "QCheckBox" ? "checkbox" : "radio";
             const inGroup = attr.buttonGroup;
-            const checked = prop.checked === true || prop.checked === "true" || prop.checked === "True";
+            const checked_ = (this.props.filters[widget.name]?.value || prop.checked);
+            const checked = checked_ === true || checked_ === "true" || checked_ === "True";
             return (
                 <label style={fontStyle}>
                     <input checked={checked} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.value, JSON.parse(prop.action))} {...inputConstraints} type={type} value={widget.name} />
@@ -281,7 +279,7 @@ class GwInfoQtDesignerForm extends React.Component {
                 items = [widget.item];
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
-            const value = (this.props.filters[widget.name]?.value || prop.value)
+            const value = (this.props.filters[widget.name]?.value || prop.value);
             return (
                 <select disabled={inputConstraints.readOnly} name={elname} onChange={ev => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value}>
                     {!haveEmpty ? (
@@ -302,18 +300,19 @@ class GwInfoQtDesignerForm extends React.Component {
             const max = prop.maximum ?? undefined;
             const step = prop.singleStep ?? 1;
             const type = (widget.class === "QSlider" ? "range" : "number");
+            const value = (this.props.filters[widget.name]?.value || prop.value);
             return (
-                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} type={type} value={prop.value} />
+                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} type={type} value={value} />
             );
         } else if (widget.class === "QDateEdit") {
             const min = prop.minimumDate ? this.dateConstraint(prop.minimumDate) : "1900-01-01";
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
-            const value = (this.props.filters[widget.name]?.value || prop.value)
+            const value = (this.props.filters[widget.name]?.value || prop.value);
             return (
                 <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="date" value={value} />
             );
         } else if (widget.class === "QTimeEdit") {
-            const value = (this.props.filters[widget.name]?.value || prop.value)
+            const value = (this.props.filters[widget.name]?.value || prop.value);
             return (
                 <input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="time" value={value} />
             );
@@ -348,7 +347,6 @@ class GwInfoQtDesignerForm extends React.Component {
             mergeAttrs: true
         };
         const loadingReqId = uuid.v1();
-        console.log(data);
         this.setState({ loading: true, loadingReqId: loadingReqId });
         xml2js.parseString(data, options, (err, json) => {
             if (err !== null) {
