@@ -273,8 +273,8 @@ class GwDateSelector extends React.Component {
                     // Get request paramas
                     console.log(this.state.filters);
                     const layer = queryableLayers[0];
-                    const dateFrom = this.state.filters.date_from;
-                    const dateTo = this.state.filters.date_to;
+                    const dateFrom = this.state.filters.date_from.value;
+                    const dateTo = this.state.filters.date_to.value;
                     const params = {
                         "theme": layer.title,
                         "dateFrom": dateFrom,
