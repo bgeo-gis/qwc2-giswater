@@ -172,11 +172,11 @@ class GwDateSelector extends React.Component {
         this.getDialog();
     }
     onClose = () => {
-        this.setState({ dateSelectorResult: null, pendingRequests: false, filters: {} });
+        this.setState({ dateSelectorResult: null, pendingRequests: false });
         this.props.setCurrentTask(null);
     }
     onToolClose = () => {
-        this.setState({ dateSelectorResult: null, pendingRequests: false, filters: {} });
+        this.setState({ dateSelectorResult: null, pendingRequests: false });
         this.props.setCurrentTask(null);
     }
     clearResults = () => {
@@ -227,11 +227,17 @@ class GwDateSelector extends React.Component {
             // Send request
             axios.get(request_url + "getdates", { params: params }).then(response => {
                 const result = response.data
-                this.setState({ getDatesResult: result, dateSelectorResult: null });
+                let dateFrom = result.data?.date_from;
+                let dateParts = dateFrom.split("/");
+                dateFrom = dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0];
+                let dateTo = result.data?.date_to;
+                dateParts = dateTo.split("/");
+                dateTo = dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0];
+                this.setState({ getDatesResult: result, dateSelectorResult: null, filters: { date_from: { value: dateFrom }, date_to: { value: dateTo } } });
                 // this.filterLayers(result);
             }).catch((e) => {
                 console.log(e);
-                this.setState({  });
+                this.setState({});
             });
         }
         // Set "Waiting for request..." message
@@ -255,7 +261,7 @@ class GwDateSelector extends React.Component {
         });
     }
     updateField = (widget, ev, action) => {
-        this.setState({ filters: {...this.state.filters, [widget.name]: ev} });
+        this.setState({ filters: { ...this.state.filters, [widget.name]: { value: ev } } });
     }
     dispatchButton = (action) => {
         let pendingRequests = false;
