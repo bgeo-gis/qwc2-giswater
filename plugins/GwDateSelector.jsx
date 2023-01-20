@@ -6,20 +6,16 @@ import isEmpty from 'lodash.isempty';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
+import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 
-import QtDesignerForm from 'qwc2/components/QtDesignerForm';
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
 
 import './style/GwDateSelector.css';
 
 class GwDateSelector extends React.Component {
     static propTypes = {
-        addMarker: PropTypes.func,
-        changeSelectionState: PropTypes.func,
-        click: PropTypes.object,
-        currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -27,8 +23,7 @@ class GwDateSelector extends React.Component {
         initialY: PropTypes.number,
         layers: PropTypes.array,
         map: PropTypes.object,
-        removeLayer: PropTypes.func,
-        removeMarker: PropTypes.func,
+        refreshLayer: PropTypes.func,
         setCurrentTask: PropTypes.func,
         selection: PropTypes.object
     }
@@ -52,16 +47,12 @@ class GwDateSelector extends React.Component {
         return parseInt(parts.slice(-1))
     }
     filterLayers = (result) => {
-        const layerFilters = ["expl_id", "state"]
-        const filterNames = {
-            "tab_exploitation": { "key": "expl_id", "column": "expl_id" },
-            "tab_network_state": { "key": "id", "column": "state" }
-        }
+        const layerFilters = ["filterdate"]  // TODO: get this from config?
         const queryableLayers = this.getQueryableLayers();
 
         if (!isEmpty(queryableLayers)) {
             // Get values
-            var values = this.getFilterValues(result, filterNames);
+            var values = this.getFilterValues(result);
             // Get filter query
             var filter = this.getFilterStr(values, layerFilters, result.data.layerColumns);
             console.log("filter query =", filter);
@@ -70,37 +61,12 @@ class GwDateSelector extends React.Component {
             console.log("queryable layers =", queryableLayers);
             const layer = queryableLayers[0];
             layer.params.FILTER = filter;
-            this.panToResult(result);
-            // TODO: refresh map
+            // Refresh map
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }
     }
-    getFilterValues = (result, filterNames) => {
-        let values = {}
-
-        console.log(result.form.formTabs);
-        for (let i = 0; i < result.form.formTabs.length; i++) {
-            const tab = result.form.formTabs[i];
-            let tabname = filterNames[tab.tabName];
-            if (tabname === undefined) {
-                continue;
-            }
-            let key = tabname.key;
-            let columnname = tabname.column;
-            values[columnname] = []
-            for (let j = 0; j < tab.fields.length; j++) {
-                const v = tab.fields[j];
-                if (v.value == true) {
-                    let value;
-                    for (var k in v) {
-                        if (k == key) {
-                            value = v[k]
-                            break;
-                        }
-                    }
-                    values[columnname].push(value);
-                }
-            }
-        }
+    getFilterValues = (result) => {
+        let values = { from_date: result.data?.date_from, to_date: result.data?.date_to };
 
         return values;
     }
@@ -111,41 +77,24 @@ class GwDateSelector extends React.Component {
         let filterStr = "";
         for (var lyr in layerColumns) {
             const cols = layerColumns[lyr];  // Get columns for layer
-            filterStr += lyr + ": ";
             var fields = layerFilters;  // Get columns to filter
             let fieldsFilterStr = "";
             for (let i = 0; i < fields.length; i++) {
                 var field = fields[i];  // Column to filter
-                var value = values[field];  // Value to filter
-                if (value === undefined || !cols.includes(field)) {  // If no value defined or layer doesn't have column to filter
+                if (!values || !cols.includes(field)) {  // If no value defined or layer doesn't have column to filter
                     continue;
                 }
                 if (i > 0 && fieldsFilterStr.length > 0) {
                     fieldsFilterStr += " AND ";
                 }
-                if (value.length > 0) {
-                    fieldsFilterStr += "\"" + field + "\" IN ( " + value.join(' , ') + " )";
-                } else {
-                    fieldsFilterStr += "\"" + field + "\" = -1";
-                }
+                // {layer}: "{field}" >= {from_date} AND "{field}" <= {to_date};
+                fieldsFilterStr += "\"" + field + "\" >= '" + values.from_date + "' AND \"" + field + "\" <= '" + values.to_date + "'";
             }
-            filterStr += fieldsFilterStr + ";";
+            if (fieldsFilterStr) {
+                filterStr += lyr + ": " + fieldsFilterStr + ";";
+            }
         }
         return filterStr;
-    }
-    panToResult = (result) => {
-        if (!isEmpty(result)) {
-            const x1 = result.data.geometry.x1;
-            const y1 = result.data.geometry.y1;
-            const x2 = result.data.geometry.x2;
-            const y2 = result.data.geometry.y2;
-            console.log("Zoom to:", x1, y1, x2, y2);
-            const extent = [x1, y1, x2, y2];
-            if (extent.includes(undefined)) {
-                return
-            }
-            this.props.zoomToExtent(extent, this.props.map.projection);
-        }
     }
     componentDidUpdate(prevProps, prevState) {
         // Load docker initially
@@ -156,6 +105,21 @@ class GwDateSelector extends React.Component {
         // Reload docker if switched theme
         if (prevProps.currentTask === "ThemeSwitcher") {
             this.state.dockerLoaded = false;
+        }
+        // Filter layers if any layer changed visibility
+        if (!isEmpty(this.getQueryableLayers())) {
+            const prevLayers = IdentifyUtils.getQueryLayers(prevProps.layers, prevProps.map).filter(l => {
+                // TODO: If there are some wms external layers this would select more than one layer
+                return l.type === "wms"
+            })[0]?.queryLayers;
+            const curLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
+                // TODO: If there are some wms external layers this would select more than one layer
+                return l.type === "wms"
+            })[0]?.queryLayers;
+            // If more/less layers are active, filter again
+            if (prevLayers && curLayers && prevLayers.length !== curLayers.length) {
+                this.getDates(false);
+            }
         }
 
         // Manage open tool
@@ -212,7 +176,7 @@ class GwDateSelector extends React.Component {
         // Set "Waiting for request..." message
         this.setState({ dateSelectorResult: {}, pendingRequests: pendingRequests });
     }
-    getDates = () => {
+    getDates = (updateState = true) => {
         const queryableLayers = this.getQueryableLayers();
 
         const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl");
@@ -221,27 +185,24 @@ class GwDateSelector extends React.Component {
             const layer = queryableLayers[0];
             const epsg = this.crsStrToInt(this.props.map.projection)
             const params = {
-                "theme": layer.title
+                "theme": layer.title,
+                "layers": String(layer.queryLayers)
             }
 
             // Send request
             axios.get(request_url + "getdates", { params: params }).then(response => {
                 const result = response.data
                 let dateFrom = result.data?.date_from;
-                let dateParts = dateFrom.split("/");
-                dateFrom = dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0];
                 let dateTo = result.data?.date_to;
-                dateParts = dateTo.split("/");
-                dateTo = dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0];
-                this.setState({ getDatesResult: result, dateSelectorResult: null, filters: { date_from: { value: dateFrom }, date_to: { value: dateTo } } });
-                // this.filterLayers(result);
+                if (updateState) this.setState({ getDatesResult: result, dateSelectorResult: null, filters: { date_from: { value: dateFrom }, date_to: { value: dateTo } } });
+                this.filterLayers(result);
             }).catch((e) => {
                 console.log(e);
-                this.setState({});
+                if (updateState) this.setState({});
             });
         }
         // Set "Waiting for request..." message
-        this.setState({ getDatesResult: {}, dateSelectorResult: null });
+        if (updateState) this.setState({ getDatesResult: {}, dateSelectorResult: null });
     }
     setDates = (params) => {
         const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl")
@@ -253,7 +214,7 @@ class GwDateSelector extends React.Component {
         axios.get(request_url + "setdates", { params: params }).then(response => {
             const result = response.data
             this.setState({ dateSelectorResult: result, getDatesResult: result, pendingRequests: false });
-            // this.filterLayers(result);
+            this.filterLayers(result);
             this.props.setCurrentTask(null);
         }).catch((e) => {
             console.log(e);
@@ -264,8 +225,6 @@ class GwDateSelector extends React.Component {
         this.setState({ filters: { ...this.state.filters, [widget.name]: { value: ev } } });
     }
     dispatchButton = (action) => {
-        let pendingRequests = false;
-        console.log("dispatchButton()");
         switch (action.name) {
             case "accept":
                 const queryableLayers = this.getQueryableLayers();
@@ -301,8 +260,14 @@ class GwDateSelector extends React.Component {
         // Docker
         if (this.state.getDatesResult !== null) {
             if (!isEmpty(this.state.getDatesResult)) {
+                let dateFrom = this.state.getDatesResult.data.date_from;
+                let dateParts = dateFrom.split("-");
+                dateFrom = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
+                let dateTo = this.state.getDatesResult.data.date_to;
+                dateParts = dateTo.split("-");
+                dateTo = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
                 dockerBody = (
-                    <span>Dates: {this.state.getDatesResult.data.date_from} - {this.state.getDatesResult.data.date_to}</span>
+                    <span>Dates: {dateFrom} - {dateTo}</span>
                 )
             }
         }
@@ -316,7 +281,7 @@ class GwDateSelector extends React.Component {
                     body = (<div className="date-selector-body" role="body"><span className="date-selector-body-message">No result</span></div>); // TODO: TRANSLATION
                 }
             } else {
-                const result = this.state.dateSelectorResult
+                const result = this.state.dateSelectorResult;
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
@@ -359,5 +324,6 @@ const selector = (state) => ({
 
 export default connect(selector, {
     zoomToExtent: zoomToExtent,
+    refreshLayer: refreshLayer,
     setCurrentTask: setCurrentTask
 })(GwDateSelector);
