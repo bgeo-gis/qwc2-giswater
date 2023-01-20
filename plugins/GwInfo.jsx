@@ -22,6 +22,7 @@ import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
+import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
 
@@ -364,16 +365,23 @@ class GwInfo extends React.Component {
             } else {
                 const result = this.state.identifyResult
                 const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null
-                body = (
-                    <div className="identify-body" role="body">
-                        {prevResultButton}
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} 
-                            theme={this.state.theme} idName={result.feature.idName} featureId={result.feature.id}
-                            dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
-                            listJson={this.state.listJson} filters={this.state.filters}
-                        />
-                    </div>
-                )
+                if (result.schema === null) {
+                    body = null;
+                    this.props.processStarted("info_msg", "GwInfo Error!");
+                    this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
+                }
+                else {
+                    body = (
+                        <div className="identify-body" role="body">
+                            {prevResultButton}
+                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} 
+                                theme={this.state.theme} idName={result.feature.idName} featureId={result.feature.id}
+                                dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
+                                listJson={this.state.listJson} filters={this.state.filters}
+                            />
+                        </div>
+                    )
+                }
             }
             resultWindow = (
                 <ResizeableWindow icon="info-sign"
@@ -411,5 +419,7 @@ export default connect(selector, {
     changeSelectionState: changeSelectionState,
     panTo: panTo,
     removeMarker: removeMarker,
-    removeLayer: removeLayer
+    removeLayer: removeLayer,
+    processFinished: processFinished,
+    processStarted: processStarted
 })(GwInfo);
