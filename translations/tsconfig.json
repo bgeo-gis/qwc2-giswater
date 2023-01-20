@@ -1,6 +1,10 @@
 {
   "strings": [
     "editing.select",
+    "heightprofile.asl",
+    "heightprofile.distance",
+    "heightprofile.height",
+    "heightprofile.loading",
     "identify.noresults",
     "identify.querying",
     "importlayer.nofeatures",
