@@ -7,7 +7,7 @@ import SideBar from 'qwc2/components/SideBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
-import { refreshLayer } from 'qwc2/actions/layers';
+import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
 
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
 
