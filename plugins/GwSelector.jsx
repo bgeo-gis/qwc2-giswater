@@ -7,33 +7,19 @@ import SideBar from 'qwc2/components/SideBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
+import { refreshLayer } from 'qwc2/actions/layers';
 
-import QtDesignerForm from 'qwc2/components/QtDesignerForm';
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
 
 class GwSelector extends React.Component {
     static propTypes = {
-        addMarker: PropTypes.func,
-        changeSelectionState: PropTypes.func,
-        click: PropTypes.object,
-        currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
-        initialHeight: PropTypes.number,
-        initialWidth: PropTypes.number,
-        initialX: PropTypes.number,
-        initialY: PropTypes.number,
         layers: PropTypes.array,
         map: PropTypes.object,
-        removeLayer: PropTypes.func,
-        removeMarker: PropTypes.func,
-        selection: PropTypes.object
+        refreshLayer: PropTypes.func,
+        zoomToExtent: PropTypes.func
     }
     static defaultProps = {
-        replaceImageUrls: true,
-        initialWidth: 240,
-        initialHeight: 320,
-        initialX: 0,
-        initialY: 0
     }
     state = {
         selectorResult: null,
@@ -65,7 +51,8 @@ class GwSelector extends React.Component {
             const layer = queryableLayers[0];
             layer.params.FILTER = filter;
             this.panToResult(result);
-            // TODO: refresh map
+            // Refresh map
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }
     }
     getFilterValues = (result, filterNames) => {
@@ -302,5 +289,6 @@ const selector = (state) => ({
 });
 
 export default connect(selector, {
-    zoomToExtent: zoomToExtent
+    zoomToExtent: zoomToExtent,
+    refreshLayer: refreshLayer
 })(GwSelector);
