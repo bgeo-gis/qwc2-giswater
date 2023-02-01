@@ -44,7 +44,7 @@ class GwInfoQtDesignerForm extends React.Component {
     }
     static defaultState = {
         activetabs: {},
-        formdata: null,
+        formData: null,
         loading: false,
         loadingReqId: null
     }
@@ -184,6 +184,7 @@ class GwInfoQtDesignerForm extends React.Component {
         };
 
         const elname = nametransform(widget.name);
+        const widgetFunction = prop.widgetfunction || "{}";
 
         if (widget.class === "QTableWidget") {
             if (isEmpty(this.props.listJson)) {
@@ -258,18 +259,30 @@ class GwInfoQtDesignerForm extends React.Component {
             );
         } else if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit") {
             const value = (this.props.filters[widget.name]?.value || prop.text);
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, value);
             return (<textarea name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value} />);
         } else if (widget.class === "QLineEdit") {
-            const value = (this.props.filters[widget.name]?.value || prop.text)
+            const value = (this.props.filters[widget.name]?.value || prop.text);
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, value);
             return (<input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} type="text" value={value} />);
         } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const type = widget.class === "QCheckBox" ? "checkbox" : "radio";
             const inGroup = attr.buttonGroup;
             const checked_ = (this.props.filters[widget.name]?.value || prop.checked);
             const checked = checked_ === true || checked_ === "true" || checked_ === "True";
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, checked);
+            let action;
+            try {
+                action = JSON.parse(prop.action);
+            } catch (error) {
+                action = "";
+            }
             return (
                 <label style={fontStyle}>
-                    <input checked={checked} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.value, JSON.parse(prop.action))} {...inputConstraints} type={type} value={widget.name} />
+                    <input checked={checked} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.checked, action)} {...inputConstraints} type={type} value={widget.name} />
                     {prop.text}
                 </label>
             );
@@ -279,7 +292,10 @@ class GwInfoQtDesignerForm extends React.Component {
                 items = [widget.item];
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
-            const value = (this.props.filters[widget.name]?.value || prop.value);
+            const optObj = items.find(obj => obj.property.text === prop.value);
+            const value = (this.props.filters[widget.name]?.value || optObj.property.value || optObj.property.text);
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, value);
             return (
                 <select disabled={inputConstraints.readOnly} name={elname} onChange={ev => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value}>
                     {!haveEmpty ? (
@@ -301,6 +317,8 @@ class GwInfoQtDesignerForm extends React.Component {
             const step = prop.singleStep ?? 1;
             const type = (widget.class === "QSlider" ? "range" : "number");
             const value = (this.props.filters[widget.name]?.value || prop.value);
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, value);
             return (
                 <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} type={type} value={value} />
             );
@@ -308,11 +326,15 @@ class GwInfoQtDesignerForm extends React.Component {
             const min = prop.minimumDate ? this.dateConstraint(prop.minimumDate) : "1900-01-01";
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
             const value = (this.props.filters[widget.name]?.value || prop.value);
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, value);
             return (
                 <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="date" value={value} />
             );
         } else if (widget.class === "QTimeEdit") {
             const value = (this.props.filters[widget.name]?.value || prop.value);
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, value);
             return (
                 <input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="time" value={value} />
             );
@@ -321,17 +343,19 @@ class GwInfoQtDesignerForm extends React.Component {
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
             const parts = ((this.props.filters[widget.name]?.value || prop.value) || "T").split("T");
             parts[1] = (parts[1] || "").replace(/\.\d+$/, ''); // Strip milliseconds
+            // Call updateFields to get the initial widget value
+            if (!this.props.filters[widget.name]) updateField(widget, parts[0] || parts[1] ? parts[0] + "T" + parts[1] : "");
             return (
                 <span className="qt-designer-form-datetime">
-                    <input max={max[0]} min={min[0]} onChange={(ev) => updateField(widget, ev.target.value ? ev.target.value + "T" + parts[1] : "")} readOnly={inputConstraints.readOnly} required={inputConstraints.required} style={fontStyle} type="date" value={parts[0]} />
-                    <input disabled={!parts[0]} onChange={(ev) => updateField(widget, parts[0] + "T" + ev.target.value)} {...inputConstraints} style={fontStyle} type="time" value={parts[1]} />
+                    <input max={max[0]} min={min[0]} onChange={(ev) => updateField(widget, (ev.target.value ? ev.target.value + (parts[1] ? ("T" + parts[1]) : "") : "").replace(/^T/, ""))} readOnly={inputConstraints.readOnly} required={inputConstraints.required} style={fontStyle} type="date" value={parts[0]} />
+                    <input disabled={!parts[0]} onChange={(ev) => updateField(widget, (parts[0] + "T" + ev.target.value).replace(/^T/, ""))} {...inputConstraints} style={fontStyle} type="time" value={parts[1]} />
                     <input name={elname} type="hidden" value={prop.value} />
                 </span>
             );
         } else if (widget.class === "QWidget") {
             return this.renderLayout(widget.layout, updateField, nametransform);
         } else if (widget.class === "QPushButton") {
-            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(prop.action))} type="button">{prop.text}</button>)
+            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction))} type="button">{prop.text}</button>)
         }
         return null;
     }
