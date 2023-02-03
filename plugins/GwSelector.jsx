@@ -16,6 +16,7 @@ class GwSelector extends React.Component {
         currentTask: PropTypes.string,
         layers: PropTypes.array,
         map: PropTypes.object,
+        theme: PropTypes.object,
         refreshLayer: PropTypes.func,
         zoomToExtent: PropTypes.func
     }
@@ -129,12 +130,11 @@ class GwSelector extends React.Component {
         }
     }
     componentDidUpdate(prevProps, prevState) {
-        if (!this.state.filteredSelectors && !isEmpty(this.getQueryableLayers())) {
-            this.makeRequest();
-            this.state.filteredSelectors = true;
+        if (prevProps.theme !== this.props.theme) {
+            this.setState({ filteredSelectors: false });
         }
-        if (prevProps.currentTask === "ThemeSwitcher") {
-            this.state.filteredSelectors = false;
+        else if ((!this.state.filteredSelectors && !isEmpty(this.getQueryableLayers()))) {
+            this.makeRequest(true);
         }
     }
     onShow = () => {
@@ -228,7 +228,7 @@ class GwSelector extends React.Component {
                 break;
         }
     }
-    makeRequest() {
+    makeRequest(initial = false) {
         let pendingRequests = false;
 
         const queryableLayers = this.getQueryableLayers();
@@ -244,7 +244,7 @@ class GwSelector extends React.Component {
                 "currentTab": "tab_exploitation",
                 "selectorType": "selector_basic",
                 "layers": String(layer.queryLayers),
-                "loadProject": !this.state.filteredSelectors
+                "loadProject": initial
             }
 
             // Send request
@@ -252,7 +252,7 @@ class GwSelector extends React.Component {
             this.getSelectors(params);
         }
         // Set "Waiting for request..." message
-        this.setState({ selectorResult: {}, pendingRequests: pendingRequests });
+        this.setState({ selectorResult: {}, pendingRequests: pendingRequests, filteredSelectors: true });
     }
     render() {
         // Create window
@@ -268,7 +268,8 @@ class GwSelector extends React.Component {
                 const result = this.state.selectorResult
                 body = (
                     <div className="selector-body" role="body">
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} />
+                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}
+                            dispatchButton={this.dispatchButton} updateField={this.updateField} />
                     </div>
                 )
             }
@@ -285,7 +286,8 @@ class GwSelector extends React.Component {
 const selector = (state) => ({
     currentTask: state.task.id,
     layers: state.layers.flat,
-    map: state.map
+    map: state.map,
+    theme: state.theme.current
 });
 
 export default connect(selector, {
