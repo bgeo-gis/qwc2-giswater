@@ -6,6 +6,7 @@ import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
+import GwUtils from '../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
 
@@ -33,6 +34,9 @@ class GwSelector extends React.Component {
         return parseInt(parts.slice(-1))
     }
     filterLayers = (result) => {
+        if (!result || result.schema === null) {
+            return false;
+        }
         const layerFilters = ["expl_id", "state"]
         const filterNames = {
             "tab_exploitation": { "key": "expl_id", "column": "expl_id" },
@@ -159,13 +163,13 @@ class GwSelector extends React.Component {
         });
     }
     getSelectors = (params) => {
-        const request_url = ConfigUtils.getConfigProp("gwSelectorServiceUrl")
+        const request_url = GwUtils.getServiceUrl("selector");
         if (isEmpty(request_url)) {
             return false;
         }
 
         // Send request
-        axios.get(request_url + "getselector", { params: params }).then(response => {
+        axios.get(request_url + "get", { params: params }).then(response => {
             const result = response.data
             this.setState({ selectorResult: result, pendingRequests: false });
             this.filterLayers(result);
@@ -175,13 +179,13 @@ class GwSelector extends React.Component {
         });
     }
     setSelectors = (params) => {
-        const request_url = ConfigUtils.getConfigProp("gwSelectorServiceUrl")
+        const request_url = GwUtils.getServiceUrl("selector");
         if (isEmpty(request_url)) {
             return false;
         }
 
         // Send request
-        axios.get(request_url + "setselector", { params: params }).then(response => {
+        axios.post(request_url + "set", { ...params }).then(response => {
             const result = response.data
             this.setState({ selectorResult: result, pendingRequests: false });
             this.filterLayers(result);
@@ -233,7 +237,7 @@ class GwSelector extends React.Component {
 
         const queryableLayers = this.getQueryableLayers();
 
-        const request_url = ConfigUtils.getConfigProp("gwSelectorServiceUrl")
+        const request_url = GwUtils.getServiceUrl("selector");
         if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
             // Get request paramas
             const layer = queryableLayers[0];

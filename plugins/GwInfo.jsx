@@ -25,6 +25,7 @@ import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwUtils from '../utils/GwUtils';
 
 class GwInfo extends React.Component {
     static propTypes = {
@@ -89,7 +90,7 @@ class GwInfo extends React.Component {
                     return l.type === "wms"
                 });
 
-                request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
+                request_url = GwUtils.getServiceUrl("info");
                 if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
                     if (queryableLayers.length > 1) {
                         console.warn("There are multiple giswater queryable layers")
@@ -123,7 +124,7 @@ class GwInfo extends React.Component {
                     return l.type === "wms"
                 });
 
-                request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
+                request_url = GwUtils.getServiceUrl("info");
                 if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
                     if (queryableLayers.length > 1) {
                         console.warn("There are multiple giswater queryable layers")
@@ -177,7 +178,7 @@ class GwInfo extends React.Component {
         this.setState({ currentTab: {tab: tab, widget: widget} });
     }
     getList = (tab, widget) => {
-        var request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl");
+            var request_url = GwUtils.getServiceUrl("info");
         var filtered = widget.widget.filter(child => {
             return child.name === tab.name;
         }).filter(child => {
@@ -231,7 +232,7 @@ class GwInfo extends React.Component {
                 return l.type === "wms"
             });
 
-            const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
+            const request_url = GwUtils.getServiceUrl("info");
             if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
                 if (queryableLayers.length > 1) {
                     console.warn("There are multiple giswater queryable layers")

@@ -20,6 +20,7 @@ import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
+import GwUtils from '../utils/GwUtils';
 
 class GwFlowtrace extends React.Component {
     static propTypes = {
@@ -66,49 +67,6 @@ class GwFlowtrace extends React.Component {
     crsStrToInt = (crs) => {
         const parts = crs.split(':')
         return parseInt(parts.slice(-1))
-    }
-    dispatchButton = (action) => {
-        switch (action.name) {
-            case "featureLink":
-                this.props.removeLayer("searchselection");
-                let pendingRequests = false;
-                const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                    // TODO: If there are some wms external layers this would select more than one layer
-                    return l.type === "wms"
-                });
-
-                const request_url = ConfigUtils.getConfigProp("gwInfoServiceUrl")
-                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                    if (queryableLayers.length > 1) {
-                        console.warn("There are multiple giswater queryable layers")
-                    }
-
-                    const layer = queryableLayers[0];
-
-                    const params = {
-                        "theme": layer.title,
-                        "id": action.params.id,
-                        "tableName": action.params.tableName
-                    }
-                    pendingRequests = true
-                    axios.get(request_url + "fromid", { params: params }).then((response) => {
-                        const result = response.data
-                        this.setState({ identifyResult: result, pendingRequests: false });
-                        this.highlightResult(result)
-                        this.addMarkerToResult(result)
-                        this.panToResult(result)
-                    }).catch((e) => {
-                        console.log(e);
-                        this.setState({ pendingRequests: false });
-                    });
-                }
-                this.setState({ identifyResult: {}, prevIdentifyResult: this.state.identifyResult, pendingRequests: pendingRequests });
-                break;
-
-            default:
-                console.warn(`Action \`${action.name}\` cannot be handled.`)
-                break;
-        }
     }
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
@@ -221,7 +179,7 @@ class GwFlowtrace extends React.Component {
         let pendingRequests = false;
 
         const queryableLayers = this.getQueryableLayers();
-        const request_url = ConfigUtils.getConfigProp("gwFlowtraceServiceUrl")
+        const request_url = GwUtils.getServiceUrl("flowtrace");
 
         if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
             // Get request paramas

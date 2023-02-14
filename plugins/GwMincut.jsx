@@ -27,6 +27,7 @@ import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwUtils from '../utils/GwUtils';
 
 class GwMincut extends React.Component {
     static propTypes = {
@@ -235,7 +236,7 @@ class GwMincut extends React.Component {
         this.props.removeLayer("mincutselection");
         let pendingRequests = false;
 
-        const request_url = ConfigUtils.getConfigProp("gwMincutServiceUrl");
+        const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
             const mincutId = this.state.mincutId;
             const epsg = this.crsStrToInt(this.props.map.projection);
@@ -274,7 +275,7 @@ class GwMincut extends React.Component {
                 }
                 return acc;
             }, {});
-        const request_url = ConfigUtils.getConfigProp("gwMincutServiceUrl");
+        const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
             const clickPoint = this.props.click.coordinate;
             const epsg = this.crsStrToInt(this.props.map.projection);
@@ -310,7 +311,7 @@ class GwMincut extends React.Component {
         }
     }
     cancelMincut = () => {
-        const request_url = ConfigUtils.getConfigProp("gwMincutServiceUrl");
+        const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
             const params = {
                 "theme": this.props.currentTheme.title,
@@ -325,7 +326,6 @@ class GwMincut extends React.Component {
                 // refresh map
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 this.onToolClose();
-                this.props.setCurrentTask(null);
             }).catch((e) => {
                 console.log(e);
                 this.props.processFinished("mincut_msg", false, "No se ha podido cancelar el mincut...");

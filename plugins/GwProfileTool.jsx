@@ -25,6 +25,8 @@ import {changeMeasurementState} from 'qwc2/actions/measurement';
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
 import MeasureUtils from 'qwc2/utils/MeasureUtils';
 
+import GwUtils from '../utils/GwUtils';
+
 
 /**
  * Sets a style for text drawn on a layer
@@ -384,7 +386,7 @@ class GwProfileTool extends React.Component {
     makeRequestNodeId = (clickPoint, node) => {
         let pendingRequests = false;
         const queryableLayers = this.getQueryableLayers();
-        const requestUrl = ConfigUtils.getConfigProp("gwProfileToolServiceUrl");
+        const requestUrl = GwUtils.getServiceUrl("profile");
         let result;
         if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
             // Get request paramas
@@ -429,7 +431,7 @@ class GwProfileTool extends React.Component {
         this.reset();
         let pendingRequests = false;
         const queryableLayers = this.getQueryableLayers();
-        const requestUrl = ConfigUtils.getConfigProp("gwProfileToolServiceUrl");
+        const requestUrl = GwUtils.getServiceUrl("profile");
         let result;
         if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
             // Get request paramas

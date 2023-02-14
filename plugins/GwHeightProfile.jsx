@@ -24,6 +24,7 @@ import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwUtils from '../utils/GwUtils';
 
 import CtPointLabels from 'qwc2-giswater/libs/bower_components/chartist-plugin-pointlabels/dist/chartist-plugin-pointlabels';
 import Zoom from 'qwc2-giswater/libs/bower_components/chartist-plugin-zoom/dist/chartist-plugin-zoom';
@@ -131,7 +132,7 @@ class GwHeightProfile extends React.Component {
     getDialog = () => {
         let pendingRequests = false;
 
-        const request_url = ConfigUtils.getConfigProp("gwProfileToolServiceUrl");
+        const request_url = GwUtils.getServiceUrl("profile");
         if (!isEmpty(request_url)) {
             // Send request
             pendingRequests = true
@@ -774,7 +775,7 @@ class GwHeightProfile extends React.Component {
      * @param {*} soloPozos Return a svg with only 'pozos'
      */
     getProfileSvg = (vnode_dist, title, date) => {
-        const requestUrl = ConfigUtils.getConfigProp("gwProfileToolServiceUrl");
+        const requestUrl = GwUtils.getServiceUrl("profile");
         const result = this.props.measurement.feature;
         if (!isEmpty(result)){
             if (vnode_dist === undefined){

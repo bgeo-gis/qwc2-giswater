@@ -11,6 +11,7 @@ import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwUtils from '../utils/GwUtils';
 
 import './style/GwDateSelector.css';
 
@@ -160,7 +161,7 @@ class GwDateSelector extends React.Component {
     getDialog = () => {
         let pendingRequests = false;
 
-        const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl");
+        const request_url = GwUtils.getServiceUrl("dateselector");
         if (!isEmpty(request_url)) {
             // Send request
             pendingRequests = true
@@ -179,7 +180,7 @@ class GwDateSelector extends React.Component {
     getDates = (updateState = true) => {
         const queryableLayers = this.getQueryableLayers();
 
-        const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl");
+        const request_url = GwUtils.getServiceUrl("dateselector");
         if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
             // Get request paramas
             const layer = queryableLayers[0];
@@ -205,7 +206,7 @@ class GwDateSelector extends React.Component {
         if (updateState) this.setState({ getDatesResult: {}, dateSelectorResult: null });
     }
     setDates = (params) => {
-        const request_url = ConfigUtils.getConfigProp("gwDateSelectorServiceUrl")
+        const request_url = GwUtils.getServiceUrl("dateselector");
         if (isEmpty(request_url)) {
             return false;
         }
