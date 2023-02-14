@@ -708,7 +708,7 @@ class GwHeightProfile extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widget_values={this.state.widget_values} />
+                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.widget_values} />
                         </div>
                     )
                 }

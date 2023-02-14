@@ -378,7 +378,7 @@ class GwInfo extends React.Component {
                             <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} 
                                 theme={this.state.theme} idName={result.feature.idName} featureId={result.feature.id}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
-                                listJson={this.state.listJson} filters={this.state.filters}
+                                listJson={this.state.listJson} widgetValues={this.state.filters}
                             />
                         </div>
                     )

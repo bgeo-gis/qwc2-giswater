@@ -370,7 +370,7 @@ class GwMincut extends React.Component {
                             <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false}
                                 theme={this.props.currentTheme.title}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
-                                listJson={this.state.listJson} filters={this.state.widgetValues}
+                                listJson={this.state.listJson} widgetValues={this.state.widgetValues} disabledWidgets={this.state.disabledWidgets}
                             />
                         </div>
                     )
