@@ -1,4 +1,35 @@
 {
+  "languages": [
+    "ca-ES",
+    "de-DE",
+    "de-CH",
+    "en-US",
+    "es-ES",
+    "fr-FR",
+    "it-IT",
+    "pl-PL",
+    "pt-BR",
+    "pt-PT",
+    "ro-RO",
+    "ru-RU",
+    "sv-SE",
+    "tr-TR",
+    "cs-CZ"
+  ],
+  "extra_strings": [
+    "appmenu.items.GwTools",
+    "appmenu.items.GwInfoPoint",
+    "appmenu.items.GwInfoDma",
+    "appmenu.items.GwProfileTool",
+    "appmenu.items.GwSelector",
+    "appmenu.items.GwFlowtracetrace",
+    "appmenu.items.GwFlowtraceexit",
+    "appmenu.items.GwMincutNetwork",
+    "appmenu.items.GwMincutManager",
+    "appmenu.items.GwVisitVisit",
+    "appmenu.items.GwVisitIncidencia",
+    "colorschemes.giswater"
+  ],
   "strings": [
     "editing.select",
     "heightprofile.asl",

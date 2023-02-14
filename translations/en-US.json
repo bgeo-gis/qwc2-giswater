@@ -1,0 +1,45 @@
+{
+  "locale": "en-US",
+  "messages": {
+    "editing": {
+      "select": "Select"
+    },
+    "heightprofile": {
+      "asl": "a.s.l.",
+      "distance": "Distance",
+      "height": "Height",
+      "loading": "Calculating height profile..."
+    },
+    "identify": {
+      "noresults": "No information available for the selected point",
+      "querying": "Querying..."
+    },
+    "importlayer": {
+      "nofeatures": "No results or invalid URL"
+    },
+    "infotool": {
+      "clickhelpPoint": "Click a location to identify in the map..."
+    },
+    "qtdesignerform": {
+      "loading": "Loading..."
+    },
+    "appmenu": {
+      "items": {
+        "GwTools": "Giswater Tools",
+        "GwInfoPoint": "Giswater Info",
+        "GwInfoDma": "Info DMA",
+        "GwProfileTool": "Profile",
+        "GwSelector": "Selector",
+        "GwFlowtracetrace": "Flow trace",
+        "GwFlowtraceexit": "Flow exit",
+        "GwMincutNetwork": "Mincut",
+        "GwMincutManager": "Mincut Manager",
+        "GwVisitVisit": "New Visit",
+        "GwVisitIncidencia": "New Incidence"
+      }
+    },
+    "colorschemes": {
+      "giswater": "Giswater"
+    }
+  }
+}

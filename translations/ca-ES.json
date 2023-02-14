@@ -1,0 +1,45 @@
+{
+  "locale": "ca-ES",
+  "messages": {
+    "editing": {
+      "select": "Seleccionar"
+    },
+    "heightprofile": {
+      "asl": "a.s.l.",
+      "distance": "Distància",
+      "height": "Alçada",
+      "loading": "Càlculant el perfil..."
+    },
+    "identify": {
+      "noresults": "Sense informació disponible sobre el punt seleccionat",
+      "querying": "Consultant..."
+    },
+    "importlayer": {
+      "nofeatures": "Sense resultats o l'adreça URL no és vàlida"
+    },
+    "infotool": {
+      "clickhelpPoint": "Fes click en una ubicació per identificar en el mapa..."
+    },
+    "qtdesignerform": {
+      "loading": "Carregant..."
+    },
+    "appmenu": {
+      "items": {
+        "GwTools": "Eines Giswater",
+        "GwInfoPoint": "Giswater Info",
+        "GwInfoDma": "Info DMA",
+        "GwProfileTool": "Perfil longitudinal",
+        "GwSelector": "Selector",
+        "GwFlowtracetrace": "Aigües a munt",
+        "GwFlowtraceexit": "Aigües a vall",
+        "GwMincutNetwork": "Polígon de tall",
+        "GwMincutManager": "Gestor de polígons de tall",
+        "GwVisitVisit": "Nova Visita",
+        "GwVisitIncidencia": "Nova Incidencia"
+      }
+    },
+    "colorschemes": {
+      "giswater": "Giswater"
+    }
+  }
+}

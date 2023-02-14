@@ -1,0 +1,45 @@
+{
+  "locale": "es-ES",
+  "messages": {
+    "editing": {
+      "select": "Seleccionar"
+    },
+    "heightprofile": {
+      "asl": "a.s.l.",
+      "distance": "Distancia",
+      "height": "Altura",
+      "loading": "Cálculo del perfil de altura..."
+    },
+    "identify": {
+      "noresults": "Sin información disponible sobre el punto seleccionado",
+      "querying": "Consultando..."
+    },
+    "importlayer": {
+      "nofeatures": "Sin resultados o la dirección URL no es válida"
+    },
+    "infotool": {
+      "clickhelpPoint": "Haga click en una ubicación para identificar en el mapa..."
+    },
+    "qtdesignerform": {
+      "loading": "Cargando..."
+    },
+    "appmenu": {
+      "items": {
+        "GwTools": "Herramientas Giswater",
+        "GwInfoPoint": "Giswater Info",
+        "GwInfoDma": "Info DMA",
+        "GwProfileTool": "Perfil longitudinal",
+        "GwSelector": "Selector",
+        "GwFlowtracetrace": "Aguas arriba",
+        "GwFlowtraceexit": "Aguas abajo",
+        "GwMincutNetwork": "Polígono de corte",
+        "GwMincutManager": "Gestor de polígonos de corte",
+        "GwVisitVisit": "Nueva Visita",
+        "GwVisitIncidencia": "Nueva Incidencia"
+      }
+    },
+    "colorschemes": {
+      "giswater": "Giswater"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "locale": "pl-PL",
+  "messages": {
+    "editing": {
+      "select": ""
+    },
+    "heightprofile": {
+      "asl": "",
+      "distance": "",
+      "height": "",
+      "loading": ""
+    },
+    "identify": {
+      "noresults": "",
+      "querying": ""
+    },
+    "importlayer": {
+      "nofeatures": ""
+    },
+    "infotool": {
+      "clickhelpPoint": ""
+    },
+    "qtdesignerform": {
+      "loading": ""
+    },
+    "appmenu": {
+      "items": {
+        "GwTools": "",
+        "GwInfoPoint": "",
+        "GwInfoDma": "",
+        "GwProfileTool": "",
+        "GwSelector": "",
+        "GwFlowtracetrace": "",
+        "GwFlowtraceexit": "",
+        "GwMincutNetwork": "",
+        "GwMincutManager": "",
+        "GwVisitVisit": "",
+        "GwVisitIncidencia": ""
+      }
+    },
+    "colorschemes": {
+      "giswater": ""
+    }
+  }
+}
