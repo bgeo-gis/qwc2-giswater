@@ -18,6 +18,7 @@ import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MiscUtils from 'qwc2/utils/MiscUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
+import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
 import 'qwc2/components/style/QtDesignerForm.css';
 import 'qwc2-giswater/components/style/GwInfoQtDesignerForm.css';
 
@@ -198,6 +199,35 @@ class GwInfoQtDesignerForm extends React.Component {
             if (!values) {
                 return (<span>No results found</span>)
             }
+            return (<GwTableWidget values={values}/>);
+        }
+        else if (widget.class === "QTableView") {
+            if (isEmpty(this.props.listJson) || !this.props.listJson?.body?.data?.fields) {
+                return null;
+            }
+            const values = this.props.listJson.body.data.fields[0].value;
+            if (!values) {
+                return (<span>No results found</span>)
+            }
+            return (
+                <div>
+                    <table className="qtableview">
+                        <tbody>
+                        {values.map(value => (
+                            <tr className="qtableview-row">
+                                <td className="qtableview">
+                                    <ul>
+                                        {Object.keys(value).map(field => (
+                                            <li><b>{field}</b>: {value[field]}</li>
+                                        ))}
+                                    </ul>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
             return (
                 <div>
                     <table className="qtablewidget">
