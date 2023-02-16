@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
-import { addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
+import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, addLayer } from 'qwc2/actions/layers';
 import { changeSelectionState } from 'qwc2/actions/selection';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
@@ -90,7 +90,8 @@ class GwProfileTool extends React.Component {
         firstNodeId: null,
         secondNodeId: null,
         firstNodeCoordinates: null,
-        secondNodeCoordinates: null
+        secondNodeCoordinates: null,
+        prevPoint: null
     }
     
     constructor(props) {
@@ -308,6 +309,7 @@ class GwProfileTool extends React.Component {
         this.props.removeLayer("flowtrace_trace_points.geojson");
         this.props.removeLayer("flowtrace_trace_lines.geojson");
         this.props.map.removeLayer(this.measureLayer);
+        this.props.map.removeLayer(this.pointLayer);
         this.segmentMarkers = [];
         this.sketchFeature = null;
     }
@@ -401,7 +403,8 @@ class GwProfileTool extends React.Component {
                 "theme": layer.title,
                 "epsg": epsg,
                 "coords": String(clickPoint),
-                "zoom": zoom
+                "zoom": zoom,
+                "layers": layer.queryLayers.join(',')
             }
             // Send request
             pendingRequests = true;
@@ -409,19 +412,45 @@ class GwProfileTool extends React.Component {
                 result = parseInt(response.data.feature.id[0]);
                 console.log("Node Id -> ", result)
 
-                if (node === 1){  
-                    this.setState({ firstNodeId: result});
+                if (node === 1){
+                    this.setState({ firstNodeId: result });
+                    this.highlightResult(response.data.body);
                 } else if (node === 2){
                     this.setState({ secondNodeId: result});
+                    this.highlightResult(response.data.body);
                 }
                 this.setState({ identifyResult: result, pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
-                this.setState({ pendingRequests: false });
+                this.setState({ identifyResult: null, pendingRequests: false });
             });
         }
         // Set "Waiting for request..." message
         this.setState({ identifyResult: {}, pendingRequests: pendingRequests });
+    }
+
+    highlightResult = (result) => {
+        // console.log('result :>> ', result);
+        if (isEmpty(result) || isEmpty(result.feature.geometry)) {
+            //this.props.removeLayer("profilehighlight")
+        } else {
+            const layer = {
+                id: "profilehighlight",
+                role: LayerRole.SELECTION
+            };
+            const crs = this.props.mapObj.projection
+            const geometry = VectorLayerUtils.wktToGeoJSON(result.feature.geometry.st_astext, crs, crs)
+            const feature = {
+                id: result.feature.id,
+                geometry: geometry.geometry
+            }
+            if (this.state.prevPoint !== null){
+                this.props.addLayerFeatures(layer, [this.state.prevPoint, feature], false);
+            } else {
+                this.setState({ prevPoint: feature });
+                this.props.addLayerFeatures(layer, [feature], false);
+            }
+        }
     }
 
     /**
@@ -449,6 +478,7 @@ class GwProfileTool extends React.Component {
                 result = response.data;
                 this.addProfileLayers(result);
                 this.updateMeasurementResults(result, true);
+                //this.props.removeLayer("profilehighlight")
                 console.log("result -> ", result);
                 //let arcs = result['body']['data']['arc']
                 this.setState({ identifyResult: result, pendingRequests: false });
@@ -580,13 +610,15 @@ class GwProfileTool extends React.Component {
     onToolClose = () => {
         this.props.removeMarker('profile1');
         this.props.removeMarker('profile2');
-        this.props.removeLayer("identifyslection");
+        console.log("Tool Close");
+        this.props.removeLayer("profilehighlight");
         this.props.removeLayer("flowtrace_trace_points.geojson");
         this.props.removeLayer("flowtrace_trace_lines.geojson");
         this.updateMeasurementResults(null, false);
         this.props.map.removeLayer(this.measureLayer);
+        this.props.map.removeLayer(this.pointLayer);
         this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ identifyResult: null, pendingRequests: false, mode: 'trace' });
+        this.setState({ identifyResult: null, pendingRequests: false, mode: 'trace', prevPoint: null});
     }
 
     /**
@@ -595,11 +627,13 @@ class GwProfileTool extends React.Component {
     clearResults = () => {
         this.props.removeMarker('profile1');
         this.props.removeMarker('profile2');
-        this.props.removeLayer('identifyslection');
+        console.log("Clear Results");
+        this.props.removeLayer('profilehighlight');
         this.props.removeLayer('flowtrace_trace_points.geojson');
         this.props.removeLayer('flowtrace_trace_lines.geojson');
         this.props.map.removeLayer(this.measureLayer);
-        this.setState({ firstNodeId: null, secondNodeId: null, firstNodeCoordinates: null, secondNodeCoordinates: null, identifyResult: null, pendingRequests: false });
+        this.props.map.removeLayer(this.pointLayer);
+        this.setState({ firstNodeId: null, secondNodeId: null, firstNodeCoordinates: null, secondNodeCoordinates: null, identifyResult: null, pendingRequests: false, prevPoint: null });
         this.updateMeasurementResults(null, false);
     }
 
@@ -633,6 +667,7 @@ const selector = (state) => ({
 
 export default connect(selector, {
     addLayerFeatures: addLayerFeatures,
+    addLayer: addLayer,
     addMarker: addMarker,
     changeSelectionState: changeSelectionState,
     panTo: panTo,

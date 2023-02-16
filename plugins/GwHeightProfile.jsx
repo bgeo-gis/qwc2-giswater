@@ -95,7 +95,7 @@ class GwHeightProfile extends React.Component {
     /**
      * When the component is updated checks if it has to draw a graphic or not
      * @param {*} prevProps Previous state of Props
-     * @param {*} prevState Previous state of State 
+     * @param {*} prevState Previous state of State
      */
     componentDidUpdate(prevProps, prevState) {
         if (this.props.measurement.coordinates !== prevProps.measurement.coordinates) {
@@ -107,7 +107,7 @@ class GwHeightProfile extends React.Component {
             }
         }
     }
-    
+
     /**
      * Use elevationService to know the height of the terrain
      * @param {*} coordinates Array of coordinates of each node
@@ -264,7 +264,7 @@ class GwHeightProfile extends React.Component {
                 {x: null, y: null},
             );
         }
-        
+
         // Terrain line coordinates
         const terrain = highestYCoordinates.map((entry, index) => ({
             x: nodeXCoordinates[index],
@@ -278,7 +278,7 @@ class GwHeightProfile extends React.Component {
         // All lines that will be displayed on the graphic
         let data = {
             series: [
-                { 
+                {
                     name: 'terrain',
                     data: terrain,
                     className: 'ct-terrain-line'
@@ -344,11 +344,13 @@ class GwHeightProfile extends React.Component {
                         lineSmooth: false
                     }
                 },
+                scaleMinSpace: 20,
                 axisX: {
                     // Generate x labels automatically to be able to zoom
                     type: Chartist.AutoScaleAxis//,
                 },
                 axisY: {
+                    //type: Chartist.AutoScaleAxis,
                     low: minHeight,
                     high: maxHeight
                 },
@@ -393,7 +395,7 @@ class GwHeightProfile extends React.Component {
                     Zoom({
                         onZoom : function(chart, reset) { resetZoom = reset; },
                         noClipY: true,
-                        autoZoomY: {high: true, low: false},
+                        autoZoomY: {high: false, low: false},
                     })
             ]};
         } else {
@@ -414,7 +416,7 @@ class GwHeightProfile extends React.Component {
                     {x: secondNodeXCoordinate, y: minHeight + 9.5}
                     );
             }
-            
+
             const catalogGuitarLabels = jsonData["arc"].map((entry, index) => ({
                 x: (jsonData["node"][index]["total_distance"] + jsonData["node"][index + 1]["total_distance"]) / 2,
                 y: minHeight + 8
@@ -549,6 +551,7 @@ class GwHeightProfile extends React.Component {
                         showPoint: true
                     }
                 },
+                scaleMinSpace: 20,
                 axisX: {
                     type: Chartist.AutoScaleAxis
                 },
@@ -745,7 +748,7 @@ class GwHeightProfile extends React.Component {
     updateField = (widget, ev, action) => {
         this.setState({ widget_values: {...this.state.widget_values, [widget.name]: ev} });
     }
-    
+
     dispatchButton = (action) => {
         let pendingRequests = false;
         switch (action.name) {
@@ -849,7 +852,7 @@ class GwHeightProfile extends React.Component {
         if (!this.tooltip) {
             return;
         }
-        
+
         if (isPoint){
             // If user is hovering over a node show all its information
             let code = "";
@@ -907,8 +910,8 @@ class GwHeightProfile extends React.Component {
     }
     /**
      * Unknown functionality
-     * @param {*} pos 
-     * @returns 
+     * @param {*} pos
+     * @returns
      */
     pickPositionCallback = (pos) => {
         if (!pos) {
@@ -953,10 +956,10 @@ class GwHeightProfile extends React.Component {
 
     /**
      * Unknown functionality
-     * @param {*} q 
-     * @param {*} p1 
-     * @param {*} p2 
-     * @returns 
+     * @param {*} q
+     * @param {*} p1
+     * @param {*} p2
+     * @returns
      */
     pointOnSegment = (q, p1, p2) => {
         const tol = 1E-3;
