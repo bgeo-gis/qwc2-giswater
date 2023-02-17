@@ -165,7 +165,7 @@ class GwDateSelector extends React.Component {
         if (!isEmpty(request_url)) {
             // Send request
             pendingRequests = true
-            axios.get(request_url + "getdialog", { params: {} }).then(response => {
+            axios.get(request_url + "dialog", { params: {} }).then(response => {
                 const result = response.data
                 this.setState({ dateSelectorResult: result, pendingRequests: false });
                 // this.filterLayers(result);
@@ -191,7 +191,7 @@ class GwDateSelector extends React.Component {
             }
 
             // Send request
-            axios.get(request_url + "getdates", { params: params }).then(response => {
+            axios.get(request_url + "dates", { params: params }).then(response => {
                 const result = response.data
                 let dateFrom = result.data?.date_from;
                 let dateTo = result.data?.date_to;
@@ -212,7 +212,7 @@ class GwDateSelector extends React.Component {
         }
 
         // Send request
-        axios.get(request_url + "setdates", { params: params }).then(response => {
+        axios.put(request_url + "dates", { params }).then(response => {
             const result = response.data
             this.setState({ dateSelectorResult: result, getDatesResult: result, pendingRequests: false });
             this.filterLayers(result);
