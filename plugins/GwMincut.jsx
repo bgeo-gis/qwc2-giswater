@@ -47,13 +47,17 @@ class GwMincut extends React.Component {
         refreshLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         setCurrentTask: PropTypes.func,
-        selection: PropTypes.object
+        selection: PropTypes.object,
+        mincutResult: PropTypes.object,
+        dispatchButton: PropTypes.func,
     }
     static defaultProps = {
         initialWidth: 480,
         initialHeight: 420,
         initialX: 0,
-        initialY: 0
+        initialY: 0,
+        initiallyDocked: true,
+        mincutResult: null
     }
     state = {
         action: 'mincutNetwork',
@@ -64,7 +68,8 @@ class GwMincut extends React.Component {
         currentTab: {},
         feature_id: null,
         listJson: null,
-        widgetValues: {}
+        widgetValues: {},
+        disabledWidgets: ['exec_start', 'exec_descript', 'exec_user', 'exec_from_plot', 'exec_depth', 'exec_appropiate', 'exec_end']
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwMincut") {
@@ -176,9 +181,13 @@ class GwMincut extends React.Component {
         this.setState({ widgetValues: { ...this.state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } } });
     }
     dispatchButton = (action) => {
+        if (this.props.dispatchButton) {
+            return this.props.dispatchButton(action);
+        }
         var queryableLayers;
         var request_url;
         let pendingRequests = false;
+        let disabledWidgets = [];
         switch (action.functionName) {
             case "accept":
                 // get widget values to update om_mincut and call gw_fct_setmincut(action=mincutAccept)
@@ -186,20 +195,27 @@ class GwMincut extends React.Component {
                 break;
 
             case "cancel":
-                this.cancelMincut();
+                if (this.props.mincutResult === null){
+                    this.cancelMincut();
+                }
                 break;
 
             case "real_start":
-                // enable tab_exec widgets
                 this.setMincut(this.props.click.coordinate, false);
                 // set state 1 'In Progress'
                 this.acceptMincut(1, false)
+                // enable tab_exec widgets
+                // TODO: IMPROVE THIS!
+                disabledWidgets = ["chk_use_planified", "mincut_type", "anl_cause", "received_date", "anl_descript", "forecast_start", "forecast_end", "assigned_to", "id", "mincut_state", "work_order"];
+                this.setState({ disabledWidgets: disabledWidgets });
                 break;
 
             case "real_end":
-                console.log("end mincut");
                 // set state 2 'Finished'
                 this.acceptMincut(2, false)
+                // TODO: IMPROVE THIS!
+                disabledWidgets = ["exec_start", "exec_descript", "exec_user", "exec_from_plot", "exec_depth", "exec_appropiate", "exec_end", "chk_use_planified", "mincut_type", "anl_cause", "received_date", "anl_descript", "forecast_start", "forecast_end", "assigned_to", "id", "mincut_state", "work_order"];
+                this.setState({ disabledWidgets: disabledWidgets });
                 // show tab log
                 break;
 
@@ -224,11 +240,26 @@ class GwMincut extends React.Component {
     onToolClose = () => {
         this.props.removeMarker('mincut');
         this.props.removeLayer("mincutselection");
-        this.setState({ mincutResult: null, pendingRequests: false, widgetValues: {}, mincutId: null });
+        this.setState({ mincutResult: null,
+            pendingRequests: false,
+            widgetValues: {},
+            mincutId: null,
+            disabledWidgets: ['exec_start', 'exec_descript', 'exec_user', 'exec_from_plot', 'exec_depth', 'exec_appropiate', 'exec_end']
+        });
     }
     onDlgClose = () => {
         // Manage if mincut is not new (don't delete)
-        this.cancelMincut();
+        if (this.props.mincutResult){
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+            this.onToolClose();
+            if (this.props.dispatchButton){
+                this.props.dispatchButton({ "functionName": "mincutClose" });
+            }
+            console.log("cerrando");
+        } else {
+            this.cancelMincut();
+        }
+        
     }
     // #endregion
     // #region MINCUT
@@ -295,11 +326,20 @@ class GwMincut extends React.Component {
             this.props.processStarted("mincut_msg", "Aceptar mincut");
             axios.post(request_url + "accept", { ...params }).then((response) => {
                 const result = response.data;
+                let newState = {};
+                const log = result.body?.data?.info?.values;
+                if (log) {
+                    const messages = log.sort((a, b) => a.id - b.id) // sort by id
+                                        .map(value => value.message)
+                                        .join("\n");
+                    newState = {...newState, widgetValues: {...this.state.widgetValues, txt_infolog: {...this.state.widgetValues.txt_infolog, value: messages}}};
+                }
                 // show message
                 this.props.processFinished("mincut_msg", true, "Mincut guardado correctamente.");
                 // refresh map
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-                if (state !== this.state.mincutState) this.setState({ mincutState: state });
+                if (state !== this.state.mincutState) newState = {...newState, mincutState: state};
+                if (newState) this.setState(newState);
                 if (closeDlg) {
                     this.onToolClose();
                     this.props.setCurrentTask(null);
@@ -344,16 +384,16 @@ class GwMincut extends React.Component {
                 })}
             </TaskBar>
         );
-        if (this.state.pendingRequests === true || this.state.mincutResult !== null) {
+        const result = this.state.mincutResult || this.props.mincutResult;
+        if (this.state.pendingRequests === true || result !== null) {
             let body = null;
-            if (isEmpty(this.state.mincutResult)) {
+            if (isEmpty(result)) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="mincut-body" role="body"><Spinner /><span className="mincut-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
                 } else {
                     body = (<div className="mincut-body" role="body"><span className="mincut-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
                 }
             } else {
-                const result = this.state.mincutResult;
                 if (result.schema === null) {
                     body = null;
                     this.props.processStarted("mincut_msg", "GwMincut Error!");
@@ -378,7 +418,7 @@ class GwMincut extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow icon="info-sign" dockable="right"
+                <ResizeableWindow icon="mincut" dockable="right"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
                     key="GwMincutWindow"
