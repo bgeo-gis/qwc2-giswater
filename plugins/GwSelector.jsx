@@ -19,7 +19,8 @@ class GwSelector extends React.Component {
         map: PropTypes.object,
         theme: PropTypes.object,
         refreshLayer: PropTypes.func,
-        zoomToExtent: PropTypes.func
+        zoomToExtent: PropTypes.func,
+        selectorResult: PropTypes.object
     }
     static defaultProps = {
     }
@@ -146,6 +147,9 @@ class GwSelector extends React.Component {
         this.makeRequest();
     }
     onToolClose = () => {
+        if (this.props.dispatchButton){
+            this.props.dispatchButton({ "functionName": "selectorClose" });
+        }
         this.setState({ selectorResult: null, pendingRequests: false });
     }
     clearResults = () => {
@@ -261,15 +265,15 @@ class GwSelector extends React.Component {
     render() {
         // Create window
         let body = null;
-        if (this.state.pendingRequests === true || this.state.selectorResult !== null) {
-            if (isEmpty(this.state.selectorResult)) {
+        const result = this.state.selectorResult || this.props.selectorResult;
+        if (this.state.pendingRequests === true || result !== null) {
+            if (isEmpty(result)) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="selector-body" role="body"><span className="selector-body-message">Querying...</span></div>); // TODO: TRANSLATION
                 } else {
                     body = (<div className="selector-body" role="body"><span className="selector-body-message">No result</span></div>); // TODO: TRANSLATION
                 }
             } else {
-                const result = this.state.selectorResult
                 body = (
                     <div className="selector-body" role="body">
                         <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}

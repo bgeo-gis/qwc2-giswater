@@ -17,7 +17,7 @@
  * Chartist.js zoom plugin.
  * 
  */
-  (function (window, document, Chartist) {
+(function (window, document, Chartist) {
   'use strict';
 
   var defaultOptions = {
@@ -230,7 +230,7 @@
                   if(min_y == max_y) max_y = min_y + 0.1; // prevents chartist from creating NaNs when range == 0 
                 }
               }
-              if( options.autoZoomY.high ) chart.options.axisY.highLow.high = max_y + 1; 
+              if( options.autoZoomY.high ) chart.options.axisY.highLow.high = max_y; 
               if( options.autoZoomY.low ) chart.options.axisY.highLow.low = min_y;
             }
             chart.update(chart.data, chart.options);
@@ -327,7 +327,7 @@
       }
     };
   };
-  } (window, document, Chartist));
+} (window, document, Chartist));
 
   return Chartist.plugins.zoom;
 }));
