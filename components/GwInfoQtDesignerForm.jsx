@@ -220,43 +220,21 @@ class GwInfoQtDesignerForm extends React.Component {
                 <div>
                     <table className="qtableview">
                         <tbody>
-                        {values.map(value => (
-                            <tr className="qtableview-row">
+                        {values.map((value, i) => (
+                            <tr className="qtableview-row" key={i}>
                                 <td className="qtableview">
                                     <ul>
-                                        {Object.keys(value).map(field => {
+                                        {Object.keys(value).map((field, j) => {
                                             if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value[field])) {
-                                                return (<a href={value[field]} rel="noreferrer" target="_blank"><img src={value[field]} /></a>);
+                                                return (<a href={value[field]} rel="noreferrer" target="_blank" key={j}><img src={value[field]} /></a>);
                                             } else {
-                                                return (<li><b>{field}</b>: {value[field]}</li>)
+                                                return (<li key={j}><b>{field}</b>: {value[field]}</li>)
                                             }
                                             })}
                                     </ul>
                                 </td>
                             </tr>
                         ))}
-                        </tbody>
-                    </table>
-                </div>
-            );
-            return (
-                <div>
-                    <table className="qtableview">
-                        <thead>
-                            <tr>
-                            {Object.keys(values[0]).map(field => (
-                                <th className="qtableview-header" key={field}>{field}</th>
-                            ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {values.map((value, index) => (
-                            <tr className="qtableview-row" key={index}>
-                                {Object.keys(value).map((field, i) => (
-                                <td className="qtableview-cell" key={i}>{value[field]}</td>
-                                ))}
-                            </tr>
-                            ))}
                         </tbody>
                     </table>
                 </div>
