@@ -34,7 +34,8 @@ import { OpenInBrowser, Cancel, Delete } from '@mui/icons-material';
 
 class GwTableWidget extends React.Component {
     static propTypes = {
-        values: PropTypes.array
+        values: PropTypes.array,
+        dispatchButton: PropTypes.func,
     }
     static defaultState = {
         loading: false
@@ -77,38 +78,56 @@ class GwTableWidget extends React.Component {
                     filterVariant: 'select',
                     filterSelectOptions: explList
                 });
-            } else if (key === "received_date" || key === "anl_tstamp" || key === "forecast_start" || key === "forecast_end") {
+            } else if (key === "anl_tstamp"){
                 cols.push({
                     accessorFn: (row) => new Date(row.received_date),
                     header: capi,
                     accessorKey: key,
-                    filterFn: 'lessThanOrEqualTo',
-                    /*
-                    filterFn: (row, _columnIds, filterValue) => {
-                        console.info('customFn', row, _columnIds, filterValue);
-                        let date = new Date(row.getValue(key));
-                        console.log("LE DATE -> ", date);
-                        console.log(date
-                            .toLocaleDateString())
-                        if (date
-                            .toLocaleDateString() !== "1/1/1970"){
-                                return 'lessThanOrEqualTo';
-                            }
-                        //return date
-                        //  .toLocaleDateString() !== "1/1/1970" &&
-                        //  ;
-                      },
-                      */
+                    filterFn: 'greaterThanOrEqualTo',
                     sortingFn: 'datetime',
-                    /*
                     Cell: ({ cell }) => {
-                        //console.log(cell);
-                        cell.getValue()?.toLocaleDateString('es-ES', {
+                        const date = cell.getValue();
+                        if (!date || date.getTime() === 0) {
+                            return "";
+                        }
+                        return date.toLocaleDateString('es-ES', {
                             day: '2-digit',
                             month: '2-digit',
-                            year: 'numeric'})
-                    }, //render Date as a string
-                    */
+                            year: 'numeric'
+                        });
+                    },
+                    Header: ({ column }) => <em>{column.columnDef.header}</em>,
+
+
+                    //Custom Date Picker Filter from @mui/x-date-pickers
+                    Filter: ({ column }) => (
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                inputFormat="DD/MM/YYYY"
+                                onChange={(newValue) => {
+                                    column.setFilterValue(newValue);
+                                } }
+                                renderInput={(params) => {
+                                    return (
+                                      <TextField
+                                        {...params}
+                                        helperText={'Filter Mode: ' + column.getFilterFn().name}
+                                        sx={{ minWidth: '120px' }}
+                                        variant="standard" />
+                                    );
+                                }}
+                                value={column.getFilterValue()} />
+                        </LocalizationProvider>
+                    ),
+                });
+            } else if (key === "received_date" || key === "forecast_start" || key === "forecast_end") {
+                cols.push({
+                    accessorFn: (row) => new Date(row.received_date),
+                    header: capi,
+                    accessorKey: key,
+                    //filterFn: 'lessThanOrEqualTo',
+                    //filterVariant: 'range',
+                    sortingFn: 'datetime',
                     Cell: ({ cell }) => {
                         const date = cell.getValue();
                         if (!date || date.getTime() === 0) {
@@ -131,15 +150,17 @@ class GwTableWidget extends React.Component {
                                 inputFormat="DD/MM/YYYY"
                                 onChange={(newValue) => {
                                     column.setFilterValue(newValue);
-                                    //console.log("? -> ", newValue, "  ", typeof newValue);
                                 } }
-                                renderInput={(params) => (
-                                    <TextField
+
+                                renderInput={(params) => {
+                                    return (
+                                      <TextField
                                         {...params}
-                                        helperText={'Filter Mode: Lesss Than'}
+                                        helperText={'Filter Mode: ' + column.getFilterFn().name}
                                         sx={{ minWidth: '120px' }}
                                         variant="standard" />
-                                )}
+                                    );
+                                  }}
                                 value={column.getFilterValue()} />
                         </LocalizationProvider>
                     ),
@@ -172,6 +193,10 @@ class GwTableWidget extends React.Component {
         const handleExportData = () => {
             csvExporter.generateCsv(data);
         };
+
+        let monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+
         return (
             <MaterialReactTable
                 columns={cols}
@@ -179,7 +204,6 @@ class GwTableWidget extends React.Component {
                 enableColumnOrdering
                 enableColumnFilterModes
                 enableGlobalFilter={false} //turn off a feature
-
                 // Pagination
                 enablePagination={true}
                 enableFullScreenToggle={false}
@@ -203,12 +227,25 @@ class GwTableWidget extends React.Component {
                 })}
                 state={{ rowSelection }}
                 // Mostrar filtros por defecto
-                initialState={{ showColumnFilters: true, pagination: { pageSize: 5, pageIndex: 0 }, density: 'spacious' }}
+                initialState={{ showColumnFilters: false, pagination: { pageSize: 5, pageIndex: 0 }, density: 'spacious',
+                    columnFilters: [
+                        {
+                            id: "anl_tstamp",
+                            value: monthAgo
+                        }
+                      ],
+                    sorting: [
+                        {
+                            id: 'id',
+                            desc: false
+                        }
+                    ] }}
                 // Exportar
                 renderTopToolbarCustomActions={({ table }) => (
                     <Box
                         sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}
                     >
+                        
                         <Button
                             disabled={table.getPrePaginationRowModel().rows.length === 0}
                             //export all rows, including from the next page, (still respects filtering and sorting)
@@ -218,10 +255,13 @@ class GwTableWidget extends React.Component {
                         >
                             Export Data
                         </Button>
+                        <Button onClick={() => table.resetColumnFilters()}>
+                        Reset Filters
+                        </Button>
                     </Box>
                 )}
                 // Opciones de cada row
-                //enableGrouping
+                enableGrouping
                 enablePinning
                 enableRowActions
                 //enableRowSelection
@@ -266,13 +306,6 @@ class GwTableWidget extends React.Component {
                         Delete
                     </MenuItem>,
                 ]}
-                // Pruebas
-                //muiTablePaperProps={{
-                //  sx: {
-                //      
-                //      m: 'auto',
-                //  },
-                //}}
                 positionToolbarAlertBanner="bottom"
                 enableStickyHeader />
         );
