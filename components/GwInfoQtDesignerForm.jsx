@@ -11,7 +11,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import xml2js from 'xml2js';
-import uuid from 'uuid';
+import {v1 as uuidv1} from 'uuid';
 import isEmpty from 'lodash.isempty';
 import Spinner from 'qwc2/components/Spinner';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
@@ -21,6 +21,7 @@ import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
 import 'qwc2/components/style/QtDesignerForm.css';
 import 'qwc2-giswater/components/style/GwInfoQtDesignerForm.css';
+import FileSelector from 'qwc2/components/widgets/FileSelector';
 
 
 class GwInfoQtDesignerForm extends React.Component {
@@ -37,7 +38,8 @@ class GwInfoQtDesignerForm extends React.Component {
         idName: PropTypes.string,
         featureId: PropTypes.string,
         disabledWidgets: PropTypes.array,
-        getInitialValues: PropTypes.bool
+        getInitialValues: PropTypes.bool,
+        replaceImageUrls: PropTypes.bool
     }
     static defaultProps = {
         updateField: (name, value, widget) => { console.log(name, value, widget) },
@@ -45,13 +47,15 @@ class GwInfoQtDesignerForm extends React.Component {
         onTabChanged: (tab, widget) => { console.log(tab, widget) },
         widgetValues: {},
         disabledWidgets: [],
-        getInitialValues: true
+        getInitialValues: true,
+        replaceimageUrls: false
     }
     static defaultState = {
         activetabs: {},
         formData: null,
         loading: false,
-        loadingReqId: null
+        loadingReqId: null,
+        file: null
     }
     constructor(props) {
         super(props);
@@ -190,7 +194,10 @@ class GwInfoQtDesignerForm extends React.Component {
 
         const elname = nametransform(widget.name);
         const widgetFunction = prop.widgetfunction || "{}";
-
+        const widgetControls = prop.widgetcontrols || "{}";
+        if (this.props.widgetValues[widget.name.replace("lbl_", "")]?.visible === false) {
+            return null;
+        }
         if (widget.class === "QTableWidget") {
             if (isEmpty(this.props.listJson) || !this.props.listJson?.body?.data?.fields) {
                 return null;
@@ -199,7 +206,7 @@ class GwInfoQtDesignerForm extends React.Component {
             if (!values) {
                 return (<span>No results found</span>)
             }
-            return (<GwTableWidget values={values}/>);
+            return (<GwTableWidget values={values} dispatchButton={this.props.dispatchButton}/>);
         }
         else if (widget.class === "QTableView") {
             if (isEmpty(this.props.listJson) || !this.props.listJson?.body?.data?.fields) {
@@ -217,9 +224,13 @@ class GwInfoQtDesignerForm extends React.Component {
                             <tr className="qtableview-row">
                                 <td className="qtableview">
                                     <ul>
-                                        {Object.keys(value).map(field => (
-                                            <li><b>{field}</b>: {value[field]}</li>
-                                        ))}
+                                        {Object.keys(value).map(field => {
+                                            if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value[field])) {
+                                                return (<a href={value[field]} rel="noreferrer" target="_blank"><img src={value[field]} /></a>);
+                                            } else {
+                                                return (<li><b>{field}</b>: {value[field]}</li>)
+                                            }
+                                            })}
                                     </ul>
                                 </td>
                             </tr>
@@ -230,40 +241,23 @@ class GwInfoQtDesignerForm extends React.Component {
             );
             return (
                 <div>
-                    <table className="qtablewidget">
+                    <table className="qtableview">
                         <thead>
                             <tr>
                             {Object.keys(values[0]).map(field => (
-                                <th className="qtablewidget-header" key={field}>{field}</th>
+                                <th className="qtableview-header" key={field}>{field}</th>
                             ))}
                             </tr>
                         </thead>
                         <tbody>
                             {values.map((value, index) => (
-                            <tr className="qtablewidget-row" key={index}>
+                            <tr className="qtableview-row" key={index}>
                                 {Object.keys(value).map((field, i) => (
-                                <td className="qtablewidget-cell" key={i}>{value[field]}</td>
+                                <td className="qtableview-cell" key={i}>{value[field]}</td>
                                 ))}
                             </tr>
                             ))}
                         </tbody>
-                    </table>
-                </div>
-            );
-            return (
-                <div>
-                    <table class="qtablewidget">
-                        {values.map(value => (
-                            <tr class="qtablewidget">
-                                <td class="qtablewidget">
-                                    <ul>
-                                        {Object.keys(value).map(field => (
-                                            <li><b>{field}</b>: {value[field]}</li>
-                                        ))}
-                                    </ul>
-                                </td>
-                            </tr>
-                        ))}
                     </table>
                 </div>
             );
@@ -412,8 +406,16 @@ class GwInfoQtDesignerForm extends React.Component {
             return this.renderLayout(widget.layout, updateField, nametransform);
         } else if (widget.class === "QPushButton") {
             return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{prop.text}</button>)
+        } else if (widget.class === "QgsFileWidget") {
+            const accept = "image/*";
+            const file = this.state.file; // TODO: Change this so its for each widget and maybe outside this component
+            return (<FileSelector accept={accept} file={this.state.file} onFileSelected={this.onFileSelected} />);
         }
         return null;
+    }
+    onFileSelected = (file) => {
+        this.props.dispatchButton({ functionName: "upload_file", file: file });
+        this.setState({file});
     }
     groupOrName = (widget) => {
         return widget.attribute && widget.attribute.buttonGroup ? widget.attribute.buttonGroup._ : widget.name;
@@ -426,7 +428,7 @@ class GwInfoQtDesignerForm extends React.Component {
             explicitArray: false,
             mergeAttrs: true
         };
-        const loadingReqId = uuid.v1();
+        const loadingReqId = uuidv1();
         this.setState({ loading: true, loadingReqId: loadingReqId });
         xml2js.parseString(data, options, (err, json) => {
             if (err !== null) {
