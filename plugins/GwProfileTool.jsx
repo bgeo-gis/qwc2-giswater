@@ -409,15 +409,15 @@ class GwProfileTool extends React.Component {
             // Send request
             pendingRequests = true;
             axios.get(requestUrl + "nodefromcoordinates", { params: params }).then(response => {
-                result = parseInt(response.data.feature.id[0]);
+                result = parseInt(response.data.body.feature.id[0]);
                 console.log("Node Id -> ", result)
 
                 if (node === 1){
                     this.setState({ firstNodeId: result });
-                    this.highlightResult(response.data.body);
+                    this.highlightResult(response.data);
                 } else if (node === 2){
                     this.setState({ secondNodeId: result});
-                    this.highlightResult(response.data.body);
+                    this.highlightResult(response.data);
                 }
                 this.setState({ identifyResult: result, pendingRequests: false });
             }).catch((e) => {
@@ -431,7 +431,7 @@ class GwProfileTool extends React.Component {
 
     highlightResult = (result) => {
         // console.log('result :>> ', result);
-        if (isEmpty(result) || isEmpty(result.feature.geometry)) {
+        if (isEmpty(result) || isEmpty(result.body.feature.geometry)) {
             //this.props.removeLayer("profilehighlight")
         } else {
             const layer = {
@@ -439,9 +439,9 @@ class GwProfileTool extends React.Component {
                 role: LayerRole.SELECTION
             };
             const crs = this.props.mapObj.projection
-            const geometry = VectorLayerUtils.wktToGeoJSON(result.feature.geometry.st_astext, crs, crs)
+            const geometry = VectorLayerUtils.wktToGeoJSON(result.body.feature.geometry.st_astext, crs, crs)
             const feature = {
-                id: result.feature.id,
+                id: result.body.feature.id,
                 geometry: geometry.geometry
             }
             if (this.state.prevPoint !== null){
