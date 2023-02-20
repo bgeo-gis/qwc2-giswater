@@ -76,7 +76,7 @@ class GwInfo extends React.Component {
         showVisit: false,
         visitJson: null,
         visitWidgetValues: {},
-        listJson: null,
+        listJson: {},
         filters: {}
     }
     componentDidUpdate(prevProps, prevState) {
@@ -231,14 +231,14 @@ class GwInfo extends React.Component {
                 "tableName": prop.linkedobject,
                 "idName": this.state.identifyResult.feature.idName,
                 "id": this.state.identifyResult.feature.id,
-                "filterFields": this.state.filters
+                "filterFields": JSON.stringify(this.state.filters)
                 //"filterSign": action.params.tabName
             }
             console.log("TEST getList, params:", params);
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState({ listJson: result });
+                this.setState({ listJson: {...this.state.listJson, [tableWidgets[0].name]: result} });
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
