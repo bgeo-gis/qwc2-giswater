@@ -29,13 +29,15 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { ExportToCsv } from 'export-to-csv'; //or use your library of choice here
 
 //Icons Imports
-import { OpenInBrowser, Cancel, Delete } from '@mui/icons-material';
+//import { OpenInBrowser, Cancel, Delete } from '@mui/icons-material';
+import * as icons from '@mui/icons-material';
 // import 'qwc2-giswater/components/style/GwInfoDmaForm.css';
 
 class GwTableWidget extends React.Component {
     static propTypes = {
         values: PropTypes.array,
         dispatchButton: PropTypes.func,
+        form: PropTypes.object,
     }
     static defaultState = {
         loading: false
@@ -49,130 +51,68 @@ class GwTableWidget extends React.Component {
         };
     }
 
+    getIconComponent = (iconName) => {
+        // Convertir el nombre del icono a PascalCase
+        const iconComponentName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
+        // Buscar el componente de icono correspondiente dentro del objeto de iconos
+        const IconComponent = icons[iconComponentName];
+        // Devolver el componente de icono
+        return IconComponent ? React.createElement(IconComponent) : null;
+    }
+
     render() {
         const data = this.props.values;
         let cols = [];
-        const stateList = ["Planified", "In Progress", "Finished", "Canceled", "On Planning"];
-        const typeList = ["Demo", "Real", "Test"];
-        const explList = ["expl_01", "expl_02"];
-        Object.keys(data[0]).map(key => {
-            let capi = key.charAt(0).toUpperCase() + key.slice(1);
-            if (key === "state") {
-                cols.push({
-                    header: capi,
-                    accessorKey: key,
-                    filterVariant: 'select',
-                    filterSelectOptions: stateList
-                });
-            } else if (key === "mincut_type") {
-                cols.push({
-                    header: capi,
-                    accessorKey: key,
-                    filterVariant: 'select',
-                    filterSelectOptions: typeList
-                });
-            } else if (key === "exploitation") {
-                cols.push({
-                    header: capi,
-                    accessorKey: key,
-                    filterVariant: 'select',
-                    filterSelectOptions: explList
-                });
-            } else if (key === "anl_tstamp"){
-                cols.push({
-                    accessorFn: (row) => new Date(row.received_date),
-                    header: capi,
-                    accessorKey: key,
-                    filterFn: 'greaterThanOrEqualTo',
-                    sortingFn: 'datetime',
-                    Cell: ({ cell }) => {
-                        const date = cell.getValue();
-                        if (!date || date.getTime() === 0) {
-                            return "";
-                        }
-                        return date.toLocaleDateString('es-ES', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                        });
-                    },
-                    Header: ({ column }) => <em>{column.columnDef.header}</em>,
+        const headers = this.props.form.headers;
+        const tableParams = this.props.form.table;
+        if (headers !== undefined){
+            console.log("entramos")
+            Object.keys(data[0]).map(key => {
+                const header = headers.filter(header => {
+                    return header.accessorKey === key;
+                })[0];
 
+                if (header !== undefined && header['filterVariant'] !== undefined){
+                    if (header.filterVariant === 'datetime'){
+                        header['Cell'] = ({ cell }) => {
+                            const date = new Date(cell.getValue());
+                            if (!date || date.getTime() === 0) {
+                                return "";
+                            }
+                            return date.toLocaleDateString('es-ES', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                            });
+                        };
+                        header['Filter'] = ({ column }) => (
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    inputFormat="DD/MM/YYYY"
+                                    onChange={(newValue) => {
+                                        column.setFilterValue(newValue);
+                                    } }
+                                    renderInput={(params) => {
+                                        return (
+                                          <TextField
+                                            {...params}
+                                            helperText={'Filter Mode: ' + column.getFilterFn().name}
+                                            sx={{ minWidth: '120px' }}
+                                            variant="standard" />
+                                        );
+                                    }}
+                                    value={column.getFilterValue()} />
+                            </LocalizationProvider>
+                        );
+                    }
+                }
 
-                    //Custom Date Picker Filter from @mui/x-date-pickers
-                    Filter: ({ column }) => (
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                inputFormat="DD/MM/YYYY"
-                                onChange={(newValue) => {
-                                    column.setFilterValue(newValue);
-                                } }
-                                renderInput={(params) => {
-                                    return (
-                                      <TextField
-                                        {...params}
-                                        helperText={'Filter Mode: ' + column.getFilterFn().name}
-                                        sx={{ minWidth: '120px' }}
-                                        variant="standard" />
-                                    );
-                                }}
-                                value={column.getFilterValue()} />
-                        </LocalizationProvider>
-                    ),
-                });
-            } else if (key === "received_date" || key === "forecast_start" || key === "forecast_end") {
-                cols.push({
-                    accessorFn: (row) => new Date(row.received_date),
-                    header: capi,
-                    accessorKey: key,
-                    //filterFn: 'lessThanOrEqualTo',
-                    //filterVariant: 'range',
-                    sortingFn: 'datetime',
-                    Cell: ({ cell }) => {
-                        const date = cell.getValue();
-                        if (!date || date.getTime() === 0) {
-                            //console.log(date);
-                            return "";
-                        }
-                        return date.toLocaleDateString('es-ES', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                        });
-                    },
-                    Header: ({ column }) => <em>{column.columnDef.header}</em>,
+                if (header !== undefined){
+                    cols.push(header);
+                }
 
-
-                    //Custom Date Picker Filter from @mui/x-date-pickers
-                    Filter: ({ column }) => (
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                inputFormat="DD/MM/YYYY"
-                                onChange={(newValue) => {
-                                    column.setFilterValue(newValue);
-                                } }
-
-                                renderInput={(params) => {
-                                    return (
-                                      <TextField
-                                        {...params}
-                                        helperText={'Filter Mode: ' + column.getFilterFn().name}
-                                        sx={{ minWidth: '120px' }}
-                                        variant="standard" />
-                                    );
-                                  }}
-                                value={column.getFilterValue()} />
-                        </LocalizationProvider>
-                    ),
-                });
-            } else {
-                cols.push({
-                    header: capi,
-                    accessorKey: key
-                });
-            }
-
-        });
+            });
+        }
         const { rowSelection } = this.state;
         const csvOptions = {
             fieldSeparator: ',',
@@ -197,117 +137,120 @@ class GwTableWidget extends React.Component {
         let monthAgo = new Date();
         monthAgo.setMonth(monthAgo.getMonth() - 1);
 
+        
+        var inputProps = {
+            enableGlobalFilter: tableParams.enableGlobalFilter ?? false,
+            enableStickyHeader: tableParams.enableStickyHeader ?? true,
+            positionToolbarAlertBanner: tableParams.positionToolbarAlertBanner ?? "bottom",
+            enableGrouping: tableParams.enableGrouping ?? true,
+            enablePinning: tableParams.enablePinning ?? true,
+            enableColumnOrdering: tableParams.enableColumnOrdering ?? true,
+            enableColumnFilterModes: tableParams.enableColumnFilterModes ?? true,
+            enableFullScreenToggle: tableParams.enableFullScreenToggle ?? false,
+            enablePagination: tableParams.enablePagination ?? true,
+            //enableRowSelection: tableParams.enableRowSelection ?? true,
+            enableRowActions: tableParams.enableRowActions ?? false,
+            initialState: tableParams.initialState ?? {}
+        }
+
+        if (inputProps.enablePagination){
+            inputProps.muiTablePaginationProps={
+                rowsPerPageOptions: tableParams.muiTablePaginationProps.rowsPerPageOptions ?? [5, 10, 20, 50, 100],
+                showFirstButton: tableParams.muiTablePaginationProps.showFirstButton ?? true,
+                showLastButton: tableParams.muiTablePaginationProps.showLastButton ?? true
+            }
+        }
+        
+        if (tableParams.enableRowSelection){
+            inputProps.getRowId=((row) => row.userId);
+            inputProps.muiTableBodyRowProps=(({ row }) => ({
+                onClick: () => {
+                    if (tableParams.multipleRowSelection){
+                        this.setState(prevState => ({
+                            rowSelection: {
+                                ...prevState.rowSelection,
+                                [row.id]: !prevState.rowSelection[row.id],
+                            }
+                        }));
+                    } else {
+                        this.setState({
+                            rowSelection: {
+                                [row.id]: !rowSelection[row.id]
+                            }
+                        })
+                    }
+                    
+                },
+                selected: rowSelection[row.id],
+                sx: {
+                    cursor: 'pointer',
+                }
+            }));
+            inputProps.state={rowSelection};
+        }
+        
+        if (inputProps.enableRowActions){
+            let menuItems = tableParams.renderRowActionMenuItems;
+            inputProps.renderRowActionMenuItems= (({ row, closeMenu }) => {
+                let itemList=menuItems.map((item,index)=>{
+                    const IconComponent = this.getIconComponent(item.icon);
+                    return <MenuItem
+                            key={index}
+                            onClick={() => {
+                                this.props.dispatchButton({ "functionName": item.widgetfunction, "row": row.original });
+                                closeMenu();
+                            } }
+                            sx={{ m: 0 }}
+                            >
+                                <ListItemIcon>
+                                    {IconComponent}
+                                </ListItemIcon>
+                                {item.text}
+                            </MenuItem>
+                });
+                return itemList;
+            })
+        }
+        const multipleRowSelection = tableParams.multipleRowSelection;
+        inputProps.renderTopToolbarCustomActions=(({ table }) => (
+            <Box
+                sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}
+            >
+                
+                <Button
+                    disabled={table.getPrePaginationRowModel().rows.length === 0}
+                    //export all rows, including from the next page, (still respects filtering and sorting)
+                    onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
+                    startIcon={<FileDownloadIcon />}
+                    variant="contained"
+                >
+                    Export Data
+                </Button>
+                {multipleRowSelection ? (
+                    <Button
+                    disabled={
+                    !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+                    }
+                    //only export selected rows
+                    onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
+                    startIcon={<FileDownloadIcon />}
+                    variant="contained"
+                    >
+                        Export Selected Rows
+                    </Button>
+                ) : null}
+                <Button onClick={() => table.resetColumnFilters()}>
+                Reset Filters
+                </Button>
+            </Box>
+        ));
+
         return (
             <MaterialReactTable
                 columns={cols}
                 data={data}
-                enableColumnOrdering
-                enableColumnFilterModes
-                enableGlobalFilter={false} //turn off a feature
-                // Pagination
-                enablePagination={true}
-                enableFullScreenToggle={false}
-                muiTablePaginationProps={{
-                    rowsPerPageOptions: [5, 10, 15, 20],
-                    showFirstButton: false,
-                    showLastButton: false,
-                }}
-                // Select row
-                getRowId={(row) => row.userId}
-                muiTableBodyRowProps={({ row }) => ({
-                    onClick: () => this.setState({
-                        rowSelection: {
-                            [row.id]: !rowSelection[row.id]
-                        }
-                    }),
-                    selected: rowSelection[row.id],
-                    sx: {
-                        cursor: 'pointer',
-                    },
-                })}
-                state={{ rowSelection }}
-                // Mostrar filtros por defecto
-                initialState={{ showColumnFilters: false, pagination: { pageSize: 5, pageIndex: 0 }, density: 'spacious',
-                    columnFilters: [
-                        {
-                            id: "anl_tstamp",
-                            value: monthAgo
-                        }
-                      ],
-                    sorting: [
-                        {
-                            id: 'id',
-                            desc: false
-                        }
-                    ] }}
-                // Exportar
-                renderTopToolbarCustomActions={({ table }) => (
-                    <Box
-                        sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}
-                    >
-                        
-                        <Button
-                            disabled={table.getPrePaginationRowModel().rows.length === 0}
-                            //export all rows, including from the next page, (still respects filtering and sorting)
-                            onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
-                            startIcon={<FileDownloadIcon />}
-                            variant="contained"
-                        >
-                            Export Data
-                        </Button>
-                        <Button onClick={() => table.resetColumnFilters()}>
-                        Reset Filters
-                        </Button>
-                    </Box>
-                )}
-                // Opciones de cada row
-                enableGrouping
-                enablePinning
-                enableRowActions
-                //enableRowSelection
-                renderRowActionMenuItems={({ row, closeMenu }) => [
-                    <MenuItem
-                        key={0}
-                        onClick={() => {
-                            this.props.dispatchButton({ "functionName": "open", "row": row.original });
-                            closeMenu();
-                        } }
-                        sx={{ m: 0 }}
-                    >
-                        <ListItemIcon>
-                            <OpenInBrowser />
-                        </ListItemIcon>
-                        Open
-                    </MenuItem>,
-                    <MenuItem
-                        key={1}
-                        onClick={() => {
-                            this.props.dispatchButton({ "functionName": "cancel", "row": row.original });
-                            closeMenu();
-                        } }
-                        sx={{ m: 0 }}
-                    >
-                        <ListItemIcon>
-                            <Cancel />
-                        </ListItemIcon>
-                        Cancel
-                    </MenuItem>,
-                    <MenuItem
-                        key={2}
-                        onClick={() => {
-                            this.props.dispatchButton({ "functionName": "delete", "row": row.original });
-                            closeMenu();
-                        } }
-                        sx={{ m: 0 }}
-                    >
-                        <ListItemIcon>
-                            <Delete />
-                        </ListItemIcon>
-                        Delete
-                    </MenuItem>,
-                ]}
-                positionToolbarAlertBanner="bottom"
-                enableStickyHeader />
+                {...inputProps}
+            />
         );
     }
 }

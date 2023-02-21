@@ -78,16 +78,17 @@ class GwMincutManager extends React.Component {
         }
         if (!this.state.mincutmanagerResult && this.props.currentTask === "GwMincutManager" && this.props.currentTask !== prevProps.currentTask) {
             this.openMincutManager();
-            this.getList();
+            //this.getList();
         }
+        
         if (this.state.filters !== prevState.filters) {
             this.getList();
         }
+        
     }
 
     openMincutManager = (updateState = true, action = this.state.action) => {
         let pendingRequests = false;
-
         const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
             const params = {
@@ -97,6 +98,9 @@ class GwMincutManager extends React.Component {
             pendingRequests = true;
             axios.get(request_url + "getmincutmanager", { params: params }).then(response => {
                 const result = response.data;
+                console.log("getmincutmanager");
+                console.log(result);
+                this.getList(result);
                 if (updateState) this.setState({ mincutmanagerResult: result, prevmincutmanagerResult: null, pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
@@ -108,7 +112,7 @@ class GwMincutManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetValues: {},});
+        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetValues: {}, listJson: null});
     }
 
 
@@ -146,24 +150,23 @@ class GwMincutManager extends React.Component {
 
     }
 
-    onTabChanged = (tab, widget) => {
-        console.log("tab change")
-        this.setState({ currentTab: {tab: tab, widget: widget} });
-    }
-
-    getList = () => {
+    getList = (mincutManagerResult) => {
         try {
             var request_url = GwUtils.getServiceUrl("mincut");
-
-            const tab_name = 'main';
-            const widgetname = 'tbl_mincut_edit';
-            const table_name = 'tbl_mincut_manager';
+            var widgets = mincutManagerResult.body.data.fields;
+            var tableWidgets = [];
+            widgets.forEach(widget => {
+                console.log(widget);
+                if (widget.widgettype === "tableview"){
+                    tableWidgets.push(widget);
+                }
+            })
 
             const params = {
                 "theme": this.props.currentTheme.title,
-                "tabName": tab_name,
-                "widgetname": widgetname,
-                "tableName": table_name,
+                "tabName": tableWidgets[0].tabname,
+                "widgetname": tableWidgets[0].columnname,
+                "tableName": tableWidgets[0].linkedobject,
                 "filterFields": {}
             }
             console.log("TEST getList, params:", params);
@@ -171,7 +174,7 @@ class GwMincutManager extends React.Component {
                 const result = response.data
                 console.log("getlist done:", result);
                 //this.setState({ listJson: result, mincutmanagerResult: null });
-                this.setState({ listJson: result });
+                this.setState({ listJson: {...this.state.listJson, [tableWidgets[0].columnname]: result} });
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -368,7 +371,7 @@ class GwMincutManager extends React.Component {
                         <div id="mincut-body" role="body">
                             <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false}
                                 theme={this.props.currentTheme.title}
-                                dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
+                                dispatchButton={this.dispatchButton} updateField={this.updateField}
                                 listJson={this.state.listJson} widgetValues={this.state.widgetValues} getInitialValues={false}
                             />
                         </div>
