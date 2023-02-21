@@ -199,14 +199,16 @@ class GwInfoQtDesignerForm extends React.Component {
             return null;
         }
         if (widget.class === "QTableWidget") {
-            if (isEmpty(this.props.listJson) || !this.props.listJson?.body?.data?.fields) {
+            if (isEmpty(this.props.listJson) || !this.props.listJson[widget.name]?.body?.data?.fields) {
                 return null;
             }
-            const values = this.props.listJson.body.data.fields[0].value;
+            const values = this.props.listJson[widget.name].body.data.fields[0].value;
+            const form = this.props.listJson[widget.name].body.form;
             if (!values) {
                 return (<span>No results found</span>)
             }
-            return (<GwTableWidget values={values} dispatchButton={this.props.dispatchButton}/>);
+
+            return (<GwTableWidget values={values} form={form} dispatchButton={this.props.dispatchButton}/>);
         }
         else if (widget.class === "QTableView") {
             if (isEmpty(this.props.listJson) || !this.props.listJson[widget.name]?.body?.data?.fields) {
