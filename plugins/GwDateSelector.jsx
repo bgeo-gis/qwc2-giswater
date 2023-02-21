@@ -226,7 +226,7 @@ class GwDateSelector extends React.Component {
         this.setState({ filters: { ...this.state.filters, [widget.name]: { value: ev } } });
     }
     dispatchButton = (action) => {
-        switch (action.name) {
+        switch (action.functionName) {
             case "accept":
                 const queryableLayers = this.getQueryableLayers();
                 if (!isEmpty(queryableLayers)) {
