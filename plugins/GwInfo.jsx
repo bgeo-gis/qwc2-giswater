@@ -90,6 +90,9 @@ class GwInfo extends React.Component {
             if (this.state.mode === "Dma") {
                 this.identifyDma(prevProps)
             }
+            if (this.state.mode === "Scada"){
+                this.showGraph(prevProps)
+            }
         }
         // Check if list need to update (current tab or filters changed)
         if (!isEmpty(this.state.currentTab) && ((prevState.currentTab !== this.state.currentTab) || (prevState.filters !== this.state.filters))) {
@@ -249,36 +252,41 @@ class GwInfo extends React.Component {
 
     }
     showGraph = (prevProps) => {
-        let pendingRequests = false;
-        const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-            // TODO: If there are some wms external layers this would select more than one layer
-            return l.type === "wms";
-        });
-
-        const request_url = GwUtils.getServiceUrl("info");
-        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-            if (queryableLayers.length > 1) {
-                console.warn("There are multiple giswater queryable layers")
-            }
-            const layer = queryableLayers[0];
-            console.log("theme -> ", layer.title)
-            const params = {
-                "theme": layer.title,
-                "node_id": this.state.feature_id
-            }
-
-            pendingRequests = true
-            axios.get(request_url + "getgraph", { params: params }).then(response => {
-                const result = response.data
-                console.log("getGraph -> ", result)
-                this.setState({ graphJson: result, showGraph: true, pendingRequests: false, theme: layer.title });
-                this.highlightResult(result)
-            }).catch((e) => {
-                console.log(e);
-                this.setState({ pendingRequests: false });
+        const clickPoint = this.queryPoint(prevProps);
+        if (clickPoint) {
+            let pendingRequests = false;
+            const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
+                // TODO: If there are some wms external layers this would select more than one layer
+                return l.type === "wms";
             });
+
+            const request_url = GwUtils.getServiceUrl("info");
+            if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+                if (queryableLayers.length > 1) {
+                    console.warn("There are multiple giswater queryable layers")
+                }
+                const layer = queryableLayers[0];
+                console.log("theme -> ", layer.title)
+                const params = {
+                    "theme": layer.title,
+                    "node_id": this.state.feature_id
+                }
+
+                pendingRequests = true
+                axios.get(request_url + "getgraph", { params: params }).then(response => {
+                    const result = response.data
+                    console.log("getGraph -> ", result)
+                    if (this.state.mode === "Scada"){ this.setState({identifyResult: result})}
+                    this.setState({ graphJson: result, showGraph: true, pendingRequests: false, theme: layer.title});
+                    this.highlightResult(result)
+                }).catch((e) => {
+                    console.log(e);
+                    this.setState({ pendingRequests: false });
+                });
+            }
         }
     }
+
     showVisit = (prevProps) => {
         this.setState({ showVisit: true });
         let pendingRequests = false;
@@ -503,7 +511,7 @@ class GwInfo extends React.Component {
     }
     render() {
         let resultWindow = null;
-        let profileTool = null;
+        let graphWindow = null;
         let visitWindow = null;
         let noIdentifyResult = false;
         if (this.state.pendingRequests === true || this.state.identifyResult !== null) {
@@ -518,7 +526,7 @@ class GwInfo extends React.Component {
             } else {
                 const result = this.state.identifyResult
                 const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null;
-                const graphButton = result?.feature?.id === "30" || result?.feature?.id === "31" || result?.feature?.id === "32" || result?.feature?.id === "33" || result?.feature?.id === "34" || result?.feature?.id === "113766" ? (<button className='button' onClick={this.showGraph}>Graph</button>) : null;
+                //const graphButton = result?.feature?.id === "30" || result?.feature?.id === "31" || result?.feature?.id === "32" || result?.feature?.id === "33" || result?.feature?.id === "34" || result?.feature?.id === "113766" ? (<button className='button' onClick={this.showGraph}>Graph</button>) : null;
                 //const graphButton = ["30", "31", "32", "33", "34", "113766"].includes(result?.feature?.id) ? (<button className='button' onClick={this.showGraph}>Graph</button>) : null;
                 if (result.schema === null) {
                     body = null;
@@ -533,8 +541,7 @@ class GwInfo extends React.Component {
                                 theme={this.state.theme} idName={result.feature.idName} featureId={result.feature.id}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
                                 listJson={this.state.listJson} widgetValues={this.state.filters}
-                            />
-                            {graphButton}
+                            />                            
                         </div>
                     )
                 }
@@ -546,7 +553,7 @@ class GwInfo extends React.Component {
                     )
                 }
             }
-            resultWindow = (
+            resultWindow = (               
                 <ResizeableWindow icon="info-sign"
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} scrollable={this.state.mode === "Dma" ? true : false}
@@ -556,6 +563,7 @@ class GwInfo extends React.Component {
                     {body}
                 </ResizeableWindow>
             );
+                      
             if (this.state.showGraph && !noIdentifyResult && this.state.graphJson !== null){
                 let result = this.state.graphJson
                 let fields_real = result.body.data.fields.real_data
@@ -655,7 +663,7 @@ class GwInfo extends React.Component {
                         })
                 ]};
                 const listeners = {};
-                profileTool = (
+                graphWindow = (
                     <div id="GwInfoGraph">
                         <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" />
                         <div>
@@ -686,7 +694,7 @@ class GwInfo extends React.Component {
                 );
             }
         }
-        return [resultWindow, profileTool, visitWindow, (
+        return [this.state.mode !== "Scada" ? resultWindow : null , graphWindow, visitWindow, (
             <TaskBar key="GwInfoTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwInfo">
                 {() => ({
                     body: LocaleUtils.tr("infotool.clickhelpPoint")
