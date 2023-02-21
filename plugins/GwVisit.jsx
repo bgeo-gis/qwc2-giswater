@@ -81,7 +81,7 @@ class GwVisit extends React.Component {
         showVisit: false,
         visitJson: null,
         visitWidgetValues: {},
-        listJson: null,
+        listJson: {},
         filters: {}
     }
     componentDidUpdate(prevProps, prevState) {
@@ -180,29 +180,17 @@ class GwVisit extends React.Component {
     getList = (tab, widget) => {
         try {
             var request_url = GwUtils.getServiceUrl("visit");
-            // console.log('widget.widget :>> ', widget.widget);
-            // var filtered = widget.widget.filter(child => {
-            //     return child.name === tab.name;
-            // }).filter(child => {
-            //     return child.layout;
-            // }).filter(child => {
-            //     // TODO: IMPROVE THIS
-            //     return child.layout.item[1].layout.item.some((child2) => child2.widget.class === "QTableView");
-            // });
-            // console.log('filtered :>> ', filtered);
-            // // if (isEmpty(filtered) || isEmpty(request_url)) {
-            // //     return null;
-            // // }
-            // var tableWidgets = [];
-            // filtered.forEach(childTab => {
-            //     childTab.layout.item[0].layout.item.forEach(child => {
-            //         if (child.widget.class === "QTableView") {
-            //             tableWidgets.push(child.widget);
-            //         }
-            //     })
-            // })
-            // const prop = tableWidgets[0]?.property || {};
-            // const action = JSON.parse(prop.action);
+            var widgets = this.state.visitResult?.body?.data?.fields;
+            var tableWidgets = [];
+            if (widgets) {
+                widgets.forEach(widget => {
+                    console.log(widget);
+                    if (widget.widgettype === "tableview"){
+                        tableWidgets.push(widget);
+                    }
+                })
+            }
+
 
             const params = {
                 "theme": this.props.theme.title,
@@ -219,7 +207,7 @@ class GwVisit extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState({ listJson: result });
+                this.setState({ listJson: {...this.state.listJson, [tableWidgets[0].columnname]: result} });
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
