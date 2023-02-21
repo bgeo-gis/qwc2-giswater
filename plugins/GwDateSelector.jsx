@@ -9,6 +9,7 @@ import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
+import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
@@ -48,6 +49,11 @@ class GwDateSelector extends React.Component {
         return parseInt(parts.slice(-1))
     }
     filterLayers = (result) => {
+        if (isEmpty(result) || result.schema === null) {
+            this.props.processStarted("dateselector_msg", "DateSelector Error!");
+            this.props.processFinished("dateselector_msg", false, "Couldn't find schema, please check service config.");
+            return null;
+        }
         const layerFilters = ["filterdate"]  // TODO: get this from config?
         const queryableLayers = this.getQueryableLayers();
 
@@ -212,7 +218,7 @@ class GwDateSelector extends React.Component {
         }
 
         // Send request
-        axios.put(request_url + "dates", { params }).then(response => {
+        axios.put(request_url + "dates", { ...params }).then(response => {
             const result = response.data
             this.setState({ dateSelectorResult: result, getDatesResult: result, pendingRequests: false });
             this.filterLayers(result);
@@ -326,5 +332,7 @@ const selector = (state) => ({
 export default connect(selector, {
     zoomToExtent: zoomToExtent,
     refreshLayer: refreshLayer,
-    setCurrentTask: setCurrentTask
+    setCurrentTask: setCurrentTask,
+    processFinished: processFinished,
+    processStarted: processStarted
 })(GwDateSelector);
