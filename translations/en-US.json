@@ -28,6 +28,7 @@
         "GwTools": "Giswater Tools",
         "GwInfoPoint": "Giswater Info",
         "GwInfoDma": "Info DMA",
+        "GwInfoScada": "Info Scada",
         "GwProfileTool": "Profile",
         "GwSelector": "Selector",
         "GwFlowtracetrace": "Flow trace",

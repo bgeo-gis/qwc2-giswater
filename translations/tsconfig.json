@@ -20,6 +20,7 @@
     "appmenu.items.GwTools",
     "appmenu.items.GwInfoPoint",
     "appmenu.items.GwInfoDma",
+    "appmenu.items.GwInfoScada",
     "appmenu.items.GwProfileTool",
     "appmenu.items.GwSelector",
     "appmenu.items.GwFlowtracetrace",
