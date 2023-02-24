@@ -105,7 +105,7 @@ class GwProfileTool extends React.Component {
      * @param {*} prevState Previous state of States
      */
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
+        if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwProfileTool") {
             // ProfileTool no longer used, clear layers and reset variables
             this.clearResults();
             this.reset();
@@ -256,7 +256,7 @@ class GwProfileTool extends React.Component {
         if (Math.abs(angle) > 0.5 * Math.PI) {
             angle += Math.PI;
         }
-        const text = LocaleUtils.toLocaleFixed(MeasureUtils.getFormattedLength(this.props.measurement.lenUnit, length), 2);
+        const text = MeasureUtils.getFormattedLength(this.props.measurement.lenUnit, length);
         marker.getStyle().getText().setText(text);
         marker.getStyle().getText().setRotation(angle);
         marker.setGeometry(new ol.geom.Point([0.5 * (p1[0] + p2[0]), 0.5 * (p1[1] + p2[1])]));
