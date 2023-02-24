@@ -39,7 +39,8 @@ class GwInfoQtDesignerForm extends React.Component {
         featureId: PropTypes.string,
         disabledWidgets: PropTypes.array,
         getInitialValues: PropTypes.bool,
-        replaceImageUrls: PropTypes.bool
+        replaceImageUrls: PropTypes.bool,
+        files: PropTypes.array
     }
     static defaultProps = {
         updateField: (name, value, widget) => { console.log(name, value, widget) },
@@ -48,7 +49,8 @@ class GwInfoQtDesignerForm extends React.Component {
         widgetValues: {},
         disabledWidgets: [],
         getInitialValues: true,
-        replaceimageUrls: false
+        replaceimageUrls: false,
+        files: []
     }
     static defaultState = {
         activetabs: {},
@@ -389,7 +391,8 @@ class GwInfoQtDesignerForm extends React.Component {
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             const file = this.state.file; // TODO: Change this so its for each widget and maybe outside this component
-            return (<FileSelector accept={accept} file={this.state.file} onFileSelected={this.onFileSelected} />);
+            const files = this.props.files.map(file => file.name).join(", ");
+            return (<FileSelector accept={accept} file={this.state.file} onFileSelected={this.onFileSelected} multiple={true} showAllFilenames={true} overrideText={files} />);
         }
         return null;
     }
