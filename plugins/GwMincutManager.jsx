@@ -49,13 +49,15 @@ class GwMincutManager extends React.Component {
         setCurrentTask: PropTypes.func,
         selection: PropTypes.object,
         getInitialValues: PropTypes.bool,
+        //keepManagerOpen: PropTypes.bool
     }
     static defaultProps = {
         initialWidth: 800,
         initialHeight: 500,
         initialX: 0,
         initialY: 0,
-        initiallyDocked: false
+        initiallyDocked: false,
+        //keepManagerOpen: false
     }
     state = {
         action: 'mincutNetwork',
@@ -81,8 +83,8 @@ class GwMincutManager extends React.Component {
             //this.getList();
         }
         
-        if (this.state.filters !== prevState.filters) {
-            this.getList();
+        if (this.state.mincutmanagerResult && this.state.filters !== prevState.filters) {
+            this.getList(this.state.mincutmanagerResult);
         }
         
     }
@@ -98,8 +100,6 @@ class GwMincutManager extends React.Component {
             pendingRequests = true;
             axios.get(request_url + "getmincutmanager", { params: params }).then(response => {
                 const result = response.data;
-                console.log("getmincutmanager");
-                console.log(result);
                 this.getList(result);
                 if (updateState) this.setState({ mincutmanagerResult: result, prevmincutmanagerResult: null, pendingRequests: false });
             }).catch((e) => {
@@ -138,7 +138,6 @@ class GwMincutManager extends React.Component {
         } else if (widget.class === "QComboBox"){
             if (widgetcontrols.getIndex !== undefined && widgetcontrols.getIndex === false){
                 for(let key in widget.item){
-                    console.log(widget.item[key].property.value);
                     if (widget.item[key].property.value === value){
                         filtervalue = widget.item[key].property.text;
                     }
@@ -156,7 +155,6 @@ class GwMincutManager extends React.Component {
             var widgets = mincutManagerResult.body.data.fields;
             var tableWidgets = [];
             widgets.forEach(widget => {
-                console.log(widget);
                 if (widget.widgettype === "tableview"){
                     tableWidgets.push(widget);
                 }
@@ -169,10 +167,8 @@ class GwMincutManager extends React.Component {
                 "tableName": tableWidgets[0].linkedobject,
                 "filterFields": {}
             }
-            console.log("TEST getList, params:", params);
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
-                console.log("getlist done:", result);
                 //this.setState({ listJson: result, mincutmanagerResult: null });
                 this.setState({ listJson: {...this.state.listJson, [tableWidgets[0].columnname]: result} });
             }).catch((e) => {
@@ -185,83 +181,100 @@ class GwMincutManager extends React.Component {
     }
 
     dispatchButton = (action) => {
-        var queryableLayers;
-        var request_url;
-        let pendingRequests = false;
-        switch (action.functionName) {
+        let functionName = action.widgetfunction.functionName;
+        let params = action.widgetfunction.params ?? {};
+        switch (functionName) {
             case "selector":
-                console.log("Selector mincut");
-                this.selectorMincut(action.ids);
+                this.selectorMincut(action.row);
                 break;
             case "open":
-                console.log("Open mincut");
-                this.openMincut(action.row.id);
+                this.openMincut(action.row[0].original.id);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                //if (!this.props.keepManagerOpen){
+                //    this.setState({ mincutmanagerResult: null });
+                //}
                 break;
             case "cancel":
-                console.log("Cancel mincut");
-                console.log(action.row);
-                this.cancelMincut(action.row.id);
+                action.row.map((row) => {
+                    this.cancelMincut(row.original.id);
+                })
+                this.setState( { filters: {"mincutId": action.row[0].original.id, "action":"cancel"} } );
                 break;
             case "delete":
-                console.log("Delete mincut");
-                console.log(action.row);
-                this.deleteMincut(action.row.id);
+                let ids = [];
+                action.row.map((row) => {
+                    ids.push(row.original.id)
+                })
+
+                if (
+                    !confirm(`Are you sure you want to delete these mincuts ${ids.toString()}`)
+                ) {
+                    break;
+                }
+                action.row.map((row) => {
+                    this.deleteMincut(row.original.id);
+                })
+                this.setState( { filters: {"mincutId": action.row[0].original.id, "action":"delete"} } );
                 break;
             case "mincutClose":
-                console.log("Mincut Close");
                 this.setState({ mincutResult: null });
                 break;
             case "selectorClose":
-                console.log("Selector Close");
                 this.setState({ selectorResult: null });
                 break;
             default:
-                console.warn(`Action \`${action.functionName}\` cannot be handled.`)
+                console.warn(`Action \`${functionName}\` cannot be handled.`)
                 break;
         }
     }
 
-    selectorMincut = (ids) => {
-        try {
-            let pendingRequests = false;
-            const queryableLayers = this.getQueryableLayers();
-
-            const request_url = GwUtils.getServiceUrl("selector");
-            if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                // Get request paramas
-                const layer = queryableLayers[0];
-                const epsg = this.crsStrToInt(this.props.map.projection)
-                const params = {
-                    "theme": layer.title,
-                    "epsg": epsg,
-                    "currentTab": "tab_mincut",
-                    "selectorType": "selector_mincut",
-                    "layers": String(layer.queryLayers),
-                    "loadProject": false,
-                    "ids": String(ids)
+    selectorMincut = (rows) => {
+        if (rows.length === 0){
+            console.log("No rows");
+        } else {
+            let ids = [];
+            rows.map(row => {
+                ids.push(row.original.id);
+            })
+            let idsString = ids.join(",");
+            try {
+                let pendingRequests = false;
+                const queryableLayers = this.getQueryableLayers();
+    
+                const request_url = GwUtils.getServiceUrl("selector");
+                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+                    // Get request paramas
+                    const layer = queryableLayers[0];
+                    const epsg = this.crsStrToInt(this.props.map.projection)
+                    const params = {
+                        "theme": layer.title,
+                        "epsg": epsg,
+                        "currentTab": "tab_mincut",
+                        "selectorType": "selector_mincut",
+                        "layers": String(layer.queryLayers),
+                        "loadProject": false,
+                        "ids": idsString
+                    }
+                    // Send request
+                    pendingRequests = true
+                    // Send request
+                    axios.get(request_url + "get", { params: params }).then(response => {
+                        const result = response.data
+                        this.setState({ selectorResult: result, pendingRequests: false });
+                        //this.filterLayers(result);
+                    }).catch((e) => {
+                        console.log(e);
+                        this.setState({ pendingRequests: false });
+                    });
                 }
-                console.log("ids -> ", ids)
-                // Send request
-                pendingRequests = true
-                // Send request
-                axios.get(request_url + "get", { params: params }).then(response => {
-                    const result = response.data
-                    this.setState({ selectorResult: result, pendingRequests: false });
-                    //this.filterLayers(result);
-                }).catch((e) => {
-                    console.log(e);
-                    this.setState({ pendingRequests: false });
-                });
+            } catch (error) {
+                console.warn(error);
             }
-        } catch (error) {
-            console.warn(error);
         }
     }
 
     getQueryableLayers = () => {
         if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
-            console.log("return", this.props.layers, this.props.map);
             return [];
         }
 
@@ -284,10 +297,8 @@ class GwMincutManager extends React.Component {
                 "theme": this.props.currentTheme.title,
                 "mincutId": mincutId
             }
-            console.log("TEST open, params:", params);
             axios.get(request_url + "open", { params: params }).then((response) => {
                 const result = response.data
-                console.log("open done:", result);
                 this.setState( { mincutResult: result } );
             }).catch((e) => {
                 console.log(e);
@@ -305,11 +316,8 @@ class GwMincutManager extends React.Component {
                 "theme": this.props.currentTheme.title,
                 "mincutId": mincutId
             }
-            console.log("TEST cancel, params:", params);
             axios.post(request_url + "cancel", { ...params }).then((response) => {
                 const result = response.data
-                console.log("cancel done:", result);
-                this.setState( { filters: {"mincutId": mincutId, "action":"cancel"} } );
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -327,11 +335,8 @@ class GwMincutManager extends React.Component {
                 "theme": this.props.currentTheme.title,
                 "mincutId": mincutId
             }
-            console.log("TEST delete, params:", params);
             axios.delete(request_url + "delete", { params }).then((response) => {
                 const result = response.data
-                console.log("delete done:", result);
-                this.setState( { filters: {"mincutId": mincutId, "action":"delete"} } );
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });

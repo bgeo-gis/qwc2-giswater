@@ -253,7 +253,7 @@ class GwMincut extends React.Component {
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
             this.onToolClose();
             if (this.props.dispatchButton){
-                this.props.dispatchButton({ "functionName": "mincutClose" });
+                this.props.dispatchButton({ "widgetfunction": { "functionName": "mincutClose" } });
             }
             console.log("cerrando");
         } else {
@@ -422,7 +422,7 @@ class GwMincut extends React.Component {
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
                     key="GwMincutWindow"
-                    onClose={this.onDlgClose} title="Giswater Mincut"
+                    onClose={this.onDlgClose} title="Giswater Mincut" scrollable={true}
                 >
                     {body}
                 </ResizeableWindow>

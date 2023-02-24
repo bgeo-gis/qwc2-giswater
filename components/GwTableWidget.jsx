@@ -11,6 +11,9 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import MaterialReactTable from 'material-react-table';
 
+import {
+    MRT_ToggleFiltersButton
+  } from 'material-react-table';
 //Material-UI Imports
 import {
     Box,
@@ -19,6 +22,7 @@ import {
     MenuItem,
     Typography,
     TextField,
+    IconButton
   } from '@mui/material';
 //Date Picker Imports
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -26,6 +30,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FilterAltOff from '@mui/icons-material/FilterAltOff';
 import { ExportToCsv } from 'export-to-csv'; //or use your library of choice here
 
 //Icons Imports
@@ -66,7 +71,6 @@ class GwTableWidget extends React.Component {
         const headers = this.props.form.headers;
         const tableParams = this.props.form.table;
         if (headers !== undefined){
-            console.log("entramos")
             Object.keys(data[0]).map(key => {
                 const header = headers.filter(header => {
                     return header.accessorKey === key;
@@ -74,6 +78,10 @@ class GwTableWidget extends React.Component {
 
                 if (header !== undefined && header['filterVariant'] !== undefined){
                     if (header.filterVariant === 'datetime'){
+                        header['accessorFn'] = ((row) => {
+                            var date = new Date(new Date(row[header.accessorKey]).toDateString());
+                            return date;
+                        });
                         header['Cell'] = ({ cell }) => {
                             const date = new Date(cell.getValue());
                             if (!date || date.getTime() === 0) {
@@ -90,8 +98,9 @@ class GwTableWidget extends React.Component {
                                 <DatePicker
                                     inputFormat="DD/MM/YYYY"
                                     onChange={(newValue) => {
+                                        newValue = new Date(new Date(newValue).toDateString());
                                         column.setFilterValue(newValue);
-                                    } }
+                                      }}
                                     renderInput={(params) => {
                                         return (
                                           <TextField
@@ -134,9 +143,6 @@ class GwTableWidget extends React.Component {
             csvExporter.generateCsv(data);
         };
 
-        let monthAgo = new Date();
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-
         
         var inputProps = {
             enableGlobalFilter: tableParams.enableGlobalFilter ?? false,
@@ -148,9 +154,49 @@ class GwTableWidget extends React.Component {
             enableColumnFilterModes: tableParams.enableColumnFilterModes ?? true,
             enableFullScreenToggle: tableParams.enableFullScreenToggle ?? false,
             enablePagination: tableParams.enablePagination ?? true,
-            //enableRowSelection: tableParams.enableRowSelection ?? true,
+            enableExporting: tableParams.enableExporting ?? true,
             enableRowActions: tableParams.enableRowActions ?? false,
-            initialState: tableParams.initialState ?? {}
+            initialState: tableParams.initialState ?? {},
+            modifyTopToolBar: tableParams.modifyTopToolBar ?? false,
+        }
+        
+        if (inputProps.initialState.columnFilters){
+            inputProps.initialState.columnFilters.forEach(filter => {
+                if (filter.range){
+                    let value = filter.range.value;
+                    let timePeriod = filter.range.timePeriod ?? "month";
+                    let today = new Date();
+                    delete filter.range;
+
+                    if (value == 0){
+                        filter.value = today;
+                    }
+                    switch(timePeriod){
+                        case "year":
+                            if (value < 0){
+                                today.setFullYear(today.getFullYear() - Math.abs(value));
+                            } else {
+                                today.setFullYear(today.getFullYear() + value);
+                            }
+                            break;
+                        case "month":
+                            if (value < 0){
+                                today.setMonth(today.getMonth() - Math.abs(value));
+                            } else {
+                                today.setMonth(today.getMonth() + value);
+                            }
+                            break;
+                        case "day":
+                            if (value < 0){
+                                today.setDate(today.getDate() - Math.abs(value));
+                            } else {
+                                today.setDate(today.getDate() + value);
+                            }
+                            break;
+                    }
+                    filter.value = today;
+                }
+            });
         }
 
         if (inputProps.enablePagination){
@@ -192,12 +238,12 @@ class GwTableWidget extends React.Component {
         if (inputProps.enableRowActions){
             let menuItems = tableParams.renderRowActionMenuItems;
             inputProps.renderRowActionMenuItems= (({ row, closeMenu }) => {
-                let itemList=menuItems.map((item,index)=>{
+                    let itemList=menuItems.map((item,index)=>{
                     const IconComponent = this.getIconComponent(item.icon);
                     return <MenuItem
                             key={index}
                             onClick={() => {
-                                this.props.dispatchButton({ "functionName": item.widgetfunction, "row": row.original });
+                                this.props.dispatchButton({ "widgetfunction": item.widgetfunction, "row": row.original });
                                 closeMenu();
                             } }
                             sx={{ m: 0 }}
@@ -211,45 +257,98 @@ class GwTableWidget extends React.Component {
                 return itemList;
             })
         }
-        const multipleRowSelection = tableParams.multipleRowSelection;
-        inputProps.renderTopToolbarCustomActions=(({ table }) => (
-            <Box
-                sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}
-            >
-                
-                <Button
-                    disabled={table.getPrePaginationRowModel().rows.length === 0}
-                    //export all rows, including from the next page, (still respects filtering and sorting)
-                    onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
-                    startIcon={<FileDownloadIcon />}
-                    variant="contained"
-                >
-                    Export Data
-                </Button>
-                {multipleRowSelection ? (
-                    <Button
-                    disabled={
-                    !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+        
+        if (inputProps.modifyTopToolBar){
+            let customAction = tableParams.renderTopToolbarCustomActions;
+            inputProps.renderTopToolbarCustomActions=(({ table }) => {
+                let itemList=customAction.map((item,index)=>{
+                    let disableProp = {};
+                    if (item.disableOnSelect){
+                        if (item.moreThanOneDisable){
+                            disableProp.disabled = table.getSelectedRowModel().flatRows.length === 0 || table.getSelectedRowModel().flatRows.length > 1;
+                        } else {
+                            disableProp.disabled = table.getSelectedRowModel().flatRows.length === 0;
+                        }
                     }
-                    //only export selected rows
-                    onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
-                    startIcon={<FileDownloadIcon />}
-                    variant="contained"
+                    return <Button
+                            key={index}
+                            color={item.color ?? "success"}
+                            {...disableProp}
+                            onClick={() => {
+                                    let rows;
+                                    if (item.getAllRows){
+                                        rows = table.getPrePaginationRowModel().rows;
+                                    } else {
+                                        rows = table.getSelectedRowModel().flatRows;
+                                    }
+                                    this.props.dispatchButton({ "widgetfunction": item.widgetfunction, "row": rows });
+                                } }
+                            variant="contained"
+                            >
+                                {item.text}
+                            </Button>
+                });
+                return (<Box
+                    sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}
+                >
+                    {itemList}   
+                </Box>)
+            });
+        }
+        
+        if (inputProps.enableExporting){
+            const multipleRowSelection = tableParams.multipleRowSelection;
+            inputProps.renderBottomToolbarCustomActions=(({ table }) => (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <Button
+                        key={0}
+                        disabled={table.getPrePaginationRowModel().rows.length === 0}
+                        //export all rows, including from the next page, (still respects filtering and sorting)
+                        onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
+                        startIcon={<FileDownloadIcon />}
+                        variant="contained"
                     >
-                        Export Selected Rows
+                        Export Data
                     </Button>
-                ) : null}
-                <Button onClick={() => table.resetColumnFilters()}>
-                Reset Filters
-                </Button>
-            </Box>
-        ));
-
+                    {multipleRowSelection ? (
+                        <Button
+                        key={1}
+                        disabled={table.getSelectedRowModel().flatRows.length === 0}
+                        //only export selected rows
+                        onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
+                        startIcon={<FileDownloadIcon />}
+                        variant="contained"
+                        >
+                            Export Selected Rows
+                        </Button>
+                    ) : null}
+                </div>
+            ));
+        }
+        
         return (
             <MaterialReactTable
                 columns={cols}
                 data={data}
                 {...inputProps}
+                muiTableContainerProps={{
+                    //ref: tableContainerRef, //get access to the table container element
+                    sx: { maxHeight: '400px' }, //give the table a max height
+                  }}
+                renderToolbarInternalActions={({ table }) => (
+                    <Box>
+                      {/* add custom button to print table  */}
+                      <IconButton
+                        onClick={() => {
+                            table.resetColumnFilters()
+                        }}
+                      >
+                        {<FilterAltOff />}
+                      </IconButton>
+                      {/* along-side built-in buttons in whatever order you want them */}
+                      <MRT_ToggleFiltersButton table={table} />
+                    </Box>
+                  )}
             />
         );
     }
