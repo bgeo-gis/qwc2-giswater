@@ -138,6 +138,8 @@ class GwHeightProfile extends React.Component {
             pendingRequests = true
             axios.get(request_url + "getdialog", { params: {} }).then(response => {
                 const result = response.data
+                console.log("profileToolResult");
+                console.log(result);
                 this.setState({ profileToolResult: result, pendingRequestsDialog: false });
                 // this.filterLayers(result);
             }).catch((e) => {
@@ -711,7 +713,7 @@ class GwHeightProfile extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.widget_values} />
+                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.widget_values} getInitialValues={false}/>
                         </div>
                     )
                 }
@@ -750,8 +752,7 @@ class GwHeightProfile extends React.Component {
     }
 
     dispatchButton = (action) => {
-        let pendingRequests = false;
-        switch (action.name) {
+        switch (action.functionName) {
             case "accept":
                 this.getProfileSvg(this.state.widget_values.txt_vnode, this.state.widget_values.txt_title, this.state.widget_values.date_to)
                 break;
@@ -759,7 +760,7 @@ class GwHeightProfile extends React.Component {
                 this.onClose();
                 break;
             default:
-                console.warn(`Action \`${action.name}\` cannot be handled.`)
+                console.warn(`Action \`${action.functionName}\` cannot be handled.`)
                 break;
         }
     }
