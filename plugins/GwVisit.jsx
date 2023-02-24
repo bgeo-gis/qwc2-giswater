@@ -82,7 +82,8 @@ class GwVisit extends React.Component {
         visitJson: null,
         visitWidgetValues: {},
         listJson: {},
-        filters: {}
+        filters: {},
+        files: []
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwVisit") {
@@ -107,26 +108,50 @@ class GwVisit extends React.Component {
         let pendingRequests = false;
         switch (action.functionName) {
             case 'upload_file':
-                this.props.processStarted("upload_file", "File upload");
-                const file = action.file;
-                request_url = GwUtils.getServiceUrl('visit');
-                let formData = new FormData();
-                formData.append("file", file);
-                formData.append("theme", this.props.theme.title);
-                formData.append("visit_id", 1);
-                axios.post(request_url + 'file', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                }).then((response) => {
-                    const result = response.data;
-                    // show message
-                    this.props.processFinished("upload_file", result.status === "Accepted", result.message);
-                    this.getList();
-                }).catch((e) => {
-                    console.warn(e);
-                    this.props.processFinished("upload_file", false, "Internal server error!");
-                });
+                let files = this.state.files
+                if (action.file instanceof FileList) {
+                    for (let i = 0; i < action.file.length; i++) {
+                        files.push(action.file[i]);
+                    }
+                } else {
+                    files.push(action.file);
+                }
+                this.setState({ files: files });
                 break;
             case 'set_visit':
+                console.log(this.state.widgetValues);
+                const ignore_widgets = ['txt_visit_id'];
+                const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
+                    let v = value.columnname === 'mincut_state' ? state : value.value;
+                    if (ignore_widgets.includes(value.columnname)) v = null;
+                    if (!(v === null || v === undefined)) {
+                        acc[value.columnname] = v;
+                    }
+                    return acc;
+                }, {});
+                const request_url = GwUtils.getServiceUrl("visit");
+                if (!isEmpty(request_url)) {
+                    this.props.processStarted("visit_msg", "Aceptar visita");
+                    let formData = new FormData();
+                    for (let i = 0; i < this.state.files.length; i++) {
+                        const file = this.state.files[i];
+                        formData.append('files[]', file);
+                    }
+                    formData.append("theme", this.props.theme.title);
+                    if (this.state.visitId) formData.append("visitId", this.state.visitId);
+                    formData.append("fields", JSON.stringify(fields));
+                    axios.post(request_url + 'set', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then((response) => {
+                        const result = response.data;
+                        // show message
+                        if (result.message) this.props.processFinished("visit_msg", result.status === "Accepted", result.message.text);
+                    }).catch((e) => {
+                        console.warn(e);
+                        this.props.processFinished("visit_msg", false, "Internal server error!");
+                    });
+                }
+                break;
             case 'set_previous_form_back':
                 this.clearResults();
                 break;
@@ -160,22 +185,22 @@ class GwVisit extends React.Component {
         if (widget.name === "class_id") {
             Object.keys(this.state.widgetValues).forEach((key) => {
                 // if (key !== "class_id") {
-                    let _visible = this.state.widgetValues[key].setFilterClass === null || this.state.widgetValues[key].setFilterClass == value;
-                    newWidgetValues = {...newWidgetValues, [key]: {...this.state.widgetValues[key], visible: _visible}};
+                let _visible = this.state.widgetValues[key].setFilterClass === null || this.state.widgetValues[key].setFilterClass == value;
+                newWidgetValues = { ...newWidgetValues, [key]: { ...this.state.widgetValues[key], visible: _visible } };
                 // }
             });
-            newWidgetValues = {...newWidgetValues, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign, visible: visible, setFilterClass: widgetcontrols.setFilterClass}}
+            newWidgetValues = { ...newWidgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign, visible: visible, setFilterClass: widgetcontrols.setFilterClass } }
             console.log('newWidgetValues :>> ', newWidgetValues);
             this.setState({ widgetValues: newWidgetValues })
         }
         else {
-            this.setState({ widgetValues: {...this.state.widgetValues, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign, visible: visible, setFilterClass: widgetcontrols.setFilterClass}} });
+            this.setState({ widgetValues: { ...this.state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign, visible: visible, setFilterClass: widgetcontrols.setFilterClass } } });
         }
         console.log("visible :>> ", visible);
     }
     onTabChanged = (tab, widget) => {
         this.getList(tab, widget);
-        this.setState({ currentTab: {tab: tab, widget: widget} });
+        this.setState({ currentTab: { tab: tab, widget: widget } });
     }
     getList = (tab, widget) => {
         try {
@@ -185,7 +210,7 @@ class GwVisit extends React.Component {
             if (widgets) {
                 widgets.forEach(widget => {
                     console.log(widget);
-                    if (widget.widgettype === "tableview"){
+                    if (widget.widgettype === "tableview") {
                         tableWidgets.push(widget);
                     }
                 })
@@ -207,7 +232,7 @@ class GwVisit extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState({ listJson: {...this.state.listJson, [tableWidgets[0].columnname]: result} });
+                this.setState({ listJson: { ...this.state.listJson, [tableWidgets[0].columnname]: result } });
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -234,7 +259,7 @@ class GwVisit extends React.Component {
                     console.warn("There are multiple giswater queryable layers");
                 }
                 const layer = queryableLayers[0];
-                const visit_type = this.state.mode === 'Incidencia' ? 2 : 1;
+                const visitType = this.state.mode === 'Incidencia' ? 2 : 1;
 
                 const epsg = this.crsStrToInt(this.props.map.projection)
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom)
@@ -245,16 +270,14 @@ class GwVisit extends React.Component {
                     "ycoord": clickPoint[1],
                     "zoomRatio": zoomRatio,
                     "layers": layer.queryLayers.join(','),
-                    "visit_id": 10,
-                    "featureType": "node",
-                    "id": 1001,
-                    "visit_type": visit_type
+                    "visitType": visitType
                 }
 
                 pendingRequests = true
                 axios.get(request_url + "get", { params: params }).then(response => {
                     const result = response.data;
-                    this.setState({ visitResult: result, pendingRequests: false });
+                    const visitId = result.body.feature.visitId;
+                    this.setState({ visitResult: result, pendingRequests: false, visitId: visitId });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
@@ -275,60 +298,14 @@ class GwVisit extends React.Component {
                 id: "visitselection",
                 role: LayerRole.SELECTION
             };
-            const crs = this.props.map.projection
-            console.log("geometry -> ",result.feature.geometry);
-            console.log("crs -> ",crs);
-            const geometry = VectorLayerUtils.wktToGeoJSON(result.feature.geometry, crs, crs)
+            const crs = this.props.map.projection;
+            const geometry = VectorLayerUtils.wktToGeoJSON(result.feature.geometry, crs, crs);
             const feature = {
                 id: result.feature.id,
                 geometry: geometry.geometry
             }
             this.props.addLayerFeatures(layer, [feature], true)
         }
-    }
-    panToResult = (result) => {
-        // TODO: Maybe we should zoom to the result as well
-        if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.feature.geometry)
-            this.props.panTo(center, this.props.map.projection)
-        }
-    }
-    addMarkerToResult = (result) => {
-        if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.feature.geometry)
-            this.props.addMarker('visit', center, '', this.props.map.projection);
-        }
-    }
-    getGeometryCenter = (geom) => {
-        const geometry = new ol.format.WKT().readGeometry(geom);
-        const type = geometry.getType();
-        let center = null;
-        switch (type) {
-            case "Polygon":
-                center = geometry.getInteriorPoint().getCoordinates();
-                break;
-            case "MultiPolygon":
-                center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "Point":
-                center = geometry.getCoordinates();
-                break;
-            case "MultiPoint":
-                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "LineString":
-                center = geometry.getCoordinateAt(0.5);
-                break;
-            case "MultiLineString":
-                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "Circle":
-                center = geometry.getCenter();
-                break;
-            default:
-                break;
-        }
-        return center;
     }
     queryPoint = (prevProps) => {
         if (this.props.click.button !== 0 || this.props.click === prevProps.click || (this.props.click.features || []).find(entry => entry.feature === 'startupposmarker')) {
@@ -341,18 +318,18 @@ class GwVisit extends React.Component {
         return this.props.click.coordinate;
     }
     onShow = (mode) => {
-        this.setState({mode: mode || 'Visit'});
+        this.setState({ mode: mode || 'Visit' });
     }
     onToolClose = () => {
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
         this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ visitResult: null, pendingRequests: false });
+        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [] });
     }
     clearResults = () => {
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ visitResult: null, pendingRequests: false });
+        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [] });
     }
     render() {
         let resultWindow = null;
@@ -377,7 +354,7 @@ class GwVisit extends React.Component {
                             <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={true}
                                 theme={this.state.theme} initiallyDocked={this.props.initiallyDocked}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
-                                widgetValues={this.state.widgetValues} listJson={this.state.listJson} replaceImageUrls={true}
+                                widgetValues={this.state.widgetValues} listJson={this.state.listJson} replaceImageUrls={true} files={this.state.files}
                             />
                         </div>
                     )
