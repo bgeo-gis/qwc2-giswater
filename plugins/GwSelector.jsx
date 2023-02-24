@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
+import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import GwUtils from '../utils/GwUtils';
@@ -20,9 +21,19 @@ class GwSelector extends React.Component {
         theme: PropTypes.object,
         refreshLayer: PropTypes.func,
         zoomToExtent: PropTypes.func,
-        selectorResult: PropTypes.object
+        selectorResult: PropTypes.object,
+        initialHeight: PropTypes.number,
+        initialWidth: PropTypes.number,
+        initialX: PropTypes.number,
+        initialY: PropTypes.number,
+        initiallyDocked: PropTypes.bool
     }
     static defaultProps = {
+        initialWidth: 480,
+        initialHeight: 420,
+        initialX: 0,
+        initialY: 0,
+        initiallyDocked: true
     }
     state = {
         selectorResult: null,
@@ -148,7 +159,7 @@ class GwSelector extends React.Component {
     }
     onToolClose = () => {
         if (this.props.dispatchButton){
-            this.props.dispatchButton({ "functionName": "selectorClose" });
+            this.props.dispatchButton({ "widgetfunction": { "functionName": "selectorClose" } });
         }
         this.setState({ selectorResult: null, pendingRequests: false });
     }
@@ -274,6 +285,8 @@ class GwSelector extends React.Component {
                     body = (<div className="selector-body" role="body"><span className="selector-body-message">No result</span></div>); // TODO: TRANSLATION
                 }
             } else {
+                // console.log("rendering selector");
+                // console.log(result);
                 body = (
                     <div className="selector-body" role="body">
                         <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}
@@ -282,12 +295,26 @@ class GwSelector extends React.Component {
                 )
             }
         }
-        return (
-            <SideBar icon="selector" id="GwSelector" title="GW Selector"
-                key="GwSelectorNull" onShow={this.onShow}>
-                {body}
-            </SideBar>
-        );
+        if (this.props.selectorResult){
+            return (
+                <ResizeableWindow icon="selector" dockable="right"
+                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
+                    initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
+                    key="GwSelector"
+                    onClose={this.onToolClose} title="GW Selector" maximizeable={false} minimizeable={false} scrollable={true}
+                >
+                    {body}
+                </ResizeableWindow>
+            );
+        } else {
+            return (
+                <SideBar icon="selector" id="GwSelector" title="GW Selector"
+                    key="GwSelectorNull" onShow={this.onShow} >
+                    {body}
+                </SideBar>
+            );
+        }
+        
     }
 }
 
