@@ -61,7 +61,7 @@ class GwDateSelector extends React.Component {
             // Get values
             var values = this.getFilterValues(result);
             // Get filter query
-            var filter = this.getFilterStr(values, layerFilters, result.data.layerColumns);
+            var filter = this.getFilterStr(values, layerFilters, result.body.data.layerColumns);
             console.log("filter query =", filter);
 
             // Apply filter, zoom to extent & refresh map
@@ -73,7 +73,7 @@ class GwDateSelector extends React.Component {
         }
     }
     getFilterValues = (result) => {
-        let values = { from_date: result.data?.date_from, to_date: result.data?.date_to };
+        let values = { from_date: result.body.data?.date_from, to_date: result.body.data?.date_to };
 
         return values;
     }
@@ -199,8 +199,8 @@ class GwDateSelector extends React.Component {
             // Send request
             axios.get(request_url + "dates", { params: params }).then(response => {
                 const result = response.data
-                let dateFrom = result.data?.date_from;
-                let dateTo = result.data?.date_to;
+                let dateFrom = result.body.data?.date_from;
+                let dateTo = result.body.data?.date_to;
                 if (updateState) this.setState({ getDatesResult: result, dateSelectorResult: null, filters: { date_from: { value: dateFrom }, date_to: { value: dateTo } } });
                 this.filterLayers(result);
             }).catch((e) => {
@@ -267,10 +267,10 @@ class GwDateSelector extends React.Component {
         // Docker
         if (this.state.getDatesResult !== null) {
             if (!isEmpty(this.state.getDatesResult)) {
-                let dateFrom = this.state.getDatesResult.data.date_from;
+                let dateFrom = this.state.getDatesResult.body.data.date_from;
                 let dateParts = dateFrom.split("-");
                 dateFrom = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
-                let dateTo = this.state.getDatesResult.data.date_to;
+                let dateTo = this.state.getDatesResult.body.data.date_to;
                 dateParts = dateTo.split("-");
                 dateTo = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
                 dockerBody = (
@@ -297,9 +297,9 @@ class GwDateSelector extends React.Component {
                     )
                 }
 
-                if (!isEmpty(result.data?.date_from) && !isEmpty(result.data?.date_to)) {
+                if (!isEmpty(result.body?.data?.date_from) && !isEmpty(result.body?.data?.date_to)) {
                     dockerBody = (
-                        <span>Dates: {result.data.date_from} - {result.data.date_to}</span>
+                        <span>Dates: {result.body.data.date_from} - {result.body.data.date_to}</span>
                     )
                 }
 
