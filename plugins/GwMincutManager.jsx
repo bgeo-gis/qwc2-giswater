@@ -49,7 +49,7 @@ class GwMincutManager extends React.Component {
         setCurrentTask: PropTypes.func,
         selection: PropTypes.object,
         getInitialValues: PropTypes.bool,
-        //keepManagerOpen: PropTypes.bool
+        keepManagerOpen: PropTypes.bool
     }
     static defaultProps = {
         initialWidth: 800,
@@ -57,7 +57,7 @@ class GwMincutManager extends React.Component {
         initialX: 0,
         initialY: 0,
         initiallyDocked: false,
-        //keepManagerOpen: false
+        keepManagerOpen: false
     }
     state = {
         action: 'mincutNetwork',
@@ -80,7 +80,6 @@ class GwMincutManager extends React.Component {
         }
         if (!this.state.mincutmanagerResult && this.props.currentTask === "GwMincutManager" && this.props.currentTask !== prevProps.currentTask) {
             this.openMincutManager();
-            //this.getList();
         }
         
         if (this.state.mincutmanagerResult && this.state.filters !== prevState.filters) {
@@ -190,9 +189,9 @@ class GwMincutManager extends React.Component {
             case "open":
                 this.openMincut(action.row[0].original.id);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-                //if (!this.props.keepManagerOpen){
-                //    this.setState({ mincutmanagerResult: null });
-                //}
+                if (!this.props.keepManagerOpen){
+                    this.setState({ mincutmanagerResult: null });
+                }
                 break;
             case "cancel":
                 action.row.map((row) => {
@@ -218,6 +217,9 @@ class GwMincutManager extends React.Component {
                 break;
             case "mincutClose":
                 this.setState({ mincutResult: null });
+                if (!this.props.keepManagerOpen){
+                    this.onToolClose();
+                }
                 break;
             case "selectorClose":
                 this.setState({ selectorResult: null });
@@ -381,16 +383,6 @@ class GwMincutManager extends React.Component {
                             />
                         </div>
                     )
-                    if (this.state.mincutResult){
-                        bodyMincut = (
-                            <GwMincut mincutResult={this.state.mincutResult} dispatchButton={this.dispatchButton}/>
-                        )
-                    }
-                    if (this.state.selectorResult){
-                        bodySelector = (
-                            <GwSelector selectorResult={this.state.selectorResult} dispatchButton={this.dispatchButton}/>
-                        )
-                    }
                 }
             }
             resultWindow = (
@@ -405,6 +397,18 @@ class GwMincutManager extends React.Component {
             );
             
         }
+
+        if (this.state.mincutResult){
+            bodyMincut = (
+                <GwMincut mincutResult={this.state.mincutResult} dispatchButton={this.dispatchButton}/>
+            )
+        }
+        if (this.state.selectorResult){
+            bodySelector = (
+                <GwSelector selectorResult={this.state.selectorResult} dispatchButton={this.dispatchButton}/>
+            )
+        }
+
         if (bodyMincut){
             return [resultWindow, bodyMincut];
         }

@@ -255,7 +255,6 @@ class GwMincut extends React.Component {
             if (this.props.dispatchButton){
                 this.props.dispatchButton({ "widgetfunction": { "functionName": "mincutClose" } });
             }
-            console.log("cerrando");
         } else {
             this.cancelMincut();
         }
