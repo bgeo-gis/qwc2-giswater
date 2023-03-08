@@ -57,11 +57,11 @@ class GwTableWidget extends React.Component {
     }
 
     getIconComponent = (iconName) => {
-        // Convertir el nombre del icono a PascalCase
+        // Convert the icon name to PascalCase
         const iconComponentName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
-        // Buscar el componente de icono correspondiente dentro del objeto de iconos
+        // Search for the icon's corresponding component in the icons object
         const IconComponent = icons[iconComponentName];
-        // Devolver el componente de icono
+        // Return the icon component
         return IconComponent ? React.createElement(IconComponent) : null;
     }
 
@@ -152,7 +152,7 @@ class GwTableWidget extends React.Component {
             enablePinning: tableParams.enablePinning ?? true,
             enableColumnOrdering: tableParams.enableColumnOrdering ?? true,
             enableColumnFilterModes: tableParams.enableColumnFilterModes ?? true,
-            enableFullScreenToggle: tableParams.enableFullScreenToggle ?? false,
+            //enableFullScreenToggle: tableParams.enableFullScreenToggle ?? false,
             enablePagination: tableParams.enablePagination ?? true,
             enableExporting: tableParams.enableExporting ?? true,
             enableRowActions: tableParams.enableRowActions ?? false,
@@ -332,12 +332,10 @@ class GwTableWidget extends React.Component {
                 data={data}
                 {...inputProps}
                 muiTableContainerProps={{
-                    //ref: tableContainerRef, //get access to the table container element
                     sx: { maxHeight: '400px' }, //give the table a max height
                   }}
                 renderToolbarInternalActions={({ table }) => (
                     <Box>
-                      {/* add custom button to print table  */}
                       <IconButton
                         onClick={() => {
                             table.resetColumnFilters()
@@ -345,7 +343,6 @@ class GwTableWidget extends React.Component {
                       >
                         {<FilterAltOff />}
                       </IconButton>
-                      {/* along-side built-in buttons in whatever order you want them */}
                       <MRT_ToggleFiltersButton table={table} />
                     </Box>
                   )}
