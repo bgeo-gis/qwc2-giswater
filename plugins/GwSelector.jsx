@@ -35,101 +35,27 @@ class GwSelector extends React.Component {
         initialY: 0,
         initiallyDocked: true
     }
+    constructor(props) {
+        super(props);
+    }
     state = {
         selectorResult: null,
         pendingRequests: false,
-        filteredSelectors: false
     }
 
     crsStrToInt = (crs) => {
         const parts = crs.split(':')
         return parseInt(parts.slice(-1))
     }
-    filterLayers = (result) => {
+    handleResult = (result) => {
         if (!result || result.schema === null) {
             return false;
         }
-        const layerFilters = ["expl_id", "state"]
-        const filterNames = {
-            "tab_exploitation": { "key": "expl_id", "column": "expl_id" },
-            "tab_network_state": { "key": "id", "column": "state" }
-        }
-        const queryableLayers = this.getQueryableLayers();
 
-        if (!isEmpty(queryableLayers)) {
-            // Get values
-            var values = this.getFilterValues(result, filterNames);
-            // Get filter query
-            var filter = this.getFilterStr(values, layerFilters, result.data.layerColumns);
-            console.log("filter query =", filter);
-
-            // Apply filter, zoom to extent & refresh map
-            console.log("queryable layers =", queryableLayers);
-            const layer = queryableLayers[0];
-            layer.params.FILTER = filter;
-            this.panToResult(result);
-            // Refresh map
-            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-        }
-    }
-    getFilterValues = (result, filterNames) => {
-        let values = {}
-
-        console.log(result.form.formTabs);
-        for (let i = 0; i < result.form.formTabs.length; i++) {
-            const tab = result.form.formTabs[i];
-            let tabname = filterNames[tab.tabName];
-            if (tabname === undefined) {
-                continue;
-            }
-            let key = tabname.key;
-            let columnname = tabname.column;
-            values[columnname] = []
-            for (let j = 0; j < tab.fields.length; j++) {
-                const v = tab.fields[j];
-                if (v.value == true) {
-                    let value;
-                    for (var k in v) {
-                        if (k == key) {
-                            value = v[k]
-                            break;
-                        }
-                    }
-                    values[columnname].push(value);
-                }
-            }
-        }
-
-        return values;
-    }
-    getFilterStr = (values, layerFilters, layerColumns) => {
-        console.log("values ->", values);
-        console.log("layerFilters ->", layerFilters);
-        console.log("layerColumns ->", layerColumns);
-        let filterStr = "";
-        for (var lyr in layerColumns) {
-            const cols = layerColumns[lyr];  // Get columns for layer
-            filterStr += lyr + ": ";
-            var fields = layerFilters;  // Get columns to filter
-            let fieldsFilterStr = "";
-            for (let i = 0; i < fields.length; i++) {
-                var field = fields[i];  // Column to filter
-                var value = values[field];  // Value to filter
-                if (value === undefined || !cols.includes(field)) {  // If no value defined or layer doesn't have column to filter
-                    continue;
-                }
-                if (i > 0 && fieldsFilterStr.length > 0) {
-                    fieldsFilterStr += " AND ";
-                }
-                if (value.length > 0) {
-                    fieldsFilterStr += "\"" + field + "\" IN ( " + value.join(' , ') + " )";
-                } else {
-                    fieldsFilterStr += "\"" + field + "\" = -1";
-                }
-            }
-            filterStr += fieldsFilterStr + ";";
-        }
-        return filterStr;
+        // Zoom to extent & refresh map
+        this.panToResult(result);
+        // Refresh map
+        this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
     }
     panToResult = (result) => {
         if (!isEmpty(result)) {
@@ -146,12 +72,7 @@ class GwSelector extends React.Component {
         }
     }
     componentDidUpdate(prevProps, prevState) {
-        if (prevProps.theme !== this.props.theme) {
-            this.setState({ filteredSelectors: false });
-        }
-        else if ((!this.state.filteredSelectors && !isEmpty(this.getQueryableLayers()))) {
-            this.makeRequest(true);
-        }
+        
     }
     onShow = () => {
         // Make service request
@@ -163,20 +84,6 @@ class GwSelector extends React.Component {
         }
         this.setState({ selectorResult: null, pendingRequests: false });
     }
-    clearResults = () => {
-        this.setState({ selectorResult: null, pendingRequests: false });
-    }
-    getQueryableLayers = () => {
-        if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
-            console.log("return", this.props.layers, this.props.map);
-            return [];
-        }
-
-        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-            // TODO: If there are some wms external layers this would select more than one layer
-            return l.type === "wms"
-        });
-    }
     getSelectors = (params) => {
         const request_url = GwUtils.getServiceUrl("selector");
         if (isEmpty(request_url)) {
@@ -187,7 +94,7 @@ class GwSelector extends React.Component {
         axios.get(request_url + "get", { params: params }).then(response => {
             const result = response.data
             this.setState({ selectorResult: result, pendingRequests: false });
-            this.filterLayers(result);
+            this.handleResult(result);
         }).catch((e) => {
             console.log(e);
             this.setState({ pendingRequests: false });
@@ -203,41 +110,36 @@ class GwSelector extends React.Component {
         axios.post(request_url + "set", { ...params }).then(response => {
             const result = response.data
             this.setState({ selectorResult: result, pendingRequests: false });
-            this.filterLayers(result);
+            this.handleResult(result);
         }).catch((e) => {
             console.log(e);
             this.setState({ pendingRequests: false });
         });
     }
     updateField = (widgetName, ev, action) => {
-        const queryableLayers = this.getQueryableLayers();
-        if (!isEmpty(queryableLayers)) {
-            // Get request paramas
-            const layer = queryableLayers[0];
-            const epsg = this.crsStrToInt(this.props.map.projection)
-            const selectorType = "selector_basic"; // TODO: get this from json key 'selectorType'
-            const tabName = action.params.tabName;
-            const id = action.params.id;
-            const isAlone = false;
-            const disableParent = false; // TODO?: get if shift is pressed (depending on)
-            const value = action.params.value == 'False';
-            const addSchema = "NULL"; // TODO?: allow addSchema
-            const params = {
-                "theme": layer.title,
-                "epsg": epsg,
-                "selectorType": selectorType,
-                "tabName": tabName,
-                "id": id,
-                "isAlone": isAlone,
-                "disableParent": disableParent,
-                "value": value,
-                "addSchema": addSchema,
-                "layers": String(layer.queryLayers)
-            }
-
-            // Call setselectors
-            this.setSelectors(params);
+        // Get request paramas
+        const epsg = this.crsStrToInt(this.props.map.projection)
+        const selectorType = action.params.selectorType;
+        const tabName = action.params.tabName;
+        const id = action.params.id;
+        const isAlone = false;
+        const disableParent = false; // TODO?: get if shift is pressed (depending on)
+        const value = action.params.value == 'False';
+        const addSchema = "NULL"; // TODO?: allow addSchema
+        const params = {
+            "theme": this.props.theme.title,
+            "epsg": epsg,
+            "selectorType": selectorType,
+            "tabName": tabName,
+            "id": id,
+            "isAlone": isAlone,
+            "disableParent": disableParent,
+            "value": value,
+            "addSchema": addSchema
         }
+
+        // Call setselectors
+        this.setSelectors(params);
     }
     dispatchButton = (action) => {
         let pendingRequests = false;
@@ -247,23 +149,18 @@ class GwSelector extends React.Component {
                 break;
         }
     }
-    makeRequest(initial = false) {
+    makeRequest() {
         let pendingRequests = false;
 
-        const queryableLayers = this.getQueryableLayers();
-
         const request_url = GwUtils.getServiceUrl("selector");
-        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+        if (!isEmpty(request_url)) {
             // Get request paramas
-            const layer = queryableLayers[0];
             const epsg = this.crsStrToInt(this.props.map.projection)
             const params = {
-                "theme": layer.title,
+                "theme": this.props.theme.title,
                 "epsg": epsg,
                 "currentTab": "tab_exploitation",
-                "selectorType": "selector_basic",
-                "layers": String(layer.queryLayers),
-                "loadProject": initial
+                "selectorType": "selector_basic"
             }
 
             // Send request
@@ -271,7 +168,8 @@ class GwSelector extends React.Component {
             this.getSelectors(params);
         }
         // Set "Waiting for request..." message
-        this.setState({ selectorResult: {}, pendingRequests: pendingRequests, filteredSelectors: true });
+        // this.filteredSelectors = true;
+        this.setState({ selectorResult: {}, pendingRequests: pendingRequests });
     }
     render() {
         // Create window
@@ -289,7 +187,7 @@ class GwSelector extends React.Component {
                 // console.log(result);
                 body = (
                     <div className="selector-body" role="body">
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}
+                        <GwInfoQtDesignerForm form_xml={result.form_xml} autoResetTab={false} readOnly={false} getInitialValues={false}
                             dispatchButton={this.dispatchButton} updateField={this.updateField} />
                     </div>
                 )
