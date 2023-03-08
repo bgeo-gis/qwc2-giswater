@@ -59,10 +59,10 @@ class GwSelector extends React.Component {
     }
     panToResult = (result) => {
         if (!isEmpty(result)) {
-            const x1 = result.data.geometry.x1;
-            const y1 = result.data.geometry.y1;
-            const x2 = result.data.geometry.x2;
-            const y2 = result.data.geometry.y2;
+            const x1 = result.body.data.geometry.x1;
+            const y1 = result.body.data.geometry.y1;
+            const x2 = result.body.data.geometry.x2;
+            const y2 = result.body.data.geometry.y2;
             console.log("Zoom to:", x1, y1, x2, y2);
             const extent = [x1, y1, x2, y2];
             if (extent.includes(undefined)) {
