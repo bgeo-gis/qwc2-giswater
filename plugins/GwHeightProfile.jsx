@@ -14,13 +14,13 @@ import isEmpty from 'lodash.isempty';
 import Chartist from 'chartist';
 import ChartistComponent from 'react-chartist';
 import ChartistAxisTitle from 'chartist-plugin-axistitle';
-import FileSaver from 'file-saver';
 import {addMarker, removeMarker} from 'qwc2/actions/layers';
 import {changeMeasurementState} from 'qwc2/actions/measurement';
 import Icon from 'qwc2/components/Icon';
 import Spinner from 'qwc2/components/Spinner';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
+import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
@@ -131,7 +131,6 @@ class GwHeightProfile extends React.Component {
 
     getDialog = () => {
         let pendingRequests = false;
-
         const request_url = GwUtils.getServiceUrl("profile");
         if (!isEmpty(request_url)) {
             // Send request
@@ -781,6 +780,7 @@ class GwHeightProfile extends React.Component {
     getProfileSvg = (vnode_dist, title, date) => {
         const requestUrl = GwUtils.getServiceUrl("profile");
         const result = this.props.measurement.feature;
+        this.props.processStarted("profile_msg", "Generando Perfil");
         if (!isEmpty(result)){
             if (vnode_dist === undefined){
                 vnode_dist = 1
@@ -803,21 +803,18 @@ class GwHeightProfile extends React.Component {
             }
             // Make request
             axios.get(requestUrl + "profilesvg", { params: params }).then(response => {
+                this.props.processFinished("profile_msg", true, "Perfil creado correctamente.");
                 // Opent new tab with image
                 window.open(response.data,'Image');
-                // Delete image
-                axios.delete(requestUrl + "profilesvg", { params: {"img_path": response.data} })
-                .catch((e) => {
-                    console.log(e);
-                });
             }).catch((e) => {
                 console.log(e);
+                this.props.processFinished("profile_msg", false, "No se ha podido crear el Perfil...");
             });
         }
     }
 
     /**
-     * Adds marker on the map depending where the mouse is located in the profile
+     * Adds marker on the map depending where the mouse is located on the profile
      * @param {*} x Length where mouse is hovering
      */
     updateMarker = (x) => {
@@ -985,5 +982,7 @@ export default connect((state) => ({
 }), {
     addMarker: addMarker,
     changeMeasurementState: changeMeasurementState,
-    removeMarker: removeMarker
+    removeMarker: removeMarker,
+    processFinished: processFinished,
+    processStarted: processStarted
 })(GwHeightProfile);

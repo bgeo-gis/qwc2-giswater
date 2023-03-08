@@ -18,7 +18,6 @@ import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
 
 import {changeMeasurementState} from 'qwc2/actions/measurement';
@@ -638,19 +637,24 @@ class GwProfileTool extends React.Component {
     }
 
     render() {
-        let resultWindow = null;
-        let bodyText = LocaleUtils.tr("infotool.clickhelpPoint");
+        let bodyText = null;
+        if (!this.state.firstNodeId || !this.state.secondNodeId){
+            bodyText = LocaleUtils.tr("infotool.clickhelpPoint");
+        }
         if (isNaN(this.state.firstNodeId) || isNaN(this.state.secondNodeId)){
             // If user not clicked a node show warning
             bodyText = "No se ha encontrado un nodo en esta posición...";
         }
-        return [resultWindow, (
-            <TaskBar key="GwProfileToolTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwProfileTool">
-                {() => ({
-                    body: bodyText
-                })}
-            </TaskBar>
-        )];
+
+        if (bodyText){
+            return (
+                <TaskBar key="GwProfileToolTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwProfileTool">
+                    {() => ({
+                        body: bodyText
+                    })}
+                </TaskBar>
+            );
+        }
     }
 }
 
