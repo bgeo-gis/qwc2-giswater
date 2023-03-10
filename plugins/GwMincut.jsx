@@ -12,12 +12,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
-import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, refreshLayer } from 'qwc2/actions/layers';
+import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
 import { changeSelectionState } from 'qwc2/actions/selection';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import TaskBar from 'qwc2/components/TaskBar';
 import Spinner from 'qwc2/components/Spinner';
-import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
@@ -50,6 +49,7 @@ class GwMincut extends React.Component {
         selection: PropTypes.object,
         mincutResult: PropTypes.object,
         dispatchButton: PropTypes.func,
+        changeLayerProperty: PropTypes.func
     }
     static defaultProps = {
         initialWidth: 480,
@@ -145,6 +145,13 @@ class GwMincut extends React.Component {
         }
         return center;
     }
+    setOMLayersVisibility = (visible = true) => {
+        const rootLayer = this.props.layers.find(l => l.type === "wms");
+        const { layer, path } = GwUtils.findLayer(rootLayer, 'Mincut');
+        if (layer) {
+            this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+        }
+    };
     // #endregion
     // #region CLICK
     identifyPoint = (prevProps) => {
@@ -195,7 +202,7 @@ class GwMincut extends React.Component {
                 break;
 
             case "cancel":
-                if (this.props.mincutResult === null){
+                if (this.props.mincutResult === null) {
                     this.cancelMincut();
                 }
                 break;
@@ -240,7 +247,8 @@ class GwMincut extends React.Component {
     onToolClose = () => {
         this.props.removeMarker('mincut');
         this.props.removeLayer("mincutselection");
-        this.setState({ mincutResult: null,
+        this.setState({
+            mincutResult: null,
             pendingRequests: false,
             widgetValues: {},
             mincutId: null,
@@ -249,22 +257,23 @@ class GwMincut extends React.Component {
     }
     onDlgClose = () => {
         // Manage if mincut is not new (don't delete)
-        if (this.props.mincutResult){
+        if (this.props.mincutResult) {
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
             this.onToolClose();
-            if (this.props.dispatchButton){
+            if (this.props.dispatchButton) {
                 this.props.dispatchButton({ "widgetfunction": { "functionName": "mincutClose" } });
             }
         } else {
             this.cancelMincut();
         }
-        
+
     }
     // #endregion
     // #region MINCUT
     setMincut = (clickPoint, updateState = true, action = this.state.action) => {
         this.props.removeLayer("mincutselection");
         let pendingRequests = false;
+        this.setOMLayersVisibility(true);
 
         const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
@@ -298,13 +307,13 @@ class GwMincut extends React.Component {
         console.log(this.state.widgetValues);
         const ignore_widgets = ['chk_use_planified', 'txt_infolog'];
         const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
-                let v = value.columnname === 'mincut_state' ? state : value.value;
-                if (ignore_widgets.includes(value.columnname)) v = null;
-                if (!(v === null || v === undefined)) {
-                    acc[value.columnname] = v;
-                }
-                return acc;
-            }, {});
+            let v = value.columnname === 'mincut_state' ? state : value.value;
+            if (ignore_widgets.includes(value.columnname)) v = null;
+            if (!(v === null || v === undefined)) {
+                acc[value.columnname] = v;
+            }
+            return acc;
+        }, {});
         const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
             const clickPoint = this.props.click.coordinate;
@@ -329,15 +338,15 @@ class GwMincut extends React.Component {
                 const log = result.body?.data?.info?.values;
                 if (log) {
                     const messages = log.sort((a, b) => a.id - b.id) // sort by id
-                                        .map(value => value.message)
-                                        .join("\n");
-                    newState = {...newState, widgetValues: {...this.state.widgetValues, txt_infolog: {...this.state.widgetValues.txt_infolog, value: messages}}};
+                        .map(value => value.message)
+                        .join("\n");
+                    newState = { ...newState, widgetValues: { ...this.state.widgetValues, txt_infolog: { ...this.state.widgetValues.txt_infolog, value: messages } } };
                 }
                 // show message
                 this.props.processFinished("mincut_msg", true, "Mincut guardado correctamente.");
                 // refresh map
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-                if (state !== this.state.mincutState) newState = {...newState, mincutState: state};
+                if (state !== this.state.mincutState) newState = { ...newState, mincutState: state };
                 if (newState) this.setState(newState);
                 if (closeDlg) {
                     this.onToolClose();
@@ -451,5 +460,6 @@ export default connect(selector, {
     refreshLayer: refreshLayer,
     processFinished: processFinished,
     processStarted: processStarted,
-    setCurrentTask: setCurrentTask
+    setCurrentTask: setCurrentTask,
+    changeLayerProperty: changeLayerProperty
 })(GwMincut);
