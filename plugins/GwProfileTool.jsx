@@ -255,7 +255,7 @@ class GwProfileTool extends React.Component {
         if (Math.abs(angle) > 0.5 * Math.PI) {
             angle += Math.PI;
         }
-        const text = MeasureUtils.getFormattedLength(this.props.measurement.lenUnit, length);
+        const text = MeasureUtils.formatMeasurement(length, false, this.props.measurement.lenUnit);
         marker.getStyle().getText().setText(text);
         marker.getStyle().getText().setRotation(angle);
         marker.setGeometry(new ol.geom.Point([0.5 * (p1[0] + p2[0]), 0.5 * (p1[1] + p2[1])]));
