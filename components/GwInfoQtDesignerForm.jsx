@@ -456,7 +456,7 @@ class GwInfoQtDesignerForm extends React.Component {
         if (widget.widget) {
             widget.widget = Array.isArray(widget.widget) ? widget.widget : [widget.widget];
             widget.widget.forEach(child => {
-                child.name = (":widget_" + counters.widget++);
+                child.name = child.name || (":widget_" + counters.widget++);
                 this.reformatWidget(child, fields, externalFields, counters);
             });
         }
