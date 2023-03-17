@@ -22,11 +22,13 @@ import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
 import 'qwc2/components/style/QtDesignerForm.css';
 import 'qwc2-giswater/components/style/GwInfoQtDesignerForm.css';
 import FileSelector from 'qwc2/components/widgets/FileSelector';
+import GwUtils from 'qwc2-giswater/utils/GwUtils'
 
 
 class GwInfoQtDesignerForm extends React.Component {
     static propTypes = {
         form_xml: PropTypes.string,
+        autoResetTab: PropTypes.bool,
         locale: PropTypes.string,
         readOnly: PropTypes.bool,
         updateField: PropTypes.func,
@@ -40,24 +42,27 @@ class GwInfoQtDesignerForm extends React.Component {
         disabledWidgets: PropTypes.array,
         getInitialValues: PropTypes.bool,
         replaceImageUrls: PropTypes.bool,
-        files: PropTypes.array
+        files: PropTypes.array,
+        activetabs: PropTypes.object
     }
     static defaultProps = {
         updateField: (name, value, widget) => { console.log(name, value, widget) },
         dispatchButton: (action) => { console.log(action) },
         onTabChanged: (tab, widget) => { console.log(tab, widget) },
+        autoResetTab: true,
         widgetValues: {},
         disabledWidgets: [],
         getInitialValues: true,
         replaceimageUrls: false,
-        files: []
+        files: [],
+        activetabs: {}
     }
     static defaultState = {
         activetabs: {},
         formData: null,
         loading: false,
         loadingReqId: null,
-        file: null
+        files: null
     }
     constructor(props) {
         super(props);
@@ -71,7 +76,7 @@ class GwInfoQtDesignerForm extends React.Component {
         if (this.props.form_xml !== prevProps.form_xml) {
             this.setState({
                 ...GwInfoQtDesignerForm.defaultState,
-                activetabs: this.props.form_xml === prevProps.form_xml ? this.state.activetabs : {}
+                activetabs: this.props.autoResetTab ? {} : this.state.activetabs
             });
             this.parseForm(this.props.form_xml);
         }
@@ -211,8 +216,7 @@ class GwInfoQtDesignerForm extends React.Component {
             }
 
             return (<GwTableWidget values={values} form={form} dispatchButton={this.props.dispatchButton}/>);
-        }
-        else if (widget.class === "QTableView") {
+        } else if (widget.class === "QTableView") {
             if (isEmpty(this.props.listJson) || !this.props.listJson[widget.name]?.body?.data?.fields) {
                 return null;
             }
@@ -243,8 +247,7 @@ class GwInfoQtDesignerForm extends React.Component {
                     </table>
                 </div>
             );
-        }
-        else if (widget.class === "QLabel") {
+        } else if (widget.class === "QLabel") {
             return (<span style={fontStyle}>{prop.text}</span>);
         } else if (widget.class === "Line") {
             const linetype = (widget.property || {}).orientation === "Qt::Vertical" ? "vline" : "hline";
@@ -268,7 +271,7 @@ class GwInfoQtDesignerForm extends React.Component {
             if (isEmpty(widget.widget)) {
                 return null;
             }
-            const activetab = this.state.activetabs[widget.name] || widget.widget[0].name;
+            const activetab = this.props.activetabs[widget.name] || this.state.activetabs[widget.name] || widget.widget[0].name;
             return (
                 <div>
                     <div className="qt-designer-form-tabbar">
@@ -390,15 +393,14 @@ class GwInfoQtDesignerForm extends React.Component {
             return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{prop.text}</button>)
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
-            const file = this.state.file; // TODO: Change this so its for each widget and maybe outside this component
             const files = this.props.files.map(file => file.name).join(", ");
-            return (<FileSelector accept={accept} file={this.state.file} onFileSelected={this.onFileSelected} multiple={true} showAllFilenames={true} overrideText={files} />);
+            return (<FileSelector accept={accept} file={this.state.files} onFilesSelected={this.onFilesSelected} multiple={true} showAllFilenames={false} />);
         }
         return null;
     }
-    onFileSelected = (file) => {
-        this.props.dispatchButton({ functionName: "upload_file", file: file });
-        this.setState({file});
+    onFilesSelected = (files) => {
+        this.props.dispatchButton({ functionName: "upload_file", file: files });
+        this.setState({files});
     }
     groupOrName = (widget) => {
         return widget.attribute && widget.attribute.buttonGroup ? widget.attribute.buttonGroup._ : widget.name;
