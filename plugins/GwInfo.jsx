@@ -55,7 +55,9 @@ class GwInfo extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        identifyResult: PropTypes.object
+        identifyResult: PropTypes.object,
+        onClose: PropTypes.func,
+        dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string])
     }
     static defaultProps = {
         replaceImageUrls: true,
@@ -63,7 +65,9 @@ class GwInfo extends React.Component {
         initialHeight: 600,
         initialX: 0,
         initialY: 0,
-        identifyResult: null
+        identifyResult: null,
+        initiallyDocked: false,
+        dockable: true
     }
     state = {
         mode: 'Point',
@@ -81,10 +85,19 @@ class GwInfo extends React.Component {
         listJson: {},
         filters: {}
     }
+
+    constructor(props) {
+        super(props);
+        if(props.identifyResult){
+            this.state.identifyResult = props.identifyResult;            
+        }
+        this.resultProcessed = false;
+    }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
             this.clearResults();
         }
+        // Manage map click
         if (this.props.currentTask === "GwInfo" || this.props.currentIdentifyTool === "GwInfo") {
             if (this.state.mode === "Point") {
                 this.identifyPoint(prevProps);
@@ -95,10 +108,15 @@ class GwInfo extends React.Component {
             if (this.state.mode === "Scada"){
                 this.showGraph(prevProps)
             }
+
+        }
+        // Manage highlight and marker from result
+        if(!isEmpty(this.state.identifyResult) && !this.resultProcessed){
+            this.highlightResult(this.state.identifyResult)
+            this.addMarkerToResult(this.state.identifyResult)
         }
         // Check if list need to update (current tab or filters changed)
         if (!isEmpty(this.state.currentTab) && ((prevState.currentTab !== this.state.currentTab) || (prevState.filters !== this.state.filters))) {
-            console.log('this.state.currentTab :>> ', this.state.currentTab);
             this.getList(this.state.currentTab.tab, this.state.currentTab.widget);
         }
     }
@@ -135,9 +153,7 @@ class GwInfo extends React.Component {
                     pendingRequests = true
                     axios.get(request_url + "fromid", { params: params }).then((response) => {
                         const result = response.data
-                        this.setState({ identifyResult: result, pendingRequests: false });
-                        this.highlightResult(result)
-                        this.addMarkerToResult(result)
+                        this.setState({ identifyResult: result, pendingRequests: false });                         
                         this.panToResult(result)
                     }).catch((e) => {
                         console.log(e);
@@ -316,7 +332,6 @@ class GwInfo extends React.Component {
                 const result = response.data
                 console.log("getVisit -> ", result)
                 this.setState({ visitJson: result, showVisit: true, pendingRequests: false, theme: layer.title });
-                // this.highlightResult(result)
             }).catch((e) => {
                 console.log(e);
                 this.setState({ pendingRequests: false });
@@ -357,7 +372,6 @@ class GwInfo extends React.Component {
                     const result = response.data;
                     console.log("identifypointid -> ", result.body.data.info.values.info.dma);
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, theme: layer.title });
-                    //this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
                     this.setState({ pendingRequests: false });
@@ -372,6 +386,9 @@ class GwInfo extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
+            if(this.props.onClose){
+                this.props.onClose();
+            }
             // Remove any search selection layer to avoid confusion
             this.props.removeLayer("searchselection");
             let pendingRequests = false;
@@ -432,6 +449,7 @@ class GwInfo extends React.Component {
             }
             this.props.addLayerFeatures(layer, [feature], true)
         }
+        this.resultProcessed = true;
     }
     panToResult = (result) => {
         // TODO: Maybe we should zoom to the result as well
@@ -500,6 +518,9 @@ class GwInfo extends React.Component {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
         this.setState({ identifyResult: null, pendingRequests: false, showGraph: false, graphJson: null });
+        if(this.props.onClose){
+            this.props.onClose();
+        }
     }
     showPrevResult = () => {
         const result = this.state.prevIdentifyResult
@@ -516,10 +537,9 @@ class GwInfo extends React.Component {
         let graphWindow = null;
         let visitWindow = null;
         let noIdentifyResult = false;
-        const resultIdentify = this.state.identifyResult || this.props.identifyResult;
-        if (this.state.pendingRequests === true || resultIdentify !== null) {
+        if (this.state.pendingRequests === true || this.state.identifyResult  !== null) {
             let body = null;
-            if (isEmpty(resultIdentify)) {
+            if (isEmpty(this.state.identifyResult )) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
                 } else {
@@ -527,7 +547,7 @@ class GwInfo extends React.Component {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
                 }
             } else {
-                const result = resultIdentify;
+                const result = this.state.identifyResult ;
                 const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null;
                 if (result.schema === null) {
                     body = null;
@@ -554,7 +574,7 @@ class GwInfo extends React.Component {
                 }
             }
             resultWindow = (               
-                <ResizeableWindow icon="info-sign"
+                <ResizeableWindow icon="info-sign" dockable={this.props.dockable}
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} scrollable={this.state.mode === "Dma" ? true : false}
                     key="GwInfoWindow"
