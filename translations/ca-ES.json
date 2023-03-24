@@ -23,6 +23,9 @@
     "qtdesignerform": {
       "loading": "Carregant..."
     },
+    "searchbox": {
+      "placeholder": ""
+    },
     "appmenu": {
       "items": {
         "GwTools": "Eines Giswater",

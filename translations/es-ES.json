@@ -23,6 +23,9 @@
     "qtdesignerform": {
       "loading": "Cargando..."
     },
+    "searchbox": {
+      "placeholder": ""
+    },
     "appmenu": {
       "items": {
         "GwTools": "Herramientas Giswater",

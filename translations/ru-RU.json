@@ -23,6 +23,9 @@
     "qtdesignerform": {
       "loading": ""
     },
+    "searchbox": {
+      "placeholder": ""
+    },
     "appmenu": {
       "items": {
         "GwTools": "",

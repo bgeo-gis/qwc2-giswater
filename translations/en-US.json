@@ -23,6 +23,9 @@
     "qtdesignerform": {
       "loading": "Loading..."
     },
+    "searchbox": {
+      "placeholder": ""
+    },
     "appmenu": {
       "items": {
         "GwTools": "Giswater Tools",

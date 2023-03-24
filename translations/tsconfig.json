@@ -41,6 +41,7 @@
     "identify.querying",
     "importlayer.nofeatures",
     "infotool.clickhelpPoint",
-    "qtdesignerform.loading"
+    "qtdesignerform.loading",
+    "searchbox.placeholder"
   ]
 }
