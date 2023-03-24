@@ -54,14 +54,16 @@ class GwInfo extends React.Component {
         map: PropTypes.object,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
-        selection: PropTypes.object
+        selection: PropTypes.object,
+        identifyResult: PropTypes.object
     }
     static defaultProps = {
         replaceImageUrls: true,
         initialWidth: 480,
         initialHeight: 600,
         initialX: 0,
-        initialY: 0
+        initialY: 0,
+        identifyResult: null
     }
     state = {
         mode: 'Point',
@@ -232,8 +234,8 @@ class GwInfo extends React.Component {
                 "widgetname": tableWidgets[0].name,  // tabname_ prefix cal?
                 //"formtype": this.props.formtype,
                 "tableName": prop.linkedobject,
-                "idName": this.state.identifyResult.feature.idName,
-                "id": this.state.identifyResult.feature.id,
+                "idName": this.state.identifyResult.body.feature.idName,
+                "id": this.state.identifyResult.body.feature.id,
                 "filterFields": JSON.stringify(this.state.filters)
                 //"filterSign": action.params.tabName
             }
@@ -399,7 +401,7 @@ class GwInfo extends React.Component {
                 pendingRequests = true
                 axios.get(request_url + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
-                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, theme: layer.title, feature_id: result.feature.id });
+                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, theme: layer.title, feature_id: result.body.feature.id });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
@@ -413,7 +415,7 @@ class GwInfo extends React.Component {
 
     highlightResult = (result) => {
         // console.log('result :>> ', result);
-        if (isEmpty(result) || !result?.feature?.geometry) {
+        if (isEmpty(result) || !result?.body?.feature?.geometry) {
             this.props.removeLayer("identifyslection")
         } else {
             const layer = {
@@ -421,11 +423,11 @@ class GwInfo extends React.Component {
                 role: LayerRole.SELECTION
             };
             const crs = this.props.map.projection
-            console.log("geometry -> ",result.feature.geometry);
+            console.log("geometry -> ",result.body.feature.geometry.st_astext);
             console.log("crs -> ",crs);
-            const geometry = VectorLayerUtils.wktToGeoJSON(result.feature.geometry, crs, crs)
+            const geometry = VectorLayerUtils.wktToGeoJSON(result.body.feature.geometry.st_astext, crs, crs)
             const feature = {
-                id: result.feature.id,
+                id: result.body.feature.id,
                 geometry: geometry.geometry
             }
             this.props.addLayerFeatures(layer, [feature], true)
@@ -434,13 +436,13 @@ class GwInfo extends React.Component {
     panToResult = (result) => {
         // TODO: Maybe we should zoom to the result as well
         if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.feature.geometry)
+            const center = this.getGeometryCenter(result.body.feature.geometry.st_astext)
             this.props.panTo(center, this.props.map.projection)
         }
     }
     addMarkerToResult = (result) => {
         if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.feature.geometry)
+            const center = this.getGeometryCenter(result.body.feature.geometry.st_astext)
             this.props.addMarker('identify', center, '', this.props.map.projection);
         }
     }
@@ -514,9 +516,10 @@ class GwInfo extends React.Component {
         let graphWindow = null;
         let visitWindow = null;
         let noIdentifyResult = false;
-        if (this.state.pendingRequests === true || this.state.identifyResult !== null) {
+        const resultIdentify = this.state.identifyResult || this.props.identifyResult;
+        if (this.state.pendingRequests === true || resultIdentify !== null) {
             let body = null;
-            if (isEmpty(this.state.identifyResult)) {
+            if (isEmpty(resultIdentify)) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
                 } else {
@@ -524,10 +527,8 @@ class GwInfo extends React.Component {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
                 }
             } else {
-                const result = this.state.identifyResult
+                const result = resultIdentify;
                 const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null;
-                //const graphButton = result?.feature?.id === "30" || result?.feature?.id === "31" || result?.feature?.id === "32" || result?.feature?.id === "33" || result?.feature?.id === "34" || result?.feature?.id === "113766" ? (<button className='button' onClick={this.showGraph}>Graph</button>) : null;
-                //const graphButton = ["30", "31", "32", "33", "34", "113766"].includes(result?.feature?.id) ? (<button className='button' onClick={this.showGraph}>Graph</button>) : null;
                 if (result.schema === null) {
                     body = null;
                     this.props.processStarted("info_msg", "GwInfo Error!");
@@ -538,7 +539,6 @@ class GwInfo extends React.Component {
                         <div className="identify-body" role="body">
                             {prevResultButton}
                             <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}
-                                theme={this.state.theme} idName={result.feature.idName} featureId={result.feature.id}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
                                 listJson={this.state.listJson} widgetValues={this.state.filters}
                             />                            
