@@ -7,6 +7,7 @@
 
 import isEmpty from 'lodash.isempty';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
+import ol from 'openlayers';
 
 const GwUtils = {
     getServiceUrl(service) {
@@ -53,6 +54,38 @@ const GwUtils = {
                 this._handleWidget(item.widget, func)
             }
         })
+    },
+
+    getGeometryCenter(geom) {
+        const geometry = new ol.format.WKT().readGeometry(geom);
+        const type = geometry.getType();
+        let center = null;
+        switch (type) {
+            case "Polygon":
+                center = geometry.getInteriorPoint().getCoordinates();
+                break;
+            case "MultiPolygon":
+                center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+                break;
+            case "Point":
+                center = geometry.getCoordinates();
+                break;
+            case "MultiPoint":
+                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+                break;
+            case "LineString":
+                center = geometry.getCoordinateAt(0.5);
+                break;
+            case "MultiLineString":
+                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+                break;
+            case "Circle":
+                center = geometry.getCenter();
+                break;
+            default:
+                break;
+        }
+        return center;
     }
 };
 
