@@ -44,6 +44,7 @@ class GwInfo extends React.Component {
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
+        minHeight: PropTypes.number,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
@@ -60,6 +61,7 @@ class GwInfo extends React.Component {
     }
     static defaultProps = {
         replaceImageUrls: true,
+        minHeight: 500,
         initialWidth: 480,
         initialHeight: 600,
         initialX: 0,
@@ -97,7 +99,7 @@ class GwInfo extends React.Component {
             this.clearResults();
         }
         // Manage map click
-        if (this.props.currentTask === "GwInfo" || this.props.currentIdentifyTool === "GwInfo") {
+        if (this.props.currentTask === "GwInfo" || this.props.currentIdentifyTool === "GwInfo") {            
             if (this.state.mode === "Point") {
                 this.identifyPoint(prevProps);
             }
@@ -254,7 +256,6 @@ class GwInfo extends React.Component {
                 "filterFields": JSON.stringify(this.state.filters)
                 //"filterSign": action.params.tabName
             }
-            console.log("TEST getList, params:", params);
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
@@ -271,6 +272,7 @@ class GwInfo extends React.Component {
     showGraph = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
+            this.resultProcessed = false;
             let pendingRequests = false;
             const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
                 // TODO: If there are some wms external layers this would select more than one layer
@@ -341,6 +343,7 @@ class GwInfo extends React.Component {
     identifyDma = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
+            this.resultProcessed = false;
              // Remove any search selection layer to avoid confusion
              this.props.removeLayer("searchselection");
              let pendingRequests = false;
@@ -385,6 +388,7 @@ class GwInfo extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
+            this.resultProcessed = false;
             if(this.props.onClose){
                 this.props.onClose();
             }
@@ -453,47 +457,17 @@ class GwInfo extends React.Component {
     panToResult = (result) => {
         // TODO: Maybe we should zoom to the result as well
         if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.body.feature.geometry.st_astext)
+            const center = GwUtils.getGeometryCenter(result.body.feature.geometry.st_astext)
             this.props.panTo(center, this.props.map.projection)
         }
     }
     addMarkerToResult = (result) => {
-        if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.body.feature.geometry.st_astext)
+        if (!isEmpty(result) && result?.body?.feature?.geometry ) {            
+            const center = GwUtils.getGeometryCenter(result.body.feature.geometry.st_astext)
             this.props.addMarker('identify', center, '', this.props.map.projection);
         }
     }
-    getGeometryCenter = (geom) => {
-        const geometry = new ol.format.WKT().readGeometry(geom);
-        const type = geometry.getType();
-        let center = null;
-        switch (type) {
-            case "Polygon":
-                center = geometry.getInteriorPoint().getCoordinates();
-                break;
-            case "MultiPolygon":
-                center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "Point":
-                center = geometry.getCoordinates();
-                break;
-            case "MultiPoint":
-                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "LineString":
-                center = geometry.getCoordinateAt(0.5);
-                break;
-            case "MultiLineString":
-                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "Circle":
-                center = geometry.getCenter();
-                break;
-            default:
-                break;
-        }
-        return center;
-    }
+    
     queryPoint = (prevProps) => {
         if (this.props.click.button !== 0 || this.props.click === prevProps.click || (this.props.click.features || []).find(entry => entry.feature === 'startupposmarker')) {
             return null;
@@ -505,6 +479,7 @@ class GwInfo extends React.Component {
         return this.props.click.coordinate;
     }
     onShow = (mode) => {
+        this.clearResults();
         this.setState({mode: mode || 'Point'});
     }
     onToolClose = () => {
@@ -573,7 +548,7 @@ class GwInfo extends React.Component {
                 }
             }
             resultWindow = (               
-                <ResizeableWindow icon="info-sign" dockable={this.props.dockable}
+                <ResizeableWindow icon="info-sign" dockable={this.props.dockable} minHeight={this.props.minHeight}
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} scrollable={this.state.mode === "Dma" ? true : false}
                     key="GwInfoWindow"

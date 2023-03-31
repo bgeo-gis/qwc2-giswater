@@ -91,6 +91,7 @@ class GwSearchBox extends React.Component {
     let pendingSearches = false;
     const request_url = GwUtils.getServiceUrl("search");
     if (!isEmpty(request_url) && !isEmpty(this.state.searchText)) {
+      //TO DO isTiled:True/False
       const filterText = this.state.searchText;
       const filterSearch = '"searchText": { "filterSign":"", "value": "' + filterText + '" } ';
 
@@ -109,7 +110,8 @@ class GwSearchBox extends React.Component {
     }
   }
 
-  setSearch = (display_name, section, filterKey, filterValue, execFunc, tableName) => {    
+  setSearch = (display_name, section, filterKey, filterValue, execFunc, tableName) => {  
+    this.setState({searchText: display_name})  
     const request_url = GwUtils.getServiceUrl("search");
     if (!isEmpty(request_url)) {
       const extras = '"value": "' + display_name + '", "section": "'+ section +'", "filterKey": "'+filterKey+'","filterValue": "'+filterValue+'", "execFunc": "'+execFunc+'", "tableName": "'+tableName+'"';
@@ -127,6 +129,10 @@ class GwSearchBox extends React.Component {
           this.identifyFromId(filterValue, tableName)
           
         }
+        if(section == "basic_search_address"){
+          this.setState({searchText: display_name+", "}) 
+        }
+        this.clearResults()
       }).catch((e) => {
         console.log(e);
       });
@@ -340,6 +346,11 @@ class GwSearchBox extends React.Component {
       this.searchBox.blur();
     }
     this.setState({ searchText: '', searchResults: {} });
+    this.props.removeLayer('searchselection');
+  }
+
+  clearResults = () => {
+    this.setState({ searchResults: {} });
     this.props.removeLayer('searchselection');
   }
 
