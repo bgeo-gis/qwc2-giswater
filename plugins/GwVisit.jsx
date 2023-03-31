@@ -23,7 +23,7 @@ import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwInfoDmaForm from '../components/GwInfoDmaForm';
 import GwUtils from '../utils/GwUtils';
 
@@ -350,7 +350,7 @@ class GwVisit extends React.Component {
                 else {
                     body = (
                         <div className="identify-body" role="body">
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={true}
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={true}
                                 theme={this.state.theme} initiallyDocked={this.props.initiallyDocked}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
                                 widgetValues={this.state.widgetValues} listJson={this.state.listJson} replaceImageUrls={true} files={this.state.files}

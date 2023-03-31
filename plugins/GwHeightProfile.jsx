@@ -22,7 +22,7 @@ import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 
 import CtPointLabels from 'qwc2-giswater/libs/bower_components/chartist-plugin-pointlabels/dist/chartist-plugin-pointlabels';
@@ -711,7 +711,7 @@ class GwHeightProfile extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.widget_values} getInitialValues={false}/>
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.widget_values} getInitialValues={false}/>
                         </div>
                     )
                 }

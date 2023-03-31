@@ -29,11 +29,20 @@
     max-width: 100%;
 }
 
-#mincut-body div.qt-designer-layout-grid {
+.mincut-body div.qt-designer-layout-grid div.qtableview {
+    max-height: 300px;
+    overflow: auto;
+}
+
+.mincut-body textarea {
+    width: 100%!important;
+}
+
+#mincutmanager-body div.qt-designer-layout-grid {
     display: block;
 }
 
-#mincut-body > div.qt-designer-form > div.qt-designer-layout-grid > div {
+#mincutmanager-body > div.qt-designer-form > div.qt-designer-layout-grid > div {
     display: flex;
     align-items: center;
     width: 100%;

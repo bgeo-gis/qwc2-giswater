@@ -375,7 +375,7 @@ class GwMincutManager extends React.Component {
                 else {
                     body = (
                         <div id="mincut-body" role="body">
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false}
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false}
                                 theme={this.props.currentTheme.title}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField}
                                 listJson={this.state.listJson} widgetValues={this.state.widgetValues} getInitialValues={false}

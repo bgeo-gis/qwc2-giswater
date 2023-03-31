@@ -24,7 +24,7 @@ import { panTo } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 
 class GwMincut extends React.Component {
@@ -414,8 +414,8 @@ class GwMincut extends React.Component {
                 else {
                     body = (
                         <div className="mincut-body" role="body">
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false}
-                                theme={this.props.currentTheme.title}
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false}
+                                autoResetTab={false} activetabs={this.state.activetabs}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
                                 listJson={this.state.listJson} widgetValues={this.state.widgetValues} disabledWidgets={this.state.disabledWidgets}
                             />

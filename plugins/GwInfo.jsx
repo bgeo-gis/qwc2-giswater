@@ -23,7 +23,7 @@ import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwInfoDmaForm from '../components/GwInfoDmaForm';
 import GwUtils from '../utils/GwUtils';
 
@@ -557,7 +557,7 @@ class GwInfo extends React.Component {
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
                                 listJson={this.state.listJson} widgetValues={this.state.filters}
                             />                            
@@ -696,7 +696,7 @@ class GwInfo extends React.Component {
             if (this.state.showVisit && !noIdentifyResult && this.state.visitJson !== null) {
                 body = (
                     <div className="visit-body" role="body">
-                        <GwInfoQtDesignerForm form_xml={this.state.visitJson.form_xml} readOnly={false} getInitialValues={true}
+                        <GwQtDesignerForm form_xml={this.state.visitJson.form_xml} readOnly={false} getInitialValues={true}
                             theme={this.state.theme} widgetValues={this.state.visitWidgetValues}
                         />
                     </div>

@@ -18,7 +18,7 @@ import GwUtils from '../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
 
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwQtDesignerForm from '../components/GwQtDesignerForm';
 
 class GwSelector extends React.Component {
     static propTypes = {
@@ -194,7 +194,7 @@ class GwSelector extends React.Component {
                 // console.log(result);
                 body = (
                     <div className="selector-body" role="body">
-                        <GwInfoQtDesignerForm form_xml={result.form_xml} autoResetTab={false} readOnly={false} getInitialValues={false}
+                        <GwQtDesignerForm form_xml={result.form_xml} autoResetTab={false} readOnly={false} getInitialValues={false}
                             dispatchButton={this.dispatchButton} updateField={this.updateField} />
                     </div>
                 )

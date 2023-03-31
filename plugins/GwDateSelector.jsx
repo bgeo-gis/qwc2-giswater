@@ -18,7 +18,7 @@ import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 
 import './style/GwDateSelector.css';
@@ -299,7 +299,7 @@ class GwDateSelector extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
-                            <GwInfoQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.filters} />
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.filters} />
                         </div>
                     )
                 }

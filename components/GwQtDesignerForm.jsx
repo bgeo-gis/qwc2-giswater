@@ -1,9 +1,8 @@
 /**
- * Copyright 2016-2021 Sourcepole AG
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree.
+ * Copyright BGEO. All rights reserved.
+ * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version
  */
 
 import axios from 'axios';
@@ -20,12 +19,13 @@ import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
 import 'qwc2/components/style/QtDesignerForm.css';
-import 'qwc2-giswater/components/style/GwInfoQtDesignerForm.css';
+import 'qwc2-giswater/components/style/GwQtDesignerForm.css';
 import FileSelector from 'qwc2/components/widgets/FileSelector';
 import GwUtils from 'qwc2-giswater/utils/GwUtils'
+import Icon from 'qwc2/components/Icon';
 
 
-class GwInfoQtDesignerForm extends React.Component {
+class GwQtDesignerForm extends React.Component {
     static propTypes = {
         form_xml: PropTypes.string,
         autoResetTab: PropTypes.bool,
@@ -36,9 +36,6 @@ class GwInfoQtDesignerForm extends React.Component {
         onTabChanged: PropTypes.func,
         listJson: PropTypes.object,
         widgetValues: PropTypes.object,
-        theme: PropTypes.string,
-        idName: PropTypes.string,
-        featureId: PropTypes.string,
         disabledWidgets: PropTypes.array,
         getInitialValues: PropTypes.bool,
         replaceImageUrls: PropTypes.bool,
@@ -66,7 +63,7 @@ class GwInfoQtDesignerForm extends React.Component {
     }
     constructor(props) {
         super(props);
-        this.state = GwInfoQtDesignerForm.defaultState;
+        this.state = GwQtDesignerForm.defaultState;
     }
     componentDidMount() {
         this.componentDidUpdate({});
@@ -74,10 +71,11 @@ class GwInfoQtDesignerForm extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         // Query form
         if (this.props.form_xml !== prevProps.form_xml) {
-            this.setState({
-                ...GwInfoQtDesignerForm.defaultState,
-                activetabs: this.props.autoResetTab ? {} : this.state.activetabs
-            });
+            console.log("Form  updated")
+            this.setState((state, props) => ({
+                ...GwQtDesignerForm.defaultState,
+                activetabs: props.autoResetTab ? {} : state.activetabs
+            }));
             this.parseForm(this.props.form_xml);
         }
     }
@@ -109,7 +107,8 @@ class GwInfoQtDesignerForm extends React.Component {
         } else if (layout.class === "QGridLayout" || layout.class === "QFormLayout") {
             containerClass = "qt-designer-layout-grid";
             containerStyle = {
-                gridTemplateColumns: this.computeLayoutColumns(layout.item).join(" ")
+                gridTemplateColumns: this.computeLayoutColumns(layout.item).join(" "),
+                gridTemplateRows: this.computeLayoutRows(layout.item).join(" ")
             };
             itemStyle = item => ({
                 gridArea: (1 + parseInt(item.row, 10)) + "/" + (1 + parseInt(item.column, 10)) + "/ span " + parseInt(item.rowspan || 1, 10) + "/ span " + parseInt(item.colspan || 1, 10)
@@ -136,6 +135,9 @@ class GwInfoQtDesignerForm extends React.Component {
         if (!visible) {
             containerStyle.display = 'none';
         }
+        if (layout.item.find(item => item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical")) {
+            containerStyle.height = '100%';
+        }
         return (
             <div className={containerClass} key={layout.name} style={containerStyle}>
                 {layout.item.sort((a, b) => (sortKey(a) - sortKey(b))).map((item, idx) => {
@@ -144,6 +146,8 @@ class GwInfoQtDesignerForm extends React.Component {
                         child = this.renderWidget(item.widget, updateField, nametransform);
                     } else if (item.layout) {
                         child = this.renderLayout(item.layout, updateField, nametransform);
+                    } else if (item.spacer) {
+                        child = (<div />);
                     } else {
                         return null;
                     }
@@ -158,13 +162,17 @@ class GwInfoQtDesignerForm extends React.Component {
     }
     computeLayoutColumns = (items, useIndex = false) => {
         const columns = [];
-        const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line"];
+        const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line", "QDateTimeEdit", "QDateEdit", "QTimeEdit", "QSpinBox", "QDoubleSpinBox", "QSlider"];
         let index = 0;
         let hasAuto = false;
+        const hasSpacer = items.find(item => (item.spacer && (item.spacer.property || {}).orientation === "Qt::Horizontal"));
         for (const item of items) {
             const col = useIndex ? index : (parseInt(item.column, 10) || 0);
             const colSpan = useIndex ? 1 : (parseInt(item.colspan, 10) || 1);
-            if (item.widget && !fitWidgets.includes(item.widget.class) && colSpan === 1) {
+            if (!hasSpacer && item.widget && !fitWidgets.includes(item.widget.class) && colSpan === 1) {
+                columns[col] = 'auto';
+                hasAuto = true;
+            } else if (item.spacer && (item.spacer.property || {}).orientation === "Qt::Horizontal") {
                 columns[col] = 'auto';
                 hasAuto = true;
             } else {
@@ -178,12 +186,41 @@ class GwInfoQtDesignerForm extends React.Component {
         }
         return columns;
     }
+    computeLayoutRows = (items, useIndex = false) => {
+        const rows = [];
+        const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line", "QDateTimeEdit", "QDateEdit", "QTimeEdit", "QPushButton", "QComboBox", "QLineEdit"];
+        let index = 0;
+        let hasAuto = false;
+        const hasSpacer = items.find(item => (item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical"));
+        for (const item of items) {
+            const row = useIndex ? index : (parseInt(item.row, 10) || 0);
+            const rowSpan = useIndex ? 1 : (parseInt(item.rowspan, 10) || 1);
+            if (!hasSpacer && item.widget && !fitWidgets.includes(item.widget.class) && rowSpan === 1) {
+                rows[row] = 'auto';
+                hasAuto = true;
+            } else if (item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical") {
+                rows[row] = 'auto';
+                hasAuto = true;
+            } else {
+                rows[row] = rows[row] || null; // Placeholder replaced by fit-content below
+            }
+            ++index;
+        }
+        const fit = 'fit-content(' + Math.round(1 / rows.length * 100) + '%)';
+        for (let row = 0; row < rows.length; ++row) {
+            rows[row] = hasAuto ? (rows[row] || fit) : 'auto';
+        }
+        return rows;
+    }
     tabChanged = (tab, widget) => {
         this.setState({ activetabs: { ...this.state.activetabs, [widget.name]: tab.name } });
         this.props.onTabChanged(tab, widget);
     }
     renderWidget = (widget, updateField, nametransform = (name) => name) => {
         const prop = widget.property || {};
+        if (prop.visible === "false") {
+            return null;
+        }
         const attr = widget.attribute || {};
         const inputConstraints = {};
         inputConstraints.readOnly = this.props.readOnly || this.props.disabledWidgets.includes(widget.name) || prop.readOnly === "true" || prop.enabled === "false";
@@ -191,20 +228,31 @@ class GwInfoQtDesignerForm extends React.Component {
         inputConstraints.required = !inputConstraints.readOnly && (prop.required === "true");
         inputConstraints.placeholder = prop.placeholderText || "";
 
-        const fontProps = widget.property.font || {};
+        const fontProps = prop.font || {};
         const fontStyle = {
             fontWeight: fontProps.bold === "true" ? "bold" : "normal",
             fontStyle: fontProps.italic === "true" ? "italic" : "normal",
             textDecoration: [fontProps.underline === "true" ? "underline" : "", fontProps.strikeout === "true" ? "line-through" : ""].join(" "),
-            fontSize: Math.round((fontProps.pointsize || 9) / 9 * 100) + "%"
+            fontSize: Math.round((fontProps.pointsize || 9) / 9 * 100) + "%",
+            textAlign: 'left'
         };
+        if (prop.alignment) {
+            if (prop.alignment.includes("Qt::AlignRight")) {
+                fontStyle.textAlign = 'right';
+            } else if (prop.alignment.includes("Qt::AlignCenter")) {
+                fontStyle.textAlign = 'center';
+            }
+        }
 
         const elname = nametransform(widget.name);
         const widgetFunction = prop.widgetfunction || "{}";
-        const widgetControls = prop.widgetcontrols || "{}";
+        const widgetControls = JSON.parse(prop.widgetcontrols || "{}");
         if (this.props.widgetValues[widget.name.replace("lbl_", "")]?.visible === false) {
             return null;
         }
+
+        const value = this.getWidgetValue(widget)
+
         if (widget.class === "QTableWidget") {
             if (isEmpty(this.props.listJson) || !this.props.listJson[widget.name]?.body?.data?.fields) {
                 return null;
@@ -224,8 +272,9 @@ class GwInfoQtDesignerForm extends React.Component {
             if (!values) {
                 return (<span>No results found</span>)
             }
+            console.log(values)
             return (
-                <div>
+                <div className="qtableview">
                     <table className="qtableview">
                         <tbody>
                         {values.map((value, i) => (
@@ -248,19 +297,21 @@ class GwInfoQtDesignerForm extends React.Component {
                 </div>
             );
         } else if (widget.class === "QLabel") {
-            return (<span style={fontStyle}>{prop.text}</span>);
+            return (<div style={fontStyle}>{prop.text}</div>);
         } else if (widget.class === "Line") {
             const linetype = (widget.property || {}).orientation === "Qt::Vertical" ? "vline" : "hline";
             return (<div className={"qt-designer-form-" + linetype} />);
         } else if (widget.class === "QFrame") {
             return (
-                <div className="qt-designer-form-frame">
-                    {this.renderLayout(widget.layout, updateField, nametransform)}
+                <div className="qt-designer-form-container">
+                    <div className="qt-designer-form-frame">
+                        {this.renderLayout(widget.layout, feature, dataset, updateField, nametransform)}
+                    </div>
                 </div>
             );
         } else if (widget.class === "QGroupBox") {
             return (
-                <div>
+                <div className="qt-designer-form-container">
                     <div className="qt-designer-form-frame-title" style={fontStyle}>{prop.title}</div>
                     <div className="qt-designer-form-frame">
                         {this.renderLayout(widget.layout, updateField, nametransform)}
@@ -273,7 +324,7 @@ class GwInfoQtDesignerForm extends React.Component {
             }
             const activetab = this.props.activetabs[widget.name] || this.state.activetabs[widget.name] || widget.widget[0].name;
             return (
-                <div>
+                <div className="qt-designer-form-container">
                     <div className="qt-designer-form-tabbar">
                         {widget.widget.map(tab => (
                             <span
@@ -293,22 +344,11 @@ class GwInfoQtDesignerForm extends React.Component {
                 </div>
             );
         } else if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit") {
-            const value = (this.props.widgetValues[widget.name]?.value || prop.text);
-            // Call updateFields to get the initial widget value
-            if ((this.props.getInitialValues && !this.props.widgetValues[widget.name])) updateField(widget, value);
             return (<textarea name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value} />);
         } else if (widget.class === "QLineEdit") {
-            const value = (this.props.widgetValues[widget.name]?.value || prop.text);
-            // Call updateFields to get the initial widget value
-            if (this.props.getInitialValues && !this.props.widgetValues[widget.name]) updateField(widget, value);
             return (<input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} type="text" value={value} />);
         } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const type = widget.class === "QCheckBox" ? "checkbox" : "radio";
-            const inGroup = attr.buttonGroup;
-            const checked_ = (this.props.widgetValues[widget.name]?.value || prop.checked);
-            const checked = checked_ === true || checked_ === "true" || checked_ === "True";
-            // Call updateFields to get the initial widget value
-            if (this.props.getInitialValues && !this.props.widgetValues[widget.name]) updateField(widget, checked);
             let action;
             try {
                 action = JSON.parse(prop.action);
@@ -317,7 +357,7 @@ class GwInfoQtDesignerForm extends React.Component {
             }
             return (
                 <label style={fontStyle}>
-                    <input checked={checked} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.checked, action)} {...inputConstraints} type={type} value={widget.name} />
+                    <input checked={value} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.checked, action)} {...inputConstraints} type={type} value={widget.name} />
                     {prop.text}
                 </label>
             );
@@ -327,10 +367,6 @@ class GwInfoQtDesignerForm extends React.Component {
                 items = [widget.item];
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
-            const optObj = items.find(obj => obj.property.text === prop.value);
-            const value = (this.props.widgetValues[widget.name]?.value || optObj.property.value || optObj.property.text);
-            // Call updateFields to get the initial widget value
-            if (this.props.getInitialValues && !this.props.widgetValues[widget.name]) updateField(widget, value);
             return (
                 <select disabled={inputConstraints.readOnly} name={elname} onChange={ev => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value}>
                     {!haveEmpty ? (
@@ -351,46 +387,59 @@ class GwInfoQtDesignerForm extends React.Component {
             const max = prop.maximum ?? undefined;
             const step = prop.singleStep ?? 1;
             const type = (widget.class === "QSlider" ? "range" : "number");
-            const value = (this.props.widgetValues[widget.name]?.value || prop.value);
-            // Call updateFields to get the initial widget value
-            if (this.props.getInitialValues && !this.props.widgetValues[widget.name]) updateField(widget, value);
             return (
                 <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} type={type} value={value} />
             );
         } else if (widget.class === "QDateEdit") {
             const min = prop.minimumDate ? this.dateConstraint(prop.minimumDate) : "1900-01-01";
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
-            const value = (this.props.widgetValues[widget.name]?.value || prop.value);
-            // Call updateFields to get the initial widget value
-            if (this.props.getInitialValues && !this.props.widgetValues[widget.name]) updateField(widget, value);
             return (
                 <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="date" value={value} />
             );
         } else if (widget.class === "QTimeEdit") {
-            const value = (this.props.widgetValues[widget.name]?.value || prop.value);
-            // Call updateFields to get the initial widget value
-            if (this.props.getInitialValues && !this.props.widgetValues[widget.name]) updateField(widget, value);
             return (
                 <input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="time" value={value} />
             );
         } else if (widget.class === "QDateTimeEdit") {
+
+            // We need to send this format EVERYWHERE
+            // Storage (xml or widgetVars) 
+            //    data if time is none
+            //    {data}T{time} if time is NOT none
+
             const min = prop.minimumDate ? this.dateConstraint(prop.minimumDate) : "1900-01-01";
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
-            const parts = ((this.props.widgetValues[widget.name]?.value || prop.value) || "T").split("T");
-            parts[1] = (parts[1] || "").replace(/\.\d+$/, ''); // Strip milliseconds
-            // Call updateFields to get the initial widget value
-            if (this.props.getInitialValues && !this.props.widgetValues[widget.name]) updateField(widget, parts[0] || parts[1] ? parts[0] + "T" + parts[1] : "");
+            const parts = (value || "").split("T");
             return (
                 <span className="qt-designer-form-datetime">
-                    <input max={max[0]} min={min[0]} onChange={(ev) => updateField(widget, (ev.target.value ? ev.target.value + (parts[1] ? ("T" + parts[1]) : "") : "").replace(/^T/, ""))} readOnly={inputConstraints.readOnly} required={inputConstraints.required} style={fontStyle} type="date" value={parts[0]} />
-                    <input disabled={!parts[0]} onChange={(ev) => updateField(widget, (parts[0] + "T" + ev.target.value).replace(/^T/, ""))} {...inputConstraints} style={fontStyle} type="time" value={parts[1]} />
+                    <input 
+                        max={max[0]} 
+                        min={min[0]} 
+                        onChange={(ev) => updateField(widget, ev.target.value ? ev.target.value + (parts[1] ? ("T" + parts[1]) : "") : "")} 
+                        readOnly={inputConstraints.readOnly} 
+                        required={inputConstraints.required} 
+                        style={fontStyle} 
+                        type="date" 
+                        value={parts[0]} 
+                    />
+                    <input 
+                        disabled={!parts[0]} 
+                        onChange={(ev) => updateField(widget, parts[0] + (ev.target.value ? "T" + ev.target.value : ""))} 
+                        {...inputConstraints} style={fontStyle} 
+                        type="time" 
+                        value={parts[1] || ""} 
+                    />
                     <input name={elname} type="hidden" value={prop.value} />
                 </span>
             );
         } else if (widget.class === "QWidget") {
             return this.renderLayout(widget.layout, updateField, nametransform);
         } else if (widget.class === "QPushButton") {
-            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{prop.text}</button>)
+            let text = prop.text;
+            if (widgetControls.icon) {
+                text = (<Icon icon={widgetControls.icon} />)
+            }
+            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{text}</button>)
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             const files = this.props.files.map(file => file.name).join(", ");
@@ -398,6 +447,59 @@ class GwInfoQtDesignerForm extends React.Component {
         }
         return null;
     }
+    getWidgetValue = (widget) => {
+        const prop = widget.property || {};
+
+        if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit" || widget.class === "QLineEdit") {
+            return (this.props.widgetValues[widget.name]?.value || prop.text);
+        } 
+        else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
+            const checked = (this.props.widgetValues[widget.name]?.value || prop.checked);
+            return checked === true || checked === "true" || checked === "True";
+        } 
+        else if (widget.class === "QComboBox") {
+            // console.log(widget)
+            let items = widget.item;
+            if (!Array.isArray(widget.item)) {
+                items = [widget.item];
+            }
+
+            const optObj = items.find(obj => obj.property.value === prop.value);
+            return (this.props.widgetValues[widget.name]?.value || optObj.property.value);
+
+            // Commented out because the updateField called when it updates only uses the value, not the text
+            // let option_value = null
+            // if (prop.textIsValue === "true") {
+            //     const optObj = items.find(obj => obj.property.text === prop.value);
+            //     option_value = optObj.property.text
+            // }
+            // else {
+            //     const optObj = items.find(obj => obj.property.value === prop.value);
+            //     option_value = optObj.property.value
+            // }
+            // return (this.props.widgetValues[widget.name]?.value || option_value);
+        } 
+        else if (
+            widget.class === "QSpinBox" || 
+            widget.class === "QDoubleSpinBox" || 
+            widget.class === "QSlider" || 
+            widget.class === "QDateEdit" || 
+            widget.class === "QTimeEdit"
+        ) {
+            return (this.props.widgetValues[widget.name]?.value || prop.value);
+        } 
+        else if (widget.class === "QDateTimeEdit") { // Removes milliseconds from the value
+            const value = (this.props.widgetValues[widget.name]?.value || prop.value);
+            
+            const parts = (value || "T").split("T");
+            parts[1] = (parts[1] || "").replace(/\.\d+$/, ''); // Strip milliseconds
+
+            return parts[1] ? parts[0] + "T" + parts[1] : parts[0]
+        }
+
+        return null
+    }
+
     onFilesSelected = (files) => {
         this.props.dispatchButton({ functionName: "upload_file", file: files });
         this.setState({files});
@@ -415,7 +517,7 @@ class GwInfoQtDesignerForm extends React.Component {
         };
         const loadingReqId = uuidv1();
         this.setState({ loading: true, loadingReqId: loadingReqId });
-        xml2js.parseString(data, options, (err, json) => {
+        xml2js.parseString(data.replace(/&/g, '&amp;'), options, (err, json) => {
             if (err !== null) {
                 console.warn(err);
             }
@@ -428,7 +530,11 @@ class GwInfoQtDesignerForm extends React.Component {
             this.reformatWidget(json.ui.widget, fields, externalFields, counters);
             json.externalFields = externalFields;
             json.fields = fields;
+
+            // const activetabs = this.filterActiveTabs(json, this.state.activetabs)
+
             this.setState({ formData: json, loading: false, loadingReqId: null });
+            // this.setState({ formData: json, loading: false, loadingReqId: null, activetabs: activetabs });
         });
     }
     reformatWidget = (widget, fields, externalFields, counters) => {
@@ -452,6 +558,12 @@ class GwInfoQtDesignerForm extends React.Component {
 
         widget.name = widget.name || (":widget_" + counters.widget++);
 
+        if (this.props.getInitialValues) {
+            const value = this.getWidgetValue(widget)
+            if (value !== null)
+                this.props.updateField(widget, value)
+        }
+
         if (widget.layout) {
             this.reformatLayout(widget.layout, fields, externalFields, counters);
         }
@@ -471,10 +583,32 @@ class GwInfoQtDesignerForm extends React.Component {
                 return;
             } else if (item.widget) {
                 this.reformatWidget(item.widget, fields, externalFields, counters);
+            } else if (item.spacer) {
+                item.spacer.property = MiscUtils.ensureArray(item.spacer.property).reduce((res, prop) => {
+                    return ({...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")]});
+                }, {});
             } else if (item.layout) {
                 this.reformatLayout(item.layout, fields, externalFields, counters);
             }
         });
+    }
+    filterActiveTabs = (formJson, oldActiveTabs) => {
+        let tabs = []
+        GwUtils.forEachWidgetInForm(formJson, widget => {
+            if (widget.class == "QTabWidget")
+                tabs.push(widget)
+        })
+
+        const activetabsArr = Object.entries(oldActiveTabs)
+        const newTabsArr = activetabsArr.filter(([widget, activetab]) => {
+            const tabWidget = tabs.find(tabWidget => tabWidget.name == widget)
+            if (tabWidget) // if the tab widget exists
+                if (tabWidget.widget.find(tab => tab.name == activetab)) // if the tab widget has the active tab
+                    return true
+            return false
+        })
+        const activetabs = Object.fromEntries(newTabsArr)
+        return activetabs
     }
     buildErrMsg = (record) => {
         let message = record.error;
@@ -496,4 +630,4 @@ class GwInfoQtDesignerForm extends React.Component {
 export default connect((state) => ({
     locale: state.locale.current
 }), {
-})(GwInfoQtDesignerForm);
+})(GwQtDesignerForm);
