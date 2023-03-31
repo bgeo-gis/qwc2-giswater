@@ -20,6 +20,11 @@
     "infotool": {
       "clickhelpPoint": ""
     },
+    "mincut": {
+      "clickhelpChangeValveStatus": "",
+      "clickhelpNetwork": "",
+      "clickhelpValveUnaccess": ""
+    },
     "qtdesignerform": {
       "loading": ""
     },

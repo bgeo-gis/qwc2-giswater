@@ -41,6 +41,9 @@
     "identify.querying",
     "importlayer.nofeatures",
     "infotool.clickhelpPoint",
+    "mincut.clickhelpChangeValveStatus",
+    "mincut.clickhelpNetwork",
+    "mincut.clickhelpValveUnaccess",
     "qtdesignerform.loading",
     "searchbox.placeholder"
   ]

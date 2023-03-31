@@ -20,6 +20,11 @@
     "infotool": {
       "clickhelpPoint": "Haga click en una ubicación para identificar en el mapa..."
     },
+    "mincut": {
+      "clickhelpChangeValveStatus": "Haga click en una o mas valvulas para abrirlas o cerrarlas al refrescar el Mincut",
+      "clickhelpNetwork": "Haga click en un arco para hacer un Mincut",
+      "clickhelpValveUnaccess": "Haga click en una valvula para hacerla inoperativa"
+    },
     "qtdesignerform": {
       "loading": "Cargando..."
     },
