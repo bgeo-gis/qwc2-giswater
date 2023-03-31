@@ -23,7 +23,7 @@ import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 
-import GwInfoQtDesignerForm from '../components/GwInfoQtDesignerForm';
+import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 import GwMincut from './GwMincut';
 import GwSelector from './GwSelector';
@@ -153,7 +153,7 @@ class GwMincutManager extends React.Component {
             var widgets = mincutManagerResult.body.data.fields;
             var tableWidgets = [];
             widgets.forEach(widget => {
-                if (widget.widgettype === "tableview"){
+                if (widget.widgettype === "tablewidget"){
                     tableWidgets.push(widget);
                 }
             })
@@ -374,7 +374,7 @@ class GwMincutManager extends React.Component {
                 }
                 else {
                     body = (
-                        <div id="mincut-body" role="body">
+                        <div id="mincutmanager-body" role="body">
                             <GwQtDesignerForm form_xml={result.form_xml} readOnly={false}
                                 theme={this.props.currentTheme.title}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField}
@@ -399,12 +399,12 @@ class GwMincutManager extends React.Component {
 
         if (this.state.mincutResult){
             bodyMincut = (
-                <GwMincut mincutResult={this.state.mincutResult} dispatchButton={this.dispatchButton}/>
+                <GwMincut mincutResult={this.state.mincutResult} dispatchButton={this.dispatchButton} key="MincutFromManager"/>
             )
         }
         if (this.state.selectorResult){
             bodySelector = (
-                <GwSelector selectorResult={this.state.selectorResult} dispatchButton={this.dispatchButton}/>
+                <GwSelector selectorResult={this.state.selectorResult} dispatchButton={this.dispatchButton} key="SelectorFromManager"/>
             )
         }
 
