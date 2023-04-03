@@ -213,7 +213,7 @@ class GwQtDesignerForm extends React.Component {
         return rows;
     }
     tabChanged = (tab, widget) => {
-        this.setState({ activetabs: { ...this.state.activetabs, [widget.name]: tab.name } });
+        this.setState((prevState, props) => ({ activetabs: { ...prevState.activetabs, [widget.name]: tab.name } }));
         this.props.onTabChanged(tab, widget);
     }
     renderWidget = (widget, updateField, nametransform = (name) => name) => {
