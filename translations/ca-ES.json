@@ -44,7 +44,9 @@
         "GwMincutNetwork": "Polígon de tall",
         "GwMincutManager": "Gestor de polígons de tall",
         "GwVisitVisit": "Nova Visita",
-        "GwVisitIncidencia": "Nova Incidencia"
+        "GwVisitIncidencia": "Nova Incidencia",
+        "GwVisitManager": "Gestor de Visites",
+        "GwToolbox": "Caixa d'eines"
       }
     },
     "colorschemes": {

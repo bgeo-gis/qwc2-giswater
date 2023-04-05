@@ -44,7 +44,9 @@
         "GwMincutNetwork": "Polígono de corte",
         "GwMincutManager": "Gestor de polígonos de corte",
         "GwVisitVisit": "Nueva Visita",
-        "GwVisitIncidencia": "Nueva Incidencia"
+        "GwVisitIncidencia": "Nueva Incidencia",
+        "GwVisitManager": "Gestor de Visitas",
+        "GwToolbox": "Caja de herramientas"
       }
     },
     "colorschemes": {

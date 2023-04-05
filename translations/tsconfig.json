@@ -29,6 +29,8 @@
     "appmenu.items.GwMincutManager",
     "appmenu.items.GwVisitVisit",
     "appmenu.items.GwVisitIncidencia",
+    "appmenu.items.GwVisitManager",
+    "appmenu.items.GwToolbox",
     "colorschemes.giswater"
   ],
   "strings": [

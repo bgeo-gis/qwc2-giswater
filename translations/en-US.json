@@ -44,7 +44,9 @@
         "GwMincutNetwork": "Mincut",
         "GwMincutManager": "Mincut Manager",
         "GwVisitVisit": "New Visit",
-        "GwVisitIncidencia": "New Incidence"
+        "GwVisitIncidencia": "New Incidence",
+        "GwVisitManager": "Visit Manager",
+        "GwToolbox": "Toolbox"
       }
     },
     "colorschemes": {
