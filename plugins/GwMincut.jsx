@@ -53,7 +53,7 @@ class GwMincut extends React.Component {
     }
     static defaultProps = {
         initialWidth: 480,
-        initialHeight: 420,
+        initialHeight: 550,
         initialX: 0,
         initialY: 0,
         initiallyDocked: true,
@@ -196,76 +196,15 @@ class GwMincut extends React.Component {
     }
     addMincutLayers = (result) => {
 
-        this.props.removeLayer("temp_points.geojson")
-        this.props.removeLayer("temp_lines.geojson")
-        this.props.removeLayer("temp_polygons.geojson")
-
-        // Init
-        let init_point = result.body.data.init;
-        let init_point_style = {
-            strokeColor: [45, 84, 255, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [191, 156, 40, 0.33],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
-        }
-        const init_point_features = GwUtils.getGeoJSONFeatures(init_point, "default", init_point_style)
-        // Valve
-        let valve = result.body.data.valve;
-        let valve_style = {
-            strokeColor: [232, 113, 141, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [191, 156, 40, 0.33],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
-        }
-        const valve_features = GwUtils.getGeoJSONFeatures(valve, "default", valve_style)
-        // Node
-        let node = result.body.data.node;
-        let node_style = {
-            strokeColor: [241, 209, 66, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [191, 156, 40, 0.33],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
-        }
-        const node_features = GwUtils.getGeoJSONFeatures(node, "default", node_style)
-        // Connec
-        let connec = result.body.data.connec;
-        let connec_style = {
-            strokeColor: [176, 123, 103, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [191, 156, 40, 0.33],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
-        }
-        const connec_features = GwUtils.getGeoJSONFeatures(connec, "default", connec_style)
-
-        const point_features = [].concat(init_point_features, valve_features, node_features, connec_features);
-        if (!isEmpty(point_features)) {
-            this.props.addLayerFeatures({
-                id: "temp_points.geojson",
-                name: "temp_points.geojson",
-                title: "Temporal Points",
-                zoomToExtent: true
-            }, point_features, true);
-        }
+        this.removeTempLayers()
 
         // Arc
         let arc = result.body.data.arc;
         let arc_style = {
-            strokeColor: [255, 206, 128, 1],
+            strokeColor: [232, 179, 93, 0.9],
             strokeWidth: 6,
             strokeDash: [1],
-            fillColor: [255, 255, 255, 0.33],
+            fillColor: [232, 179, 93, 0.66],
             textFill: "blue",
             textStroke: "white",
             textFont: '20pt sans-serif'
@@ -281,6 +220,83 @@ class GwMincut extends React.Component {
                 zoomToExtent: true
             }, line_features, true);
         }
+
+        // Init
+        let init_point = result.body.data.init;
+        let init_point_style = {
+            strokeColor: [45, 84, 255, 1],
+            strokeWidth: 2,
+            strokeDash: [4],
+            fillColor: [45, 84, 255, 0.66],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        const init_point_features = GwUtils.getGeoJSONFeatures(init_point, "default", init_point_style)
+        // Node
+        let node = result.body.data.node;
+        let node_style = {
+            strokeColor: [241, 209, 66, 1],
+            strokeWidth: 2,
+            circleRadius: 5,
+            strokeDash: [4],
+            fillColor: [241, 209, 66, 1],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        const node_features = GwUtils.getGeoJSONFeatures(node, "default", node_style)
+        // Connec
+        let connec = result.body.data.connec;
+        let connec_style = {
+            strokeColor: [176, 123, 103, 1],
+            strokeWidth: 2,
+            strokeDash: [4],
+            fillColor: [76, 123, 103, 0.66],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        const connec_features = GwUtils.getGeoJSONFeatures(connec, "default", connec_style)
+        // Valve proposed
+        let valve_proposed = result.body.data.valveClose;
+        let valve_proposed_style = {
+            strokeColor: [232, 113, 141, 1],
+            strokeWidth: 2,
+            strokeDash: [4],
+            fillColor: [232, 113, 141, 0.9],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        const valve_proposed_features = GwUtils.getGeoJSONFeatures(valve_proposed, "default", valve_proposed_style)
+        // Valve not proposed
+        let valve_not_proposed = result.body.data.valveNot;
+        let valve_not_proposed_style = {
+            strokeColor: [51, 160, 44, 1],
+            strokeWidth: 2,
+            strokeDash: [4],
+            fillColor: [51, 160, 44, 0.9],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        const valve_not_proposed_features = GwUtils.getGeoJSONFeatures(valve_not_proposed, "default", valve_not_proposed_style)
+
+        const point_features = [].concat(node_features, connec_features, init_point_features, valve_proposed_features, valve_not_proposed_features);
+        if (!isEmpty(point_features)) {
+            this.props.addLayerFeatures({
+                id: "temp_points.geojson",
+                name: "temp_points.geojson",
+                title: "Temporal Points",
+                zoomToExtent: true
+            }, point_features, true);
+        }
+    }
+    removeTempLayers = () => {
+        this.props.removeLayer("temp_points.geojson");
+        this.props.removeLayer("temp_lines.geojson");
+        this.props.removeLayer("temp_polygons.geojson");
     }
     // #endregion
     // #region CLICK
@@ -572,10 +588,12 @@ class GwMincut extends React.Component {
                 this.props.processFinished("mincut_msg", true, "Mincut cancelado correctamente.");
                 // refresh map
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                this.removeTempLayers();
                 this.onToolClose();
             }).catch((e) => {
                 console.log(e);
                 this.props.processFinished("mincut_msg", false, "No se ha podido cancelar el mincut...");
+                this.removeTempLayers();
                 this.onToolClose();
                 this.props.setCurrentTask(null);
             });
