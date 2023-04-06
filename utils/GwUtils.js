@@ -7,6 +7,7 @@
 
 import isEmpty from 'lodash.isempty';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
+import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import ol from 'openlayers';
 
 const GwUtils = {
@@ -55,7 +56,47 @@ const GwUtils = {
             }
         })
     },
-
+    getGeoJSONFeatures(data, styleName=null, styleOptions=null) {
+        let defaultCrs = "EPSG:25831";
+        let defaultStyleName = 'default'
+        let defaultStyleOptions = {
+            strokeColor: [255, 0, 0, 1],
+            strokeWidth: 4,
+            strokeDash: [4],
+            fillColor: [255, 255, 255, 0.33],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: '20pt sans-serif'
+        }
+        if (!styleName) {
+            styleName = defaultStyleName;
+        }
+        if (!styleOptions) {
+            styleOptions = defaultStyleOptions;
+        }
+        if (data.crs && data.crs.properties && data.crs.properties.name) {
+            // Extract CRS from FeatureCollection crs
+            defaultCrs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
+        }
+        const features = data.features.map(feature => {
+            let crs = defaultCrs;
+            if (feature.crs && feature.crs.properties && feature.crs.properties.name) {
+                crs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
+            } else if (typeof feature.crs === "string") {
+                crs = feature.crs;
+            }
+            if (feature.geometry && feature.geometry.coordinates) {
+                feature.geometry.coordinates = feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d);
+            }
+            
+            return { ...feature, 
+                crs: crs, 
+                styleName: styleName,
+                styleOptions: styleOptions
+            };
+        });
+        return features
+    },
     getGeometryCenter(geom) {
         const geometry = new ol.format.WKT().readGeometry(geom);
         const type = geometry.getType();

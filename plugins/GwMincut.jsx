@@ -194,9 +194,21 @@ class GwMincut extends React.Component {
             console.warn(error);
         }
     }
+    manageLayers = (result) => {
+        if (result?.tiled) {
+            this.addMincutLayers(result);
+        }
+        else {
+            this.setOMLayersVisibility(true);
+        }
+    }
     addMincutLayers = (result) => {
 
-        this.removeTempLayers()
+        if (!result?.body?.data?.arc) {
+            return;
+        }
+
+        this.removeTempLayers();
 
         // Arc
         let arc = result.body.data.arc;
@@ -261,10 +273,10 @@ class GwMincut extends React.Component {
         // Valve proposed
         let valve_proposed = result.body.data.valveClose;
         let valve_proposed_style = {
-            strokeColor: [232, 113, 141, 1],
+            strokeColor: [237, 55, 58, 1],
             strokeWidth: 2,
             strokeDash: [4],
-            fillColor: [232, 113, 141, 0.9],
+            fillColor: [237, 55, 58, 0.9],
             textFill: "blue",
             textStroke: "white",
             textFont: '20pt sans-serif'
@@ -453,7 +465,6 @@ class GwMincut extends React.Component {
     setMincut = (clickPoint, updateState = true, action = this.state.action) => {
         this.props.removeLayer("mincutselection");
         let pendingRequests = false;
-        this.setOMLayersVisibility(true);
         if (action === 'mincutValveUnaccess') updateState = false;
 
         const request_url = GwUtils.getServiceUrl("mincut");
@@ -474,12 +485,12 @@ class GwMincut extends React.Component {
             pendingRequests = true;
             axios.get(request_url + "setmincut", { params: params }).then(response => {
                 const result = response.data;
+                this.manageLayers(result);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 let newState = { mincutResult: result, mincutId: result?.body?.data?.mincutId || mincutId, prevMincutResult: null, pendingRequests: false, clickEnabled: false };
                 if (action === 'mincutNetwork') newState.ogClickPoint = clickPoint;
                 if (updateState) this.setState(newState);
                 if (action === 'mincutValveUnaccess') this.setState({ clickEnabled: false })
-                this.addMincutLayers(result);
             }).catch((e) => {
                 console.log(e);
                 if (updateState) this.setState({ pendingRequests: false });
@@ -491,7 +502,6 @@ class GwMincut extends React.Component {
     changeValveStatus = (clickPoint) => {
         this.props.removeLayer("mincutselection");
         let pendingRequests = false;
-        this.setOMLayersVisibility(true);
 
         const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
@@ -510,6 +520,7 @@ class GwMincut extends React.Component {
             pendingRequests = true;
             axios.get(request_url + "changevalvestatus", { params: params }).then(response => {
                 const result = response.data;
+                this.manageLayers(result);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 // this.setState({ action: 'mincutNetwork' });
             }).catch((e) => {
