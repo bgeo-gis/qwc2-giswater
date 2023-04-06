@@ -54,15 +54,19 @@ class GwVisit extends React.Component {
         theme: PropTypes.object,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
-        selection: PropTypes.object
+        selection: PropTypes.object,
+        dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string])
     }
     static defaultProps = {
         replaceImageUrls: true,
         initialWidth: 480,
-        initialHeight: 600,
+        initialHeight: 575,
         initialX: 0,
         initialY: 0,
-        initiallyDocked: false
+        initiallyDocked: false,
+        visitResult: null,
+        dockable: true
+        
     }
     state = {
         visitResult: null,
@@ -83,6 +87,12 @@ class GwVisit extends React.Component {
         listJson: {},
         filters: {},
         files: []
+    }
+    constructor(props) {
+        super(props);
+        if(props.visitResult){
+            this.state.visitResult = props.visitResult;            
+        }
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwVisit") {
@@ -361,7 +371,7 @@ class GwVisit extends React.Component {
             }
             let title = this.state.visitResult.body?.data?.form?.headerText || "Visit";
             resultWindow = (
-                <ResizeableWindow icon="info-sign"
+                <ResizeableWindow icon="info-sign" dockable={this.props.dockable}
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} scrollable={this.state.mode === "Dma" ? true : false}
                     key="GwInfoWindow"
