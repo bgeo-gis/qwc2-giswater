@@ -208,6 +208,11 @@ class GwFlowtrace extends React.Component {
         this.setState({ identifyResult: {}, pendingRequests: pendingRequests });
     }
     addFlowtraceLayers = (result) => {
+
+        this.props.removeLayer("temp_points.geojson")
+        this.props.removeLayer("temp_lines.geojson")
+        this.props.removeLayer("temp_polygons.geojson")
+
         // Lines
         let line = result.body.data.line;
         let lines_style = {
@@ -219,7 +224,15 @@ class GwFlowtrace extends React.Component {
             textStroke: "white",
             textFont: '20pt sans-serif'
         }
-        this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_lines.geojson", line, 'default', lines_style);
+        const line_features = GwUtils.getGeoJSONFeatures(line, "default", lines_style)
+        if (!isEmpty(line_features)) {
+            this.props.addLayerFeatures({
+                id: "temp_lines.geojson",
+                name: "temp_lines.geojson",
+                title: "Temporal Lines",
+                zoomToExtent: true
+            }, line_features, true);
+        }
 
         // Points
         let point = result.body.data.point;
@@ -232,62 +245,14 @@ class GwFlowtrace extends React.Component {
             textStroke: "white",
             textFont: '20pt sans-serif'
         }
-        this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_points.geojson", point, 'default', points_style);
-    }
-    addGeoJSONLayer = (filename, data, styleName=undefined, styleOptions=undefined) => {
-        if (!isEmpty(data.features)) {
-            let defaultCrs = "EPSG:25831";
-            let defaultStyleName = 'default'
-            let defaultStyleOptions = {
-                strokeColor: [255, 0, 0, 1],
-                strokeWidth: 4,
-                strokeDash: [4],
-                fillColor: [255, 255, 255, 0.33],
-                textFill: "blue",
-                textStroke: "white",
-                textFont: '20pt sans-serif'
-            }
-            if (styleName) {
-                defaultStyleName = styleName;
-            }
-            if (styleOptions) {
-                defaultStyleOptions = styleOptions;
-            }
-            if (data.crs && data.crs.properties && data.crs.properties.name) {
-                // Extract CRS from FeatureCollection crs
-                defaultCrs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
-            }
-            const features = data.features.map(feature => {
-                let crs = defaultCrs;
-                if (feature.crs && feature.crs.properties && feature.crs.properties.name) {
-                    crs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
-                } else if (typeof feature.crs === "string") {
-                    crs = feature.crs;
-                }
-                if (feature.geometry && feature.geometry.coordinates) {
-                    feature.geometry.coordinates = feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d);
-                }
-                
-                return { ...feature, 
-                    crs: crs, 
-                    styleName: defaultStyleName,
-                    styleOptions: defaultStyleOptions
-                };
-            });
+        const point_features = GwUtils.getGeoJSONFeatures(point, "default", points_style)
+        if (!isEmpty(point_features)) {
             this.props.addLayerFeatures({
-                id: filename,
-                name: filename,
-                title: filename.replace(/\.[^/.]+$/, "").replaceAll(/_+/g, " "),
+                id: "temp_points.geojson",
+                name: "temp_points.geojson",
+                title: "Temporal Points",
                 zoomToExtent: true
-            }, features, true);
-        } else {
-            this.props.addLayerFeatures({
-                id: filename,
-                name: filename,
-                title: filename.replace(/\.[^/.]+$/, "").replaceAll(/_+/g, " "),
-                zoomToExtent: false
-            }, [], true);
-            // TODO: send message to map, but not alert(LocaleUtils.tr("importlayer.nofeatures"));
+            }, point_features, true);
         }
     }
     searchFlowtraceLayer = () => {
