@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="23.381506mm"
+   height="23.272951mm"
+   viewBox="0 0 23.381506 23.272951"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="mincut.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="8.4359982"
+     inkscape:cx="22.048369"
+     inkscape:cy="47.178768"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid432" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath499">
+      <g
+         inkscape:label="Clip"
+         id="use501" />
+    </clipPath>
+  </defs>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-9.5409436,-9.8957825)">
+    <path
+       id="path111-2-98"
+       style="fill:#000000;stroke-width:0.238528"
+       d="m 32.576718,16.674383 a 3.1989655,3.1989655 0 0 1 -3.198966,3.198966 3.1989655,3.1989655 0 0 1 -3.198965,-3.198966 3.1989655,3.1989655 0 0 1 3.198965,-3.198965 3.1989655,3.1989655 0 0 1 3.198966,3.198965 z m -0.105344,12.87677 a 3.093622,3.093622 0 0 1 -3.093622,3.093622 3.093622,3.093622 0 0 1 -3.093622,-3.093622 3.093622,3.093622 0 0 1 3.093622,-3.093622 3.093622,3.093622 0 0 1 3.093622,3.093622 z m -16.03779,0 A 3.2734544,3.2734544 0 0 1 13.16013,32.824608 3.2734544,3.2734544 0 0 1 9.8866751,29.551153 3.2734544,3.2734544 0 0 1 13.16013,26.277699 3.2734544,3.2734544 0 0 1 16.433584,29.551153 Z M 16.253752,13.33353 A 3.093622,3.093622 0 0 1 13.16013,16.427152 3.093622,3.093622 0 0 1 10.066508,13.33353 3.093622,3.093622 0 0 1 13.16013,10.239908 3.093622,3.093622 0 0 1 16.253752,13.33353 Z M 28.735016,27.837246 V 31.26506 H 14.302266 V 27.837246 Z M 27.663845,16.072163 h 3.427814 V 29.380328 H 27.663845 Z M 11.446222,14.347132 h 3.427814 v 14.432749 h -3.427814 z" />
+  </g>
+</svg>
