@@ -443,7 +443,7 @@ class GwQtDesignerForm extends React.Component {
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
-            return (<FileSelector accept={accept} file={this.state.files} onFilesSelected={this.onFilesSelected} multiple={true} showAllFilenames={false} />);
+            return (<FileSelector accept={accept} file={this.state.files} onFilesSelected={this.onFilesSelected} multiple={true} showAllFilenames={false} overrideText={overrideText} />);
         }
         return null;
     }
