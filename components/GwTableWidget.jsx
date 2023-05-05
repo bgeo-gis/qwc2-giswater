@@ -9,6 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import MaterialReactTable from 'material-react-table';
+import isEmpty from 'lodash.isempty';
 
 import {
     MRT_ToggleFiltersButton
@@ -67,9 +68,9 @@ class GwTableWidget extends React.Component {
     render() {
         const data = this.props.values;
         let cols = [];
-        const headers = this.props.form.headers;
+        const headers = this.props.form.headers || [];
         const tableParams = this.props.form.table;
-        if (headers !== undefined){
+        if (!isEmpty(headers)){
             Object.keys(data[0]).map(key => {
                 const header = headers.filter(header => {
                     return header.accessorKey === key;
