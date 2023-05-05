@@ -149,7 +149,7 @@ class GwMincutManager extends React.Component {
 
     getList = (mincutManagerResult) => {
         try {
-            var request_url = GwUtils.getServiceUrl("mincut");
+            var request_url = GwUtils.getServiceUrl("util");
             var widgets = mincutManagerResult.body.data.fields;
             var tableWidgets = [];
             widgets.forEach(widget => {
@@ -337,7 +337,7 @@ class GwMincutManager extends React.Component {
                 "mincutId": mincutId
             }
             axios.delete(request_url + "delete", { params }).then((response) => {
-                const result = response.data
+                const result = response.message
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });

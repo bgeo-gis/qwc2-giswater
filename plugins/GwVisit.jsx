@@ -213,7 +213,7 @@ class GwVisit extends React.Component {
     }
     getList = (tab, widget) => {
         try {
-            var request_url = GwUtils.getServiceUrl("visit");
+            var request_url = GwUtils.getServiceUrl("util");
             var widgets = this.state.visitResult?.body?.data?.fields;
             var tableWidgets = [];
             if (widgets) {

@@ -158,7 +158,7 @@ class GwMincut extends React.Component {
     };
     getList = (tab, widget) => {
         try {
-            var request_url = GwUtils.getServiceUrl("info");
+            var request_url = GwUtils.getServiceUrl("util");
             var widgets = this.state.mincutResult?.body?.data?.fields;
             var tableWidgets = [];
             if (widgets) {
