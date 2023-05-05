@@ -149,7 +149,6 @@ class GwVisitManager extends React.Component {
     }
 
     getList = (visitManagerResult) => {
-        console.log("GET LIST")
         try {
             var request_url = GwUtils.getServiceUrl("util");
             var widgets = visitManagerResult.body.data.fields;
@@ -167,7 +166,6 @@ class GwVisitManager extends React.Component {
                 "tableName": tableWidgets[0].linkedobject,
                 "filterFields": {}
             }
-            console.log("PARAMS: ", params)
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 //this.setState({ listJson: result, visitmanagerResult: null });
@@ -186,8 +184,7 @@ class GwVisitManager extends React.Component {
         let params = action.widgetfunction.params ?? {};
         switch (functionName) {
             case "open":                
-                this.openvisit(action.row[0].original.id, action.row[0].original.visit_type);
-                console.log("VISIT RESULT", this.state.visitResult)                
+                this.openvisit(action.row[0].original.id, action.row[0].original.visit_type);             
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 if (!this.props.keepManagerOpen){
                     this.setState({ visitmanagerResult: null });
@@ -203,8 +200,8 @@ class GwVisitManager extends React.Component {
                 ) {
                     break;
                 }
-                action.row.map((row) => {
-                    this.deletevisit(row.original.id);
+                action.row.map((row) => {  
+                    this.deletevisit(row.original.id);                    
                 })
                 this.setState( { filters: {"visitId": action.row[0].original.id, "action":"delete"} } );
                 break; 
@@ -238,7 +235,6 @@ class GwVisitManager extends React.Component {
     }
 
     openvisit = (visitId, visitType) => {
-        console.log("open")
         try {
             var request_url = GwUtils.getServiceUrl("visit");
 
@@ -247,12 +243,9 @@ class GwVisitManager extends React.Component {
                 "visitId": visitId,
                 "visitType": visitType
             }
-            console.log("PARAMS",params)
             axios.get(request_url + "get", { params: params }).then((response) => {
                 const result = response.data
                 this.setState({ visitResult: result });
-                console.log("RESULT", result)
-                console.log("VISIT RESULT", this.state.visitResult)
             }).catch((e) => {
                 console.log(e);
             })
@@ -331,7 +324,7 @@ class GwVisitManager extends React.Component {
 
         if (this.state.visitResult){            
             bodyvisit = (
-                <GwVisit visitResult={this.state.visitResult} dispatchButton={this.dispatchButton} dockable={this.props.visitDockable} initiallyDocked="true" key="visitFromManager"/>
+                <GwVisit visitResult={this.state.visitResult} dispatchButton={this.dispatchButton} dockable={this.props.visitDockable} initiallyDocked={true} key="visitFromManager"/>
             )
         }
 
