@@ -16,7 +16,7 @@ import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import GwUtils from '../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
-import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
+import { LayerRole, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 
@@ -28,6 +28,7 @@ class GwSelector extends React.Component {
         theme: PropTypes.object,
         refreshLayer: PropTypes.func,
         zoomToExtent: PropTypes.func,
+        changeLayerProperty: PropTypes.func,
         selectorResult: PropTypes.object,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -58,14 +59,27 @@ class GwSelector extends React.Component {
         if (!result || result.schema === null) {
             return false;
         }
+        
+        this.setLayersVisibility(result)
 
         // Zoom to extent & refresh map
         this.panToResult(result);
         // Refresh map
         this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
     }
+    setLayersVisibility(result) {
+        if (result.body?.data?.layersVisibility) {
+            const rootLayer = this.props.layers.find(l => l.type === "wms");
+            Object.entries(result.body.data.layersVisibility).map(([layerName, visible]) => {
+                const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
+                if (layer) {
+                    this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path);
+                }
+            })
+        }
+    }
     panToResult = (result) => {
-        if (!isEmpty(result)) {
+        if (!isEmpty(result) && result.body?.data?.geometry) {
             const x1 = result.body.data.geometry.x1;
             const y1 = result.body.data.geometry.y1;
             const x2 = result.body.data.geometry.x2;
@@ -79,7 +93,11 @@ class GwSelector extends React.Component {
         }
     }
     componentDidUpdate(prevProps, prevState) {
-        
+        if (prevProps.theme != this.props.theme) {
+            this.makeRequest(true)
+        }
+    }
+    componentDidMount() {
     }
     onShow = () => {
         // Make service request
@@ -91,7 +109,7 @@ class GwSelector extends React.Component {
         }
         this.setState({ selectorResult: null, pendingRequests: false });
     }
-    getSelectors = (params) => {
+    getSelectors = (params, hide_form = false) => {
         const request_url = GwUtils.getServiceUrl("selector");
         if (isEmpty(request_url)) {
             return false;
@@ -100,7 +118,8 @@ class GwSelector extends React.Component {
         // Send request
         axios.get(request_url + "get", { params: params }).then(response => {
             const result = response.data
-            this.setState({ selectorResult: result, pendingRequests: false });
+            if (!hide_form)
+                this.setState({ selectorResult: result, pendingRequests: false });
             this.handleResult(result);
         }).catch((e) => {
             console.log(e);
@@ -156,7 +175,7 @@ class GwSelector extends React.Component {
                 break;
         }
     }
-    makeRequest() {
+    makeRequest(hide_form = false) {
         let pendingRequests = false;
 
         const request_url = GwUtils.getServiceUrl("selector");
@@ -172,11 +191,12 @@ class GwSelector extends React.Component {
 
             // Send request
             pendingRequests = true
-            this.getSelectors(params);
+            this.getSelectors(params, hide_form);
         }
         // Set "Waiting for request..." message
         // this.filteredSelectors = true;
-        this.setState({ selectorResult: {}, pendingRequests: pendingRequests });
+        if (!hide_form)
+            this.setState({ selectorResult: {}, pendingRequests: pendingRequests });
     }
     render() {
         // Create window
@@ -189,9 +209,9 @@ class GwSelector extends React.Component {
                 } else {
                     body = (<div className="selector-body" role="body"><span className="selector-body-message">No result</span></div>); // TODO: TRANSLATION
                 }
+            } else if (!result.form_xml) {
+                body = (<div className="selector-body" role="body"><span className="selector-body-message">{result.message}</span></div>);
             } else {
-                // console.log("rendering selector");
-                // console.log(result);
                 body = (
                     <div className="selector-body" role="body">
                         <GwQtDesignerForm form_xml={result.form_xml} autoResetTab={false} readOnly={false} getInitialValues={false}
@@ -232,5 +252,6 @@ const selector = (state) => ({
 
 export default connect(selector, {
     zoomToExtent: zoomToExtent,
-    refreshLayer: refreshLayer
+    refreshLayer: refreshLayer,
+    changeLayerProperty: changeLayerProperty
 })(GwSelector);
