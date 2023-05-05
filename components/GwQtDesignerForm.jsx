@@ -169,7 +169,7 @@ class GwQtDesignerForm extends React.Component {
         for (const item of items) {
             const col = useIndex ? index : (parseInt(item.column, 10) || 0);
             const colSpan = useIndex ? 1 : (parseInt(item.colspan, 10) || 1);
-            if (!hasSpacer && item.widget && !fitWidgets.includes(item.widget.class) && colSpan === 1) {
+            if (!hasSpacer && item.widget && !fitWidgets.includes(item.widget.class) && colSpan === 1 && item.widget.property?.fit_horizontal !== "true") {
                 columns[col] = 'auto';
                 hasAuto = true;
             } else if (item.spacer && (item.spacer.property || {}).orientation === "Qt::Horizontal") {
@@ -195,7 +195,7 @@ class GwQtDesignerForm extends React.Component {
         for (const item of items) {
             const row = useIndex ? index : (parseInt(item.row, 10) || 0);
             const rowSpan = useIndex ? 1 : (parseInt(item.rowspan, 10) || 1);
-            if (!hasSpacer && item.widget && !fitWidgets.includes(item.widget.class) && rowSpan === 1) {
+            if (!hasSpacer && item.widget && !fitWidgets.includes(item.widget.class) && rowSpan === 1 && item.widget.property?.fit_vertical !== "true") {
                 rows[row] = 'auto';
                 hasAuto = true;
             } else if (item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical") {
