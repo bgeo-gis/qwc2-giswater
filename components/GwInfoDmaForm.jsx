@@ -28,41 +28,43 @@ class GwInfoDmaForm extends React.Component {
     }
 
     render() {
-        const dma = this.props.jsonData?.info?.values?.info?.dma;
-        const exploitation = this.props.jsonData?.info?.values?.info?.exploitation;
+        const info = this.props.jsonData?.info?.values?.info || {}
+
+        const dma = info.dma;
+        const exploitation = info.exploitation;
 
         //Período e intérvalo
-        const period = this.props.jsonData?.info?.values?.info?.period;
-        const period_dates = this.props.jsonData?.info?.values?.info?.period_dates;
+        const period = info.period;
+        const period_dates = info.period_dates;
 
         //Datos de la red
-        const meters_in = this.props.jsonData?.info?.values?.info?.meters_in; //
-        const meters_out = this.props.jsonData?.info?.values?.info?.meters_out; //
-        const n_connec = this.props.jsonData?.info?.values?.info?.n_connec; // numero acometidas
-        const n_hydro = this.props.jsonData?.info?.values?.info?.n_hydro; // numero abonados
-        const arc_length = this.props.jsonData?.info?.values?.info?.arc_length; // longitud red
-        const link_length = this.props.jsonData?.info?.values?.info?.link_length; // longitud acometidas
+        const meters_in = info.meters_in; //
+        const meters_out = info.meters_out; //
+        const n_connec = info.n_connec; // numero acometidas
+        const n_hydro = info.n_hydro; // numero abonados
+        const arc_length = info.arc_length; // longitud red
+        const link_length = info.link_length; // longitud acometidas
 
         //Pie Chart
         //Datos
-        const total = this.props.jsonData?.info?.values?.info?.total; // total inyectado
+        const total = info.total; // total inyectado
         const flow = "2.55"; // TODO: FALTA!!!
-        const dma_rw_eff = (this.props.jsonData?.info?.values?.info?.dma_rw_eff * 100)?.toFixed(2); // rendimiento
-        const dma_nrw_eff = (this.props.jsonData?.info?.values?.info?.dma_nrw_eff * 100)?.toFixed(2); // dma agua no controlada
+        const dma_rw_eff = (info.dma_rw_eff * 100)?.toFixed(2); // rendimiento
+        const dma_nrw_eff = (info.dma_nrw_eff * 100)?.toFixed(2); // dma agua no controlada
 
         //Gràfico
-        const nrw = this.props.jsonData?.info?.values?.info?.nrw; // VANC
-        const auth = this.props.jsonData?.info?.values?.info?.auth; // total abonados
+        const nrw = info?.nrw; // VANC
+        const auth = info?.auth; // total abonados
 
         //Otros indicadores
         // dma agua no controlada
-        const expl_nrw_eff = (this.props.jsonData?.info?.values?.info?.expl_nrw_eff * 100)?.toFixed(2); // expl agua no controlada
-        const dma_ili = this.props.jsonData?.info?.values?.info?.dma_ili?.toFixed(2) // dma indice perdidas
-        const expl_ili = this.props.jsonData?.info?.values?.info?.expl_ili?.toFixed(2) // expl indice perdidas
-        const dma_m4day = this.props.jsonData?.info?.values?.info?.dma_m4day?.toFixed(2); // dma m3kmdia
-        const expl_m4day = this.props.jsonData?.info?.values?.info?.expl_m4day?.toFixed(2); // expl m3kmdia
-        const dma_nightvol = this.props.jsonData?.info?.values?.info?.dma_nightvol; // dma min nocturno
-        const expl_nightvol = this.props.jsonData?.info?.values?.info?.expl_nightvol; // expl min nocturno
+        const expl_nrw_eff = (info.expl_nrw_eff * 100)?.toFixed(2); // expl agua no controlada
+        const dma_ili = info.dma_ili?.toFixed(2) // dma indice perdidas
+        const expl_ili = info.expl_ili?.toFixed(2) // expl indice perdidas
+        const dma_m4day = info.dma_m4day?.toFixed(2); // dma m3kmdia
+        const expl_m4day = info.expl_m4day?.toFixed(2); // expl m3kmdia
+        const dma_nightvol = info.dma_nightvol; // dma min nocturno
+        const expl_nightvol = info.expl_nightvol; // expl min nocturno
 
         const data = this.props.jsonData?.info?.values?.chart;
         var { data_piechart, options_piechart, data_chart, listeners, options_chart } = this.getChartData(data, dma, exploitation, nrw, auth);
