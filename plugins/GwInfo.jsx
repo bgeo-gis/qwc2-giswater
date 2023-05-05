@@ -52,6 +52,7 @@ class GwInfo extends React.Component {
         initiallyDocked: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
+        theme: PropTypes.object,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
@@ -75,7 +76,6 @@ class GwInfo extends React.Component {
         identifyResult: null,
         prevIdentifyResult: null,
         pendingRequests: false,
-        theme: null,
         currentTab: {},
         feature_id: null,
         showGraph: false,
@@ -92,7 +92,6 @@ class GwInfo extends React.Component {
         if(props.identifyResult){
             this.state.identifyResult = props.identifyResult;            
         }
-        this.resultProcessed = false;
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
@@ -109,10 +108,10 @@ class GwInfo extends React.Component {
             if (this.state.mode === "Scada"){
                 this.showGraph(prevProps)
             }
-
+            
         }
         // Manage highlight and marker from result
-        if(!isEmpty(this.state.identifyResult) && !this.resultProcessed){
+        if(this.props.identifyResult && this.props.identifyResult != prevProps.identifyResult) {
             this.highlightResult(this.state.identifyResult)
             this.addMarkerToResult(this.state.identifyResult)
         }
@@ -126,60 +125,44 @@ class GwInfo extends React.Component {
         return parseInt(parts.slice(-1))
     }
     dispatchButton = (action, widget) => {
-        var queryableLayers;
+        // var queryableLayers;
         var request_url;
         let pendingRequests = false;
         switch (action.functionName) {
             case "featureLink":
             case "get_info_node":
                 this.props.removeLayer("searchselection");
-                queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                    // TODO: If there are some wms external layers this would select more than one layer
-                    return l.type === "wms"
-                });
+
+                this.setState((state) => ({ identifyResult: {}, prevIdentifyResult: state.identifyResult, pendingRequests: pendingRequests }));
 
                 request_url = GwUtils.getServiceUrl("info");
-                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                    if (queryableLayers.length > 1) {
-                        console.warn("There are multiple giswater queryable layers")
-                    }
-
-                    const layer = queryableLayers[0];
+                if (!isEmpty(request_url)) {
 
                     const params = {
-                        "theme": layer.title,
+                        "theme": this.props.theme.title,
                         "id": widget.property.text,
                         "tableName": "v_edit_node"
                     }
                     pendingRequests = true
                     axios.get(request_url + "fromid", { params: params }).then((response) => {
                         const result = response.data
-                        this.setState({ identifyResult: result, pendingRequests: false });                         
+                        this.setState({ identifyResult: result, pendingRequests: false });
                         this.panToResult(result)
+                        this.highlightResult(result)
+                        this.addMarkerToResult(result)
                     }).catch((e) => {
                         console.log(e);
                         this.setState({ pendingRequests: false });
                     });
                 }
-                this.setState({ identifyResult: {}, prevIdentifyResult: this.state.identifyResult, pendingRequests: pendingRequests });
                 break;
 
             case "getlist":
-                queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                    // TODO: If there are some wms external layers this would select more than one layer
-                    return l.type === "wms"
-                });
-
-                request_url = GwUtils.getServiceUrl("info");
-                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                    if (queryableLayers.length > 1) {
-                        console.warn("There are multiple giswater queryable layers")
-                    }
-
-                    const layer = queryableLayers[0];
+                request_url = GwUtils.getServiceUrl("util");
+                if (!isEmpty(request_url)) {
 
                     const params = {
-                        "theme": layer.title,
+                        "theme": this.props.theme.title,
                         "tabName": action.params.tabName,
                         "widgetname": action.params.tabName,
                         "tableName": action.params.tableName,
@@ -190,14 +173,14 @@ class GwInfo extends React.Component {
                     axios.get(request_url + "getlist", { params: params }).then((response) => {
                         const result = response.data
                         console.log("getlist done:", this.state.identifyResult, result);
-                        this.setState({ identifyResult: this.state.identifyResult, listJson: result, pendingRequests: false });
+                        this.setState((state) => ({ identifyResult: state.identifyResult, listJson: result, pendingRequests: false }));
                     }).catch((e) => {
                         console.log(e);
                         this.setState({ pendingRequests: false });
                     });
                 }
                 // TODO: maybe set pending results state
-                // this.setState({ identifyResult: {}, prevIdentifyResult: this.state.identifyResult, pendingRequests: pendingRequests });
+                // this.setState((state) => ({ identifyResult: {}, prevIdentifyResult: state.identifyResult, pendingRequests: pendingRequests }));
                 break;
             default:
                 console.warn(`Action \`${action.functionName}\` cannot be handled.`)
@@ -216,14 +199,14 @@ class GwInfo extends React.Component {
         }
         columnname = columnname ?? widget.name;
         // Update filters
-        this.setState({ filters: {...this.state.filters, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}} });
+        this.setState((state) => ({ filters: {...state.filters, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}} }));
     }
     onTabChanged = (tab, widget) => {
         this.setState({ currentTab: {tab: tab, widget: widget} });
     }
     getList = (tab, widget) => {
         try {
-            var request_url = GwUtils.getServiceUrl("info");
+            var request_url = GwUtils.getServiceUrl("util");
             var filtered = widget.widget.filter(child => {
                 return child.name === tab.name;
             }).filter(child => {
@@ -243,10 +226,9 @@ class GwInfo extends React.Component {
                 })
             })
             const prop = tableWidgets[0].property || {};
-            const action = JSON.parse(prop.action);
 
             const params = {
-                "theme": this.state.theme,
+                "theme": this.props.theme.title,
                 "tabName": tab.name,  // tab.name, no? o widget.name?
                 "widgetname": tableWidgets[0].name,  // tabname_ prefix cal?
                 //"formtype": this.props.formtype,
@@ -259,7 +241,7 @@ class GwInfo extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState({ listJson: {...this.state.listJson, [tableWidgets[0].name]: result} });
+                this.setState((state) => ({ listJson: {...state.listJson, [tableWidgets[0].name]: result} }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -272,31 +254,22 @@ class GwInfo extends React.Component {
     showGraph = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            this.resultProcessed = false;
-            let pendingRequests = false;
-            const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                // TODO: If there are some wms external layers this would select more than one layer
-                return l.type === "wms";
-            });
+            // let pendingRequests = false;
 
             const request_url = GwUtils.getServiceUrl("info");
-            if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                if (queryableLayers.length > 1) {
-                    console.warn("There are multiple giswater queryable layers")
-                }
-                const layer = queryableLayers[0];
-                console.log("theme -> ", layer.title)
+            if (!isEmpty(request_url)) {
+                console.log("theme -> ", this.props.theme.title)
                 const params = {
-                    "theme": layer.title,
+                    "theme": this.props.theme.title,
                     "node_id": this.state.feature_id
                 }
 
-                pendingRequests = true
+                // pendingRequests = true
                 axios.get(request_url + "getgraph", { params: params }).then(response => {
                     const result = response.data
                     console.log("getGraph -> ", result)
                     if (this.state.mode === "Scada"){ this.setState({identifyResult: result})}
-                    this.setState({ graphJson: result, showGraph: true, pendingRequests: false, theme: layer.title});
+                    this.setState({ graphJson: result, showGraph: true, pendingRequests: false });
                     this.highlightResult(result)
                 }).catch((e) => {
                     console.log(e);
@@ -308,31 +281,20 @@ class GwInfo extends React.Component {
 
     showVisit = (prevProps) => {
         this.setState({ showVisit: true });
-        let pendingRequests = false;
-        const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-            // TODO: If there are some wms external layers this would select more than one layer
-            return l.type === "wms";
-        });
 
         const request_url = GwUtils.getServiceUrl("visit");
-        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-            if (queryableLayers.length > 1) {
-                console.warn("There are multiple giswater queryable layers")
-            }
-            const layer = queryableLayers[0];
-            console.log("theme -> ", layer.title)
+        if (!isEmpty(request_url)) {
             const params = {
-                "theme": layer.title,
+                "theme": this.props.theme.title,
                 "visit_id": 10,
                 "featureType": "node",
                 "id": this.state.feature_id
             }
 
-            pendingRequests = true
             axios.get(request_url + "get", { params: params }).then(response => {
                 const result = response.data
                 console.log("getVisit -> ", result)
-                this.setState({ visitJson: result, showVisit: true, pendingRequests: false, theme: layer.title });
+                this.setState({ visitJson: result, showVisit: true, pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
                 this.setState({ pendingRequests: false });
@@ -343,26 +305,16 @@ class GwInfo extends React.Component {
     identifyDma = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            this.resultProcessed = false;
-             // Remove any search selection layer to avoid confusion
-             this.props.removeLayer("searchselection");
-             let pendingRequests = false;
-             const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                 // TODO: If there are some wms external layers this would select more than one layer
-                 return l.type === "wms";
-             });
+            // Remove any search selection layer to avoid confusion
+            this.props.removeLayer("searchselection");
+            let pendingRequests = false;
 
-             const request_url = GwUtils.getServiceUrl("info");
-             if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                if (queryableLayers.length > 1) {
-                    console.warn("There are multiple giswater queryable layers");
-                }
-                const layer = queryableLayers[0];
-
+            const request_url = GwUtils.getServiceUrl("info");
+            if (!isEmpty(request_url)) {
                 const epsg = this.crsStrToInt(this.props.map.projection)
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom)
                 const params = {
-                    "theme": layer.title,
+                    "theme": this.props.theme.title,
                     "epsg": epsg,
                     "xcoord": clickPoint[0],
                     "ycoord": clickPoint[1],
@@ -373,12 +325,13 @@ class GwInfo extends React.Component {
                 axios.get(request_url + "getdma", { params: params }).then(response => {
                     const result = response.data;
                     console.log("identifypointid -> ", result.body.data.info.values.info.dma);
-                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, theme: layer.title });
+                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
                 }).catch((e) => {
                     console.log(e);
                     this.setState({ pendingRequests: false });
                 });
-             }
+            }
+            this.props.removeMarker('identify');
             this.props.addMarker('identify', clickPoint, '', this.props.map.projection);
             this.setState({ identifyResult: {}, prevIdentifyResult: null, pendingRequests: pendingRequests });
 
@@ -388,40 +341,36 @@ class GwInfo extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            this.resultProcessed = false;
             if(this.props.onClose){
                 this.props.onClose();
             }
             // Remove any search selection layer to avoid confusion
             this.props.removeLayer("searchselection");
             let pendingRequests = false;
-            const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                // TODO: If there are some wms external layers this would select more than one layer
-                return l.type === "wms";
-            });
+
+            const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map)
 
             const request_url = GwUtils.getServiceUrl("info");
             if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
-                if (queryableLayers.length > 1) {
-                    console.warn("There are multiple giswater queryable layers");
-                }
-                const layer = queryableLayers[0];
+                const queryLayers = queryableLayers.reduce((acc, layer) => {
+                    return acc.concat(layer.queryLayers)
+                }, [])
 
                 const epsg = this.crsStrToInt(this.props.map.projection)
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom)
                 const params = {
-                    "theme": layer.title,
+                    "theme": this.props.theme.title,
                     "epsg": epsg,
                     "xcoord": clickPoint[0],
                     "ycoord": clickPoint[1],
                     "zoomRatio": zoomRatio,
-                    "layers": layer.queryLayers.join(',')
+                    "layers": queryLayers.join(',')
                 }
 
                 pendingRequests = true
                 axios.get(request_url + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
-                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, theme: layer.title, feature_id: result.body.feature.id });
+                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, feature_id: result.body.feature.id });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
@@ -452,7 +401,6 @@ class GwInfo extends React.Component {
             }
             this.props.addLayerFeatures(layer, [feature], true)
         }
-        this.resultProcessed = true;
     }
     panToResult = (result) => {
         // TODO: Maybe we should zoom to the result as well
@@ -513,7 +461,7 @@ class GwInfo extends React.Component {
         let noIdentifyResult = false;
         if (this.state.pendingRequests === true || this.state.identifyResult  !== null) {
             let body = null;
-            if (isEmpty(this.state.identifyResult )) {
+            if (isEmpty(this.state.identifyResult) || !this.state.identifyResult.form_xml) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
                 } else {
@@ -671,8 +619,8 @@ class GwInfo extends React.Component {
             if (this.state.showVisit && !noIdentifyResult && this.state.visitJson !== null) {
                 body = (
                     <div className="visit-body" role="body">
-                        <GwQtDesignerForm form_xml={this.state.visitJson.form_xml} readOnly={false} getInitialValues={true}
-                            theme={this.state.theme} widgetValues={this.state.visitWidgetValues}
+                        <GwQtDesignerForm form_xml={this.state.visitJson.form_xml} readOnly={false} 
+                            getInitialValues={true} widgetValues={this.state.visitWidgetValues}
                         />
                     </div>
                 )
@@ -704,7 +652,8 @@ const selector = (state) => ({
     currentIdentifyTool: state.identify.tool,
     layers: state.layers.flat,
     map: state.map,
-    selection: state.selection
+    selection: state.selection,
+    theme: state.theme.current
 });
 
 export default connect(selector, {
