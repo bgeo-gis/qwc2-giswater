@@ -442,7 +442,7 @@ class GwQtDesignerForm extends React.Component {
             return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{text}</button>)
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
-            const files = this.props.files.map(file => file.name).join(", ");
+            const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
             return (<FileSelector accept={accept} file={this.state.files} onFilesSelected={this.onFilesSelected} multiple={true} showAllFilenames={false} />);
         }
         return null;
