@@ -336,6 +336,12 @@ class GwVisit extends React.Component {
         this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [] });
     }
     clearResults = () => {
+        if (this.props.visitResult) {
+            this.onToolClose();
+            if (this.props.dispatchButton) {
+                this.props.dispatchButton({ "widgetfunction": { "functionName": "visitClose" } });
+            }
+        }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
         this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [] });
