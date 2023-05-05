@@ -71,7 +71,8 @@ class GwSearchBox extends React.Component {
     expandedLayerGroup: null,
     activeLayerInfo: null,
     identifyResult: null,
-    pendingRequests: false
+    pendingRequests: false,
+    searchAdd: false
   }
   constructor(props) {
     super(props);
@@ -81,10 +82,7 @@ class GwSearchBox extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // If search text changed
-    if (this.state.searchText !== prevState.searchText) {
-      //this.getSearch();
-    }
+
   }
 
   getSearch = () => {
@@ -110,11 +108,11 @@ class GwSearchBox extends React.Component {
     }
   }
 
-  setSearch = (display_name, section, filterKey, filterValue, execFunc, tableName) => {  
+  setSearch = (display_name, section, filterKey, filterValue, execFunc, tableName, searchAdd) => {  
     this.setState({searchText: display_name})  
     const request_url = GwUtils.getServiceUrl("search");
     if (!isEmpty(request_url)) {
-      const extras = '"value": "' + display_name + '", "section": "'+ section +'", "filterKey": "'+filterKey+'","filterValue": "'+filterValue+'", "execFunc": "'+execFunc+'", "tableName": "'+tableName+'"';
+      const extras = '"value": "' + display_name + '", "section": "'+ section +'", "filterKey": "'+filterKey+'","filterValue": "'+filterValue+'", "execFunc": "'+execFunc+'", "tableName": "'+tableName+'", "searchAdd": "'+searchAdd+'"';
       const params = {
         "theme": this.props.theme.title,
         "extras": extras
@@ -126,11 +124,10 @@ class GwSearchBox extends React.Component {
 
         //Info if execFunc is present
         if (execFunc) {
-          this.identifyFromId(filterValue, tableName)
-          
+          this.identifyFromId(filterValue, tableName)          
         }
-        if(section == "basic_search_address"){
-          this.setState({searchText: display_name+", "}) 
+        if(section == "basic_search_v2_address" && !searchAdd){
+          this.searchTextChanged(null, display_name+", ")
         }
         this.clearResults()
       }).catch((e) => {
@@ -201,6 +198,7 @@ class GwSearchBox extends React.Component {
     const searchResultItems = [];
 
     searchResults.data.forEach((result) => {
+      const searchAdd = result.searchAdd;
       const alias = result.alias;
       const values = result.values;
       const title = alias+" title"
@@ -213,7 +211,7 @@ class GwSearchBox extends React.Component {
           resultItems.push(
             <div
               className="searchbox-result"
-              onClick={() => this.setSearch(display, result.section, value.key, value.value, result.execFunc, result.tableName)}
+              onClick={() => this.setSearch(display, result.section, value.key, value.value, result.execFunc, result.tableName, searchAdd)}
               key={display}
             >
               <span className="searchbox-result-label" title={display}>
@@ -310,6 +308,7 @@ class GwSearchBox extends React.Component {
   }
 
   searchTextChanged = (el, text) => {
+    this.setState({searchResults: {}})
     let pasted = false;
     if (el) {
       pasted = el.getAttribute('__pasted');
@@ -318,7 +317,7 @@ class GwSearchBox extends React.Component {
     if (this.props.layers.find(layer => layer.id === 'searchselection')) {
       this.props.removeLayer('searchselection');
     }
-    this.setState({ searchText: text, expandedLayerGroup: null, activeLayerInfo: null });
+    this.setState({ searchText: text, expandedLayerGroup: null, activeLayerInfo: null});
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => this.getSearch(pasted), 250);
   }
@@ -337,7 +336,7 @@ class GwSearchBox extends React.Component {
     if (this.preventBlur && this.searchBox) {
       this.searchBox.focus();
     } else {
-      this.setState({ resultsVisible: false, collapsedSections: [], expandedLayerGroup: null, activeLayerInfo: null });
+      this.setState({ resultsVisible: false, expandedLayerGroup: null, activeLayerInfo: null });
     }
   }
 
