@@ -207,10 +207,8 @@ class GwMapInfoTooltip extends React.Component {
         let infoButtons = null;
         const gwInfoResponse = this.state.gwInfoResponse;
         if (ConfigUtils.havePlugin("GwInfo") && gwInfoResponse) {
-            console.log('gwInfoResponse :>> ', gwInfoResponse);
-            // body.data.valve
             let valveButton = null;
-            if (gwInfoResponse.body.data.valve) {
+            if (gwInfoResponse.body?.data?.valve) {
                 valveButton = (
                     <td>
                         <button className="button" onClick={() => this.toggleValveState(gwInfoResponse.body.data.valve)}>{gwInfoResponse.body.data.valve.text}</button>
