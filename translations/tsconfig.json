@@ -35,18 +35,27 @@
   ],
   "strings": [
     "editing.select",
+    "fileselector.files",
     "heightprofile.asl",
     "heightprofile.distance",
     "heightprofile.height",
     "heightprofile.loading",
     "identify.noresults",
     "identify.querying",
-    "importlayer.nofeatures",
     "infotool.clickhelpPoint",
+    "mapinfotooltip.elevation",
+    "mapinfotooltip.title",
     "mincut.clickhelpChangeValveStatus",
     "mincut.clickhelpNetwork",
     "mincut.clickhelpValveUnaccess",
     "qtdesignerform.loading",
+    "routing.addviapoint",
+    "routing.fromhere",
+    "routing.isocenter",
+    "routing.isoextracenter",
+    "routing.reachability",
+    "routing.route",
+    "routing.tohere",
     "searchbox.placeholder"
   ]
 }

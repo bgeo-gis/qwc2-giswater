@@ -4,6 +4,9 @@
     "editing": {
       "select": "Seleccionar"
     },
+    "fileselector": {
+      "files": ""
+    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distancia",
@@ -14,11 +17,12 @@
       "noresults": "Sin información disponible sobre el punto seleccionado",
       "querying": "Consultando..."
     },
-    "importlayer": {
-      "nofeatures": "Sin resultados o la dirección URL no es válida"
-    },
     "infotool": {
       "clickhelpPoint": "Haga click en una ubicación para identificar en el mapa..."
+    },
+    "mapinfotooltip": {
+      "elevation": "Elevacion",
+      "title": ""
     },
     "mincut": {
       "clickhelpChangeValveStatus": "Haga click en una o mas valvulas para abrirlas o cerrarlas al refrescar el Mincut",
@@ -27,6 +31,15 @@
     },
     "qtdesignerform": {
       "loading": "Cargando..."
+    },
+    "routing": {
+      "addviapoint": "",
+      "fromhere": "",
+      "isocenter": "",
+      "isoextracenter": "",
+      "reachability": "",
+      "route": "",
+      "tohere": ""
     },
     "searchbox": {
       "placeholder": ""

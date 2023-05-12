@@ -4,6 +4,9 @@
     "editing": {
       "select": "Seleccionar"
     },
+    "fileselector": {
+      "files": ""
+    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distància",
@@ -14,11 +17,12 @@
       "noresults": "Sense informació disponible sobre el punt seleccionat",
       "querying": "Consultant..."
     },
-    "importlayer": {
-      "nofeatures": "Sense resultats o l'adreça URL no és vàlida"
-    },
     "infotool": {
       "clickhelpPoint": "Fes click en una ubicació per identificar en el mapa..."
+    },
+    "mapinfotooltip": {
+      "elevation": "Elevació",
+      "title": ""
     },
     "mincut": {
       "clickhelpChangeValveStatus": "Fes clic en una o mes valvules per obrir-les o tancar-les en refrescar el Mincut",
@@ -27,6 +31,15 @@
     },
     "qtdesignerform": {
       "loading": "Carregant..."
+    },
+    "routing": {
+      "addviapoint": "",
+      "fromhere": "",
+      "isocenter": "",
+      "isoextracenter": "",
+      "reachability": "",
+      "route": "",
+      "tohere": ""
     },
     "searchbox": {
       "placeholder": ""

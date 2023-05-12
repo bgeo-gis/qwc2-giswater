@@ -4,6 +4,9 @@
     "editing": {
       "select": ""
     },
+    "fileselector": {
+      "files": ""
+    },
     "heightprofile": {
       "asl": "",
       "distance": "",
@@ -14,11 +17,12 @@
       "noresults": "",
       "querying": ""
     },
-    "importlayer": {
-      "nofeatures": ""
-    },
     "infotool": {
       "clickhelpPoint": ""
+    },
+    "mapinfotooltip": {
+      "elevation": "",
+      "title": ""
     },
     "mincut": {
       "clickhelpChangeValveStatus": "",
@@ -27,6 +31,15 @@
     },
     "qtdesignerform": {
       "loading": ""
+    },
+    "routing": {
+      "addviapoint": "",
+      "fromhere": "",
+      "isocenter": "",
+      "isoextracenter": "",
+      "reachability": "",
+      "route": "",
+      "tohere": ""
     },
     "searchbox": {
       "placeholder": ""
