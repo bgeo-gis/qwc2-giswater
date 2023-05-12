@@ -99,6 +99,7 @@ class GwMapInfoTooltip extends React.Component {
                     axios.get(gwInfoService + 'getlayersfromcoordinates', {params: params}).then(response => {
                         this.setState({gwInfoResponse: response.data});
                     }).catch(() => {});
+                    this.setState({gwInfoResponse: null});
                 }
             }
         }
