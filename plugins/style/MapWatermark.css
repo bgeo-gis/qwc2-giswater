@@ -1,0 +1,10 @@
+#MapWatermark {
+    position: absolute;
+    left: 0.5em;
+    display: flex;
+    pointer-events: none;
+}
+
+#MapWatermark img {
+    width: inherit;
+}
