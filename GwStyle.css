@@ -1,0 +1,340 @@
+* {
+    --edge-space: 1em;
+}
+
+:root, :root.default {
+    --radius: 10px;
+    --radius-window: 8px;
+    --radius-small: 8px;
+    --searchbox-color: var(--map-button-bg-color);
+    --searchbox-border: none;
+    --map-background-color: white;
+    --shadows: 1px 2px 5px 0px rgba(60,64,67,0.5);
+    --map-button-transition: background-color 0.25s, color 0.25s;
+
+    --map-button-bg-color: white !important;
+    --map-button-text-color: var(--text-color) !important;
+    --map-button-hover-bg-color: #dcdcdc !important;
+    --map-button-hover-text-color: var(--text-color) !important;
+    --map-button-active-text-color: var(--text-color) !important;
+}
+
+div#map {
+    background-color: var(--map-background-color);
+}
+
+/* GwToolbox.css */
+#PluginsContainer
+div.toolbox-results-container {
+    border-radius: var(--radius-small);
+}
+
+/* App.css */
+#PluginsContainer input,
+#PluginsContainer select,
+#PluginsContainer button,
+#PluginsContainer textarea {
+    border-radius: var(--radius-small);
+}
+
+#PluginsContainer
+button.button {
+    border-radius: var(--radius-small);
+}
+
+/* AppMenu.css */
+#PluginsContainer 
+div.AppMenu.appmenu-visible {
+    background-color: inherit;
+    color: inherit;
+}
+
+#PluginsContainer div.AppMenu .appmenu-icon:hover,
+#PluginsContainer div.AppMenu.appmenu-visible .appmenu-icon {
+    background-color: var(--map-button-hover-bg-color);
+    color: var(--map-button-hover-text-color);
+}
+
+#PluginsContainer
+div.AppMenu .appmenu-label {
+    display: none;
+}
+
+#PluginsContainer
+div.AppMenu .appmenu-icon {
+    color: var(--map-button-text-color);
+    margin: 0;
+    margin-left: 2px;
+    background-color: var(--map-button-bg-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadows);
+    width: 2.5em;
+    height: 2.5em;
+    border: none;
+    transition: var(--map-button-transition);
+    pointer-events: all;
+}
+
+#PluginsContainer
+div.AppMenu .appmenu-icon:before {
+    height: 100%;
+}
+
+#PluginsContainer
+div.AppMenu div.appmenu-menu-container {
+    right: 1em;
+    box-shadow: var(--shadows);
+    border-radius: var(--radius);
+    pointer-events: all;
+}
+
+/* InputContainsr.css */
+#PluginsContainer
+div.input-container {
+    border-radius: var(--radius-small);
+}
+
+#PluginsContainer
+div.input-container .input-container-input {
+    border-radius: var(--radius-small);
+}
+
+/* MessageBar */
+#PluginsContainer
+#MessageBar div.messagebar {
+    box-shadow: var(--shadows);
+    border-radius: var(--radius-window);
+}
+
+/* QtDesignerForm.css */
+#PluginsContainer 
+div.qt-designer-layout-grid {
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
+}
+
+#PluginsContainer 
+.qt-designer-form-datetime > input:first-child {
+    border-radius: var(--radius-small) 0 0 var(--radius-small);
+}
+
+#PluginsContainer 
+.qt-designer-form-datetime > input:nth-last-child(2) {
+    border-radius: 0 var(--radius-small) var(--radius-small) 0;
+    border-left: none
+}
+
+#PluginsContainer
+div.qt-designer-form-frame {
+    padding: 0.4em;
+    border-radius: 0 var(--radius-small) var(--radius-small) var(--radius-small);
+}
+
+#PluginsContainer
+div.qt-designer-form-tabbar > span {
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+    padding: 0 0.5em;
+}
+
+/* ResizeableWindow.css */
+#PluginsContainer
+div.resizeable-window {
+    border-radius: var(--radius-window);
+}
+
+#PluginsContainer
+div.resizeable-window-body {
+    padding: 0.4em;
+}
+
+/* #PluginsContainer
+div.resizeable-window-titlebar {
+    border-bottom: 1px solid var(--text-color-disabled);
+} */
+
+/* SearchBox.css */
+#PluginsContainer
+div.SearchBox > div.searchbox-results {
+    border-radius: var(--radius);
+}
+
+#PluginsContainer
+div.SearchBox {
+    border-radius: var(--radius);
+    border: none
+}
+
+#PluginsContainer
+div.SearchBox > div.searchbox-field {
+    height: 100%;
+}
+
+#PluginsContainer
+div.SearchBox .input-container-prefix {
+    width: 2em;
+}
+
+#PluginsContainer
+div.SearchBox .input-container-suffix {
+    width: 2em;
+}
+
+#PluginsContainer
+div.SearchBox > div.searchbox-field {
+    height: 100%;
+}
+
+/* SideBar.css */
+#PluginsContainer
+div.sidebar {
+    box-shadow: var(--shadows);
+    border-radius: var(--radius);
+}
+
+#PluginsContainer
+div.sidebar-right {
+    right: 1em;
+}
+
+#PluginsContainer
+div.sidebar-left {
+    left: 1em;
+}
+
+#PluginsContainer
+div.sidebar-right:not(.sidebar-open) {
+    transform: translateX(100%) translateX(8px) translate(1em);
+}
+
+#PluginsContainer
+div.sidebar-left:not(.sidebar-open) {
+    transform: translateX(-100%) translateX(-8px) translate(-1em);
+}
+
+#PluginsContainer div.mapinfotooltip-titlebar,
+#PluginsContainer div.sidebar div.sidebar-titlebar,
+#PluginsContainer div.resizeable-window-titlebar {
+    border-bottom: 1px solid var(--text-color-disabled);
+    padding: 0 0.4em;
+}
+
+#PluginsContainer div.sidebar div.sidebar-titlebar {
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+#PluginsContainer div.mapinfotooltip-titlebar,
+#PluginsContainer div.resizeable-window-titlebar {
+    border-radius: var(--radius-window) var(--radius-window) 0 0;
+}
+
+/* Toolbar.css */
+#PluginsContainer
+div.Toolbar > .icon {
+    margin-right: 1.25em;
+    border: none;
+    box-shadow: var(--shadows);
+    color: var(--map-button-text-color);
+    background-color: var(--map-button-bg-color);
+    border-radius: var(--radius);
+    transition: var(--map-button-transition);
+    pointer-events: all;
+}
+
+#PluginsContainer
+div.Toolbar > .icon:before {
+    height: 100%;
+    font-size: 140%;
+}
+
+#PluginsContainer div.Toolbar > .icon:hover,
+#PluginsContainer div.Toolbar > .toolbar-item-active {
+    border: none;
+    background-color: var(--map-button-hover-bg-color);
+    color: var(--map-button-hover-text-color);
+}
+
+/* ButtonBar.css */
+#PluginsContainer
+div.ButtonBar span.buttonbar-button-container > button {
+    border-radius: 0;
+}
+
+#PluginsContainer
+div.ButtonBar span.buttonbar-button-container:last-child > button {
+    border-radius: 0 var(--radius-small) var(--radius-small) 0;
+}
+
+#PluginsContainer
+div.ButtonBar span.buttonbar-button-container:first-child > button {
+    border-radius: var(--radius-small) 0 0 var(--radius-small);
+}
+
+/* BottomBar.css */
+#PluginsContainer
+#BottomBar input.bottombar-mousepos {
+    border-radius: var(--radius-small) 0 0 var(--radius-small);
+}
+
+#PluginsContainer
+#BottomBar > span > select {
+    border-radius: 0 var(--radius-small) var(--radius-small) 0;
+}
+
+/* MapInfoTooltip.css */
+#PluginsContainer
+div.mapinfotooltip-window {
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+}
+
+#PluginsContainer
+div.mapinfotooltip-window .mapinfotooltip-body-gwinfo button {
+    width: 100%;
+}
+
+/* Buttons.css */
+#PluginsContainer
+button.map-button {
+    box-shadow: var(--shadows);
+    border-radius: 1.5em; /* Revert to vanilla */
+    transition: var(--map-button-transition);
+}
+
+/* Measure.css */
+#PluginsContainer
+div.measure-body * {
+    border-radius: var(--radius-small);
+}
+
+/* TopBar.css */
+#PluginsContainer
+#TopBar {
+    background-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    pointer-events: none;
+}
+
+#PluginsContainer
+#TopBar div.SearchBox {
+    height: 2.5em;
+    margin-right: 1.5em;
+    box-shadow: var(--shadows);
+    pointer-events: all;
+}
+
+#PluginsContainer
+#TopBar div.SearchBox > div.searchbox-field {
+    border: var(--searchbox-border);
+}
+
+#PluginsContainer
+#TopBar img.logo {
+    display: none;
+}
+
+#PluginsContainer
+#TopBar.mobile div.AppMenu .appmenu-button {
+    margin-right: 0.5em;
+}
