@@ -84,14 +84,14 @@ class GwToolbox extends React.Component {
         console.log("Clicked:", type, tool)
         switch (type) {
             case "processes":
-                this.getProcess(tool.id, {}, (response) => {
-                    const result = response.data
-                    console.log("getprocess result:", result)
-                    this.setState({ toolResult: result, toolWidgetValues: {}, toolActiveTabs: {} });
-                })
+                if (this.state.toolResult?.body?.data.id !== tool.id) {
+                    this.getProcess(tool.id, {}, (response) => {
+                        const result = response.data
+                        console.log("getprocess result:", result)
+                        this.setState({ toolResult: result, toolWidgetValues: {}, toolActiveTabs: {} });
+                    })
+                }
                 break;
-            // case "reports":
-            //     break
             default:
                 console.warn(`Type \`${type}\` cannot be handled.`)
                 break;
@@ -269,35 +269,35 @@ class GwToolbox extends React.Component {
                             zoomToExtent: false
                         }, features, true);
                     }
-                }
-                // console.log(all_features)
-                if (!isEmpty(all_features)) {
-                    const bbox = VectorLayerUtils.computeFeaturesBBox(all_features)
-                    // console.log(bbox)
-                    this.props.zoomToExtent(bbox.bounds, bbox.crs)
-                }
-                
-                // if (!isEmpty(all_features)) {
-                //     this.props.addLayerFeatures({
-                    //         id: "temp_all.geojson",
-                    //         name: "temp_all.geojson",
-                    //         title: "Temporal Al",
-                //         zoomToExtent: true
-                //     }, all_features, true);
-                // }
+                    }
+                    // console.log(all_features)
+                    if (!isEmpty(all_features)) {
+                        const bbox = VectorLayerUtils.computeFeaturesBBox(all_features)
+                        // console.log(bbox)
+                        this.props.zoomToExtent(bbox.bounds, bbox.crs)
+                    }
+                    
+                    // if (!isEmpty(all_features)) {
+                    //     this.props.addLayerFeatures({
+                        //         id: "temp_all.geojson",
+                        //         name: "temp_all.geojson",
+                        //         title: "Temporal Al",
+                    //         zoomToExtent: true
+                    //     }, all_features, true);
+                    // }
 
-                this.setState((prevState, props) => ({ 
-                    executionResult: result, 
-                    toolWidgetValues: { ...prevState.toolWidgetValues, txt_infolog: { value: log_text } },
-                    toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
-                }))
+                    this.setState((prevState, props) => ({ 
+                        executionResult: result, 
+                        toolWidgetValues: { ...prevState.toolWidgetValues, txt_infolog: { value: log_text } },
+                        toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
+                    }))
                 // this.setState({ toolboxResult: result, pendingRequests: false });
-            }).catch((e) => {
-                console.log(e);
-                this.props.processFinished("process_msg", false, "Execution failed")
-                // this.setState({ pendingRequests: false });
-            });
-            break
+                }).catch((e) => {
+                    console.log(e);
+                    this.props.processFinished("process_msg", false, "Execution failed")
+                    // this.setState({ pendingRequests: false });
+                });
+                break
         }
     }
     filterUpdate(value) {
@@ -400,7 +400,7 @@ class GwToolbox extends React.Component {
             console.log("Tool", tool)
 
             toolWindow = (
-                <ResizeableWindow icon="cog"
+                <ResizeableWindow icon="toolbox"
                     key="ToolManager"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
@@ -421,7 +421,7 @@ class GwToolbox extends React.Component {
         }
 
         return [toolWindow, (
-            <SideBar icon="cog" id="GwToolbox" title="GW Toolbox"
+            <SideBar icon="toolbox" id="GwToolbox" title="GW Toolbox"
                 key="GwToolboxNull" onShow={this.onShow} width={this.props.toolboxInitialWidth} >
                 {body}
             </SideBar>
