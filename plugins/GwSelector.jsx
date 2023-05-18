@@ -17,6 +17,7 @@ import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import GwUtils from '../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { LayerRole, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
+import 'qwc2-giswater/plugins/style/GwSelector.css'
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 
