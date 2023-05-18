@@ -350,9 +350,6 @@ class GwMincut extends React.Component {
         this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } } }));
     }
     dispatchButton = (action) => {
-        if (this.props.dispatchButton) {
-            return this.props.dispatchButton(action);
-        }
         var queryableLayers;
         var request_url;
         let pendingRequests = false;
