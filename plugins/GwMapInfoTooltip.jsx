@@ -24,6 +24,8 @@ import Icon from 'qwc2/components/Icon';
 import displayCrsSelector from 'qwc2/selectors/displaycrs';
 import 'qwc2/plugins/style/MapInfoTooltip.css';
 import GwUtils from '../utils/GwUtils';
+import { setMapRequestKey } from 'qwc2/actions/map';
+import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 class GwMapInfoTooltip extends React.Component {
     static propTypes = {
@@ -40,7 +42,9 @@ class GwMapInfoTooltip extends React.Component {
         setCurrentTask: PropTypes.func,
         theme: PropTypes.object,
         layers: PropTypes.array,
-        refreshLayer: PropTypes.func
+        refreshLayer: PropTypes.func,
+        processStarted: PropTypes.func,
+        processFinished: PropTypes.func,
     };
     static defaultProps = {
         cooPrecision: 0,
@@ -122,13 +126,43 @@ class GwMapInfoTooltip extends React.Component {
             axios.put(request_url + "setfields", { ...params }).then((response) => {
                 const result = response.data;
                 // refresh map
-                this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                console.log("Theme", this.props.theme)
+                if (this.props.theme.tiled) {
+                    this.refreshTiles()
+                }
+                else {
+                    this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                }
                 // close
                 this.clear();
             }).catch((e) => {
                 console.log(e);
             });
         }
+    }
+    refreshTiles = () => {
+        const request_url = ConfigUtils.getConfigProp("tilingServiceUrl");
+        if (isEmpty(request_url)) {
+            return false;
+        }
+
+        const params = {
+            "theme": this.props.theme.title
+        }
+        
+        const processNotificationId = `tiling_msg-${+new Date()}`
+
+        this.props.processStarted(processNotificationId, "Updating tiles")
+        // Send request
+        axios.get(request_url + "update", { params: params }).then(response => {
+            this.props.processFinished(processNotificationId, true, "Update successful")
+            const result = response.data
+            console.log("tiling updated:", result)
+            this.props.setMapRequestKey(+new Date())
+        }).catch((e) => {
+            console.log(e);
+            this.props.processFinished(processNotificationId, false, "Update failed")
+        });
     }
     clear = () => {
         this.setState({coordinate: null, height: null, extraInfo: null, gwInfoResponse: null});
@@ -263,5 +297,8 @@ const selector = createSelector([state => state, displayCrsSelector], (state, di
 
 export default connect(selector, {
     setCurrentTask: setCurrentTask,
-    refreshLayer: refreshLayer
+    refreshLayer: refreshLayer,
+    setMapRequestKey: setMapRequestKey,
+    processStarted: processStarted,
+    processFinished: processFinished,
 })(GwMapInfoTooltip);
