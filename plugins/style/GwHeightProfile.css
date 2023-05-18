@@ -578,6 +578,7 @@
     box-shadow: 0 -2px 4px rgba(136, 136, 136, 0.5);
     padding-top: 0.5em;
     z-index: 2;
+    backdrop-filter: blur(4px);
 }
 
 .ct-point {
