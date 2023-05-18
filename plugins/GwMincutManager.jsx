@@ -71,7 +71,8 @@ class GwMincutManager extends React.Component {
         filters: {},
         widgetValues: {},
         mincutResult: null,
-        selectorResult: null
+        selectorResult: null,
+        mincutId: null
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentTask !== prevProps.currentTask && prevProps.currentTask === "GwMincutManager") {
@@ -110,7 +111,7 @@ class GwMincutManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetValues: {}, listJson: null});
+        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetValues: {}, listJson: null, mincutId: null});
     }
 
 
@@ -300,7 +301,7 @@ class GwMincutManager extends React.Component {
             }
             axios.get(request_url + "open", { params: params }).then((response) => {
                 const result = response.data
-                this.setState( { mincutResult: result } );
+                this.setState( { mincutResult: result, mincutId: mincutId } );
             }).catch((e) => {
                 console.log(e);
             })
@@ -399,7 +400,7 @@ class GwMincutManager extends React.Component {
 
         if (this.state.mincutResult){
             bodyMincut = (
-                <GwMincut mincutResult={this.state.mincutResult} dispatchButton={this.dispatchButton} key="MincutFromManager"/>
+                <GwMincut mincutResult={this.state.mincutResult} dispatchButton={this.dispatchButton} mincutId={this.state.mincutId} key="MincutFromManager"/>
             )
         }
         if (this.state.selectorResult){

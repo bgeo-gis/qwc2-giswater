@@ -49,7 +49,8 @@ class GwMincut extends React.Component {
         selection: PropTypes.object,
         mincutResult: PropTypes.object,
         dispatchButton: PropTypes.func,
-        changeLayerProperty: PropTypes.func
+        changeLayerProperty: PropTypes.func,
+        mincutId: PropTypes.number
     }
     static defaultProps = {
         initialWidth: 480,
@@ -367,7 +368,7 @@ class GwMincut extends React.Component {
                 break;
 
             case "real_start":
-                this.setMincut(this.state.ogClickPoint, false);
+                this.setMincut(this.state.ogClickPoint, false, "startMincut");
                 // set state 1 'In Progress'
                 this.acceptMincut(1, false)
                 // enable tab_exec widgets
@@ -463,10 +464,10 @@ class GwMincut extends React.Component {
         this.props.removeLayer("mincutselection");
         let pendingRequests = false;
         if (action === 'mincutValveUnaccess') updateState = false;
-
+        clickPoint = clickPoint || [null,null]
         const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
-            const mincutId = this.state.mincutId;
+            const mincutId = this.state.mincutId || this.props.mincutId;
             const epsg = this.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
             const params = {
@@ -539,7 +540,7 @@ class GwMincut extends React.Component {
         }, {});
         const request_url = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(request_url)) {
-            const clickPoint = this.state.ogClickPoint;
+            const clickPoint = this.state.ogClickPoint || [null,null];
             const epsg = this.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
             const params = {
@@ -549,7 +550,7 @@ class GwMincut extends React.Component {
                 "ycoord": clickPoint[1],
                 "zoomRatio": zoomRatio,
                 "action": this.props.action,
-                "mincutId": this.state.mincutId,
+                "mincutId": this.state.mincutId || this.props.mincutId,
                 "usePsectors": this.state.widgetValues.chk_use_planified?.value,
                 "fields": fields
             };
