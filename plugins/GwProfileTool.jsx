@@ -602,23 +602,6 @@ class GwProfileTool extends React.Component {
     }
 
     /**
-     * When tool is no longer used, remove all layers
-     */
-    onToolClose = () => {
-        this.props.removeMarker('profile1');
-        this.props.removeMarker('profile2');
-        console.log("Tool Close");
-        this.props.removeLayer("profilehighlight");
-        this.props.removeLayer("flowtrace_trace_points.geojson");
-        this.props.removeLayer("flowtrace_trace_lines.geojson");
-        this.updateMeasurementResults(null, false);
-        this.props.map.removeLayer(this.measureLayer);
-        this.props.map.removeLayer(this.pointLayer);
-        this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ identifyResult: null, pendingRequests: false, mode: 'trace', prevPoint: null});
-    }
-
-    /**
      * Remove all create llayers
      */
     clearResults = () => {
@@ -640,13 +623,18 @@ class GwProfileTool extends React.Component {
             bodyText = LocaleUtils.tr("infotool.clickhelpPoint");
         }
         if (isNaN(this.state.firstNodeId) || isNaN(this.state.secondNodeId)){
-            // If user not clicked a node show warning
+            // TODO: Translations
             bodyText = "No se ha encontrado un nodo en esta posición...";
+        }
+
+        if (this.state.firstNodeId && this.state.secondNodeId) {
+            // TODO: Translations
+            bodyText = "Displaying the profile"
         }
 
         if (bodyText){
             return (
-                <TaskBar key="GwProfileToolTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwProfileTool">
+                <TaskBar key="GwProfileToolTaskBar" onHide={this.clearResults} onShow={this.onShow} task="GwProfileTool">
                     {() => ({
                         body: bodyText
                     })}

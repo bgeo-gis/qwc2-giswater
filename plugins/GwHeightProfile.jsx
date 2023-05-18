@@ -347,7 +347,8 @@ class GwHeightProfile extends React.Component {
                 scaleMinSpace: 20,
                 axisX: {
                     // Generate x labels automatically to be able to zoom
-                    type: Chartist.AutoScaleAxis//,
+                    type: Chartist.AutoScaleAxis,
+                    onlyInteger: true
                 },
                 axisY: {
                     //type: Chartist.AutoScaleAxis,
@@ -553,7 +554,8 @@ class GwHeightProfile extends React.Component {
                 },
                 scaleMinSpace: 20,
                 axisX: {
-                    type: Chartist.AutoScaleAxis
+                    type: Chartist.AutoScaleAxis,
+                    onlyInteger: true
                 },
                 axisY: {
                     // TODO: Fix sometimes low value gets -1
@@ -734,7 +736,7 @@ class GwHeightProfile extends React.Component {
         }
 
         // if (this.state.pendingRequestsDialog === true || this.state.dateSelectorResult !== null) {
-            if (this.state.pendingRequestsDialog === true || this.state.profileToolResult !== null) {
+        if (this.state.pendingRequestsDialog === true || this.state.profileToolResult !== null) {
             datesDocker = (
                 <div id="DatesDocker">
                     {dockerBody}

@@ -11,7 +11,10 @@
     --map-background-color: white;
     --shadows: 1px 2px 5px 0px rgba(60,64,67,0.5);
     --map-button-transition: background-color 0.25s, color 0.25s;
+}
 
+/* Overwrite the default button colors */
+:root.default {
     --map-button-bg-color: white !important;
     --map-button-text-color: var(--text-color) !important;
     --map-button-hover-bg-color: #dcdcdc !important;
