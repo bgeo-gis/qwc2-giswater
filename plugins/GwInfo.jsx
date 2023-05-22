@@ -158,7 +158,7 @@ class GwInfo extends React.Component {
                 break;
 
             case "getlist":
-                request_url = GwUtils.getServiceUrl("util");
+                request_url = GwUtils.getServiceUrl("info");
                 if (!isEmpty(request_url)) {
 
                     const params = {
@@ -206,7 +206,7 @@ class GwInfo extends React.Component {
     }
     getList = (tab, widget) => {
         try {
-            var request_url = GwUtils.getServiceUrl("util");
+            var request_url = GwUtils.getServiceUrl("info");
             var filtered = widget.widget.filter(child => {
                 return child.name === tab.name;
             }).filter(child => {
