@@ -243,7 +243,7 @@ class GwVisitManager extends React.Component {
                 "visitId": visitId,
                 "visitType": visitType
             }
-            axios.get(request_url + "get", { params: params }).then((response) => {
+            axios.get(request_url + "getvisit", { params: params }).then((response) => {
                 const result = response.data
                 this.setState({ visitResult: result });
             }).catch((e) => {

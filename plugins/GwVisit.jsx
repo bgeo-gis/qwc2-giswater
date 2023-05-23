@@ -86,7 +86,8 @@ class GwVisit extends React.Component {
         visitWidgetValues: {},
         listJson: {},
         filters: {},
-        files: []
+        files: [],
+        refreshDialog: false
     }
     constructor(props) {
         super(props);
@@ -113,8 +114,8 @@ class GwVisit extends React.Component {
     }
     dispatchButton = (action, widget) => {
         var queryableLayers;
-        let request_url;
         let pendingRequests = false;
+        const request_url = GwUtils.getServiceUrl("visit");
         switch (action.functionName) {
             case 'upload_file':
                 let files = this.state.files
@@ -128,17 +129,18 @@ class GwVisit extends React.Component {
                 this.setState({ files: files });
                 break;
             case 'set_visit':
-                console.log(this.state.widgetValues);
+                //console.log(this.state.widgetValues);
                 const ignore_widgets = ['txt_visit_id'];
+                console.log("WIDGETS: ", this.state.widgetValues)
                 const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
                     let v = value.columnname === 'mincut_state' ? state : value.value;
                     if (ignore_widgets.includes(value.columnname)) v = null;
-                    if (!(v === null || v === undefined)) {
+                    if (!(v === null || v === undefined || v === "")) {
                         acc[value.columnname] = v;
+                        console.log(acc[value.columnname]," : ", v)
                     }
                     return acc;
                 }, {});
-                const request_url = GwUtils.getServiceUrl("visit");
                 if (!isEmpty(request_url)) {
                     this.props.processStarted("visit_msg", "Aceptar visita");
                     let formData = new FormData();
@@ -147,14 +149,19 @@ class GwVisit extends React.Component {
                         formData.append('files[]', file);
                     }
                     formData.append("theme", this.props.theme.title);
+                    formData.append("tableName", 'om_visit_photo');
                     if (this.state.visitId) formData.append("visitId", this.state.visitId);
                     formData.append("fields", JSON.stringify(fields));
-                    axios.post(request_url + 'set', formData, {
+                    console.log("FIELDS: ", fields)
+                    axios.post(request_url + 'setvisit', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     }).then((response) => {
                         const result = response.data;
                         // show message
-                        if (result.message) this.props.processFinished("visit_msg", result.status === "Accepted", result.message.text);
+                        this.props.processFinished("visit_msg", result.status === "Accepted", "DB error:" + (result.SQLERR || result.message || "Check logs"));
+                        if (result?.status === "Accepted") {
+                            this.onToolClose();
+                        }
                     }).catch((e) => {
                         console.warn(e);
                         this.props.processFinished("visit_msg", false, "Internal server error!");
@@ -164,48 +171,71 @@ class GwVisit extends React.Component {
             case 'set_previous_form_back':
                 this.clearResults();
                 break;
+            case 'get_visit':
+                let pendingRequests = false;
+                const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
+                    // TODO: If there are some wms external layers this would select more than one layer
+                    return l.type === "wms";
+                });
+                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+                    if (queryableLayers.length > 1) {
+                        console.warn("There are multiple giswater queryable layers");
+                    }
+                    const layer = queryableLayers[0];
+                    const visitType = this.state.mode === 'Incidencia' ? 2 : 1;
+                    const ignore_widgets = ['txt_visit_id'];
+                    console.log("WIDGETS: ", this.state.widgetValues)
+                    const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
+                        let v = value.columnname === 'class_id' ? widget : value.value;
+                        if (ignore_widgets.includes(value.columnname)) v = null;
+                        if (!(v === null || v === undefined || v === "")) {
+                            acc[value.columnname] = v;
+                            console.log(acc[value.columnname]," : ", v)
+                        }
+                        return acc;
+                    }, {});
+                    if (isEmpty(fields)) return;
+                    const epsg = this.crsStrToInt(this.props.map.projection)
+                    const params = {
+                        "theme": this.props.theme.title,
+                        "epsg": epsg,
+                        "layers": layer.queryLayers.join(','),
+                        "visitType": visitType,
+                        "visitId": this.state.visitId,
+                        "fields": fields
+                    }
+    
+                    pendingRequests = true
+                    axios.put(request_url + "getvisit", { ...params }).then(response => {
+                        const result = response.data;
+                        const visitId = result.body.feature.visitId;
+                        const filters = `{"visitId": ${visitId}}`;
+                        this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters, refreshDialog: true });
+                    }).catch((e) => {
+                        console.log(e);
+                        this.setState({ pendingRequests: false });
+                    });
+                }
+                break;
             default:
                 console.warn(`Action \`${action.functionName}\` cannot be handled.`)
                 break;
         }
     }
-    updateField = (widget, value) => {
-        console.log("updateField", widget, value);
-        let widgetcontrols = null;
-        if (widget.property.widgetcontrols !== "null") {
-            widgetcontrols = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<"));
-        }
-        let visible = true;
+    updateField = (widget, value, action) => {
         // Get filterSign
-        let filterSign = "=";
-        if (widgetcontrols !== null) {
-            filterSign = widgetcontrols.filterSign;
-            // console.log('widgetcontrols :>> ', widgetcontrols);
-            // console.log('this.state.widgetValues.class_id?.value :>> ', this.state.widgetValues.class_id?.value);
-            // visible = widgetcontrols.setFilterClass === null || widgetcontrols.setFilterClass == this.state.widgetValues.class_id?.value;
+        var filterSign = "=";
+        if (widget.property.widgetcontrols !== "null") {
+            filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
         }
-        let columnname = widget.name;
-        if (widget.property.widgetfunction !== "null") {
+        var columnname = widget.name;
+        if (widget.property.widgetfunction !== "null" && widget.property.widgetfunction !== "{}") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
+            this.dispatchButton(JSON.parse(widget.property.widgetfunction), value);
         }
         columnname = columnname ?? widget.name;
         // Update filters
-        let newWidgetValues = {}
-        if (widget.name === "class_id") {
-            Object.keys(this.state.widgetValues).forEach((key) => {
-                // if (key !== "class_id") {
-                let _visible = this.state.widgetValues[key].setFilterClass === null || this.state.widgetValues[key].setFilterClass == value;
-                newWidgetValues = { ...newWidgetValues, [key]: { ...this.state.widgetValues[key], visible: _visible } };
-                // }
-            });
-            newWidgetValues = { ...newWidgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign, visible: visible, setFilterClass: widgetcontrols.setFilterClass } }
-            console.log('newWidgetValues :>> ', newWidgetValues);
-            this.setState({ widgetValues: newWidgetValues })
-        }
-        else {
-            this.setState({ widgetValues: { ...this.state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign, visible: visible, setFilterClass: widgetcontrols.setFilterClass } } });
-        }
-        console.log("visible :>> ", visible);
+        this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } } }));
     }
     onTabChanged = (tab, widget) => {
         this.getList(tab, widget);
@@ -224,17 +254,16 @@ class GwVisit extends React.Component {
                     }
                 })
             }
-
-
+            console.log("FILTERS---------",this.state.filters)
             const params = {
                 "theme": this.props.theme.title,
-                "tableName": "om_visit_photo"
+                "tableName": "om_visit_photo",
                 // "tabName": tab.name,  // tab.name, no? o widget.name?
                 // "widgetname": tableWidgets[0].name,  // tabname_ prefix cal?
                 //"formtype": this.props.formtype,
                 // "idName": this.state.identifyResult.feature.idName,
                 // "id": this.state.identifyResult.feature.id,
-                // "filterFields": this.state.filters
+                "filterFields": this.state.filters //visit id
                 //"filterSign": action.params.tabName
             }
             console.log("TEST getList, params:", params);
@@ -283,10 +312,11 @@ class GwVisit extends React.Component {
                 }
 
                 pendingRequests = true
-                axios.get(request_url + "get", { params: params }).then(response => {
+                axios.get(request_url + "getvisit", { params: params }).then(response => {
                     const result = response.data;
                     const visitId = result.body.feature.visitId;
-                    this.setState({ visitResult: result, pendingRequests: false, visitId: visitId });
+                    const filters = `{"visitId": ${visitId}}`;
+                    this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters, refreshDialog: false });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
@@ -333,8 +363,9 @@ class GwVisit extends React.Component {
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
         this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [] });
+        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {}, refreshDialog: false });
     }
+
     clearResults = () => {
         if (this.props.visitResult) {
             this.onToolClose();
@@ -344,8 +375,9 @@ class GwVisit extends React.Component {
         }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [] });
+        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {}, refreshDialog: false });
     }
+
     render() {
         let resultWindow = null;
         if (this.state.pendingRequests === true || this.state.visitResult !== null) {
@@ -366,7 +398,7 @@ class GwVisit extends React.Component {
                 else {
                     body = (
                         <div className="identify-body" role="body">
-                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={true}
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={!this.state.refreshDialog}
                                 theme={this.state.theme} initiallyDocked={this.props.initiallyDocked}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
                                 widgetValues={this.state.widgetValues} listJson={this.state.listJson} replaceImageUrls={true} files={this.state.files}
