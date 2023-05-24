@@ -43,7 +43,7 @@ class GwQtDesignerForm extends React.Component {
         activetabs: PropTypes.object
     }
     static defaultProps = {
-        updateField: (name, value, widget) => { console.log(name, value, widget) },
+        updateField: (name, value, initial = false) => { console.log(name, value, initial) },
         dispatchButton: (action) => { console.log(action) },
         onTabChanged: (tab, widget) => { console.log(tab, widget) },
         autoResetTab: true,
@@ -561,7 +561,7 @@ class GwQtDesignerForm extends React.Component {
         if (this.props.getInitialValues) {
             const value = this.getWidgetValue(widget)
             if (value !== null)
-                this.props.updateField(widget, value)
+                this.props.updateField(widget, value, true)
         }
 
         if (widget.layout) {

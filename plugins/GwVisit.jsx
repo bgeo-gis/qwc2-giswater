@@ -86,8 +86,7 @@ class GwVisit extends React.Component {
         visitWidgetValues: {},
         listJson: {},
         filters: {},
-        files: [],
-        refreshDialog: false
+        files: []
     }
     constructor(props) {
         super(props);
@@ -210,7 +209,7 @@ class GwVisit extends React.Component {
                         const result = response.data;
                         const visitId = result.body.feature.visitId;
                         const filters = `{"visitId": ${visitId}}`;
-                        this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters, refreshDialog: true });
+                        this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters, widgetValues: {} });
                     }).catch((e) => {
                         console.log(e);
                         this.setState({ pendingRequests: false });
@@ -222,7 +221,7 @@ class GwVisit extends React.Component {
                 break;
         }
     }
-    updateField = (widget, value, action) => {
+    updateField = (widget, value, initial) => {
         // Get filterSign
         var filterSign = "=";
         if (widget.property.widgetcontrols !== "null") {
@@ -231,7 +230,7 @@ class GwVisit extends React.Component {
         var columnname = widget.name;
         if (widget.property.widgetfunction !== "null" && widget.property.widgetfunction !== "{}") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
-            this.dispatchButton(JSON.parse(widget.property.widgetfunction), value);
+            if (!initial) this.dispatchButton(JSON.parse(widget.property.widgetfunction), value);
         }
         columnname = columnname ?? widget.name;
         // Update filters
@@ -316,7 +315,7 @@ class GwVisit extends React.Component {
                     const result = response.data;
                     const visitId = result.body.feature.visitId;
                     const filters = `{"visitId": ${visitId}}`;
-                    this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters, refreshDialog: false });
+                    this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
@@ -363,7 +362,7 @@ class GwVisit extends React.Component {
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
         this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {}, refreshDialog: false });
+        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {} });
     }
 
     clearResults = () => {
@@ -375,7 +374,7 @@ class GwVisit extends React.Component {
         }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {}, refreshDialog: false });
+        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {} });
     }
 
     render() {
@@ -398,7 +397,7 @@ class GwVisit extends React.Component {
                 else {
                     body = (
                         <div className="identify-body" role="body">
-                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={!this.state.refreshDialog}
+                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={true}
                                 theme={this.state.theme} initiallyDocked={this.props.initiallyDocked}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
                                 widgetValues={this.state.widgetValues} listJson={this.state.listJson} replaceImageUrls={true} files={this.state.files}
