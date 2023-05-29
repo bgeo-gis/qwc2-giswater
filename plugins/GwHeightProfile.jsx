@@ -64,38 +64,26 @@ class GwHeightProfile extends React.Component {
         pendingRequests: false,
         dockerLoaded: false,
         widget_values: {},
+        showTerrain: true,
+        showTrueTerrain: false,
 
         width: window.innerWidth,
         data: [],
         isloading: false
     }
 
-    /**
-     * Add an event listener to know when graph is resized
-     */
     componentDidMount() {
         window.addEventListener('resize', this.handleResize);
     }
 
-    /**
-     * Removes an event listener to know when graph is resized
-     */
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleResize);
     }
 
-    /**
-     * Set new width when windows resized
-     */
     handleResize = () => {
         this.setState({width: window.innerWidth});
     }
 
-    /**
-     * When the component is updated checks if it has to draw a graphic or not
-     * @param {*} prevProps Previous state of Props
-     * @param {*} prevState Previous state of State
-     */
     componentDidUpdate(prevProps, prevState) {
         if (this.props.measurement.coordinates !== prevProps.measurement.coordinates) {
             if (this.props.measurement.profiling === true && this.props.measurement.geomType === "LineString" && !isEmpty(this.props.measurement.coordinates) ) {
@@ -149,6 +137,69 @@ class GwHeightProfile extends React.Component {
         this.setState({ profileToolResult: {}, pendingRequestsDialog: pendingRequests });
     }
 
+    getNodeSequences = (jsonData) => {
+        const nodesTopCoords = [];
+        const nodesBottomCoords = [];
+
+        const numNodes = jsonData.node.length;
+        for (let i = 0; i < numNodes; i++) {
+            // Get info of node
+            const node = jsonData.node[i];
+            const x = node.total_distance;
+            const y = node.elev;
+            const groundY = node.top_elev;
+            const halfWidth = node.cat_geom1 / 2;
+
+            const arc = jsonData.arc[i];
+            const prevArc = jsonData.arc[i - 1];
+            
+            if (i === 0) { // FirstNode coordinates
+                nodesTopCoords.push(
+                    { x: x - halfWidth, y: y },
+                    { x: x - halfWidth, y: groundY },
+                    { x: x + halfWidth, y: groundY },
+                    {
+                        x: x + halfWidth,
+                        y: numNodes > 1 ? arc.elev1 + arc.cat_geom1 : y,
+                    }
+                );
+                nodesBottomCoords.push(
+                    { x: x - halfWidth, y: y },
+                    { x: x + halfWidth, y: y },
+                    { x: x + halfWidth, y: arc.elev1 }
+                );
+            } 
+            else if (i < numNodes - 1) { // Mid nodes coordinates
+                nodesTopCoords.push(
+                    { x: x - halfWidth, y: prevArc.elev2 + prevArc.cat_geom1 },
+                    { x: x - halfWidth, y: groundY },
+                    { x: x + halfWidth, y: groundY },
+                    { x: x + halfWidth, y: arc.elev1 + arc.cat_geom1 }
+                );
+                nodesBottomCoords.push(
+                    { x: x - halfWidth, y: prevArc.elev2 },
+                    { x: x - halfWidth, y: y },
+                    { x: x + halfWidth, y: y },
+                    { x: x + halfWidth, y: arc.elev1 }
+                );
+            } 
+            else { // End Node coordinates
+                nodesTopCoords.push(
+                    { x: x - halfWidth, y: prevArc.elev2 + prevArc.cat_geom1 },
+                    { x: x - halfWidth, y: groundY },
+                    { x: x + halfWidth, y: groundY },
+                    { x: x + halfWidth, y: y }
+                );
+                nodesBottomCoords.push(
+                    { x: x - halfWidth, y: prevArc.elev2 },
+                    { x: x - halfWidth, y: y },
+                    { x: x + halfWidth, y: y }
+                );
+            }
+        }
+        return [nodesTopCoords, nodesBottomCoords]
+    }
+
     render() {
         if (!this.props.measurement.profiling) {
             // If graph not needed to be drawn return null
@@ -174,266 +225,170 @@ class GwHeightProfile extends React.Component {
         // Get all variables passed to measurement on GwProfileTool
         const jsonData = this.props.measurement.feature['body']['data'];
         const totLength = (this.props.measurement.length || []).reduce((tot, num) => tot + num, 0);
+        const nodes = jsonData.node;
+        const arcs = jsonData.arc;
+        
 
-        const nodeXCoordinates = [];
-        const nodeYCoordinates = [];
-        const highestYCoordinates = [];
+        const trueTerrain = this.state.data.map((elev, index) => ({
+            x: index * totLength / this.props.samples,
+            y: elev
+        }))
 
-        const superiorCoordinates = [];
-        const inferiorCoordinates = [];
+        const terrain = []
+        for (let n = 1; n < nodes.length; n++) {
+            const n0 = nodes[n - 1]
+            const n1 = nodes[n]
+            const i0 = Math.floor((n0.total_distance / totLength) * this.props.samples)
+            const i1 = Math.floor((n1.total_distance / totLength) * this.props.samples)
+            const delta0 = this.state.data[i0] - n0.top_elev
+            const delta1 = this.state.data[i1-1] - n1.top_elev
+            for (let i = i0; i < i1; i++) {
+                const localX = (i - i0) / (i1 - i0)
+                const delta = delta0 * (1 - localX) + delta1 * localX
+                terrain.push({
+                    x: i * totLength / this.props.samples,
+                    y: this.state.data[i] - delta
+                })
+            }
+        }
+
         const terrainMarks = [];
 
-        // Reset class arrays
-        this.terrainLabels = [];
-        this.nodeIds = [];
-
-        for (let i = 0; i < jsonData.node.length; i++) {
+        const nodeXCoordinates = [];
+        const numNodes = nodes.length;
+        for (let i = 0; i < numNodes; i++) {
             // Get info of node
-            const node = jsonData.node[i];
+            const node = nodes[i];
             const x = node.total_distance;
-            const y = node.elev;
-            const yMaxHeight = node.top_elev;
-            const halfSizeNode = node.cat_geom1 / 2;
-
-            const arc = jsonData.arc[i];
-            const prevArc = jsonData.arc[i - 1];
-            const numNodes = jsonData.node.length;
-
+            
             nodeXCoordinates.push(x);
-            nodeYCoordinates.push(y);
-            highestYCoordinates.push(yMaxHeight);
-            // Get coordinates to draw superior line of nodes in the graphic
-            if (i === 0) {
-                // FirstNode coordinates
-                superiorCoordinates.push({ x: x - halfSizeNode, y: y });
-                superiorCoordinates.push({ x: x - halfSizeNode, y: yMaxHeight });
-                superiorCoordinates.push({ x: x + halfSizeNode, y: yMaxHeight });
-                superiorCoordinates.push({
-                    x: x + halfSizeNode,
-                    y: i < numNodes - 1 ? arc.elev1 + arc.cat_geom1 : y,
-                });
-            } else if (i !== numNodes - 1) {
-                // Mid nodes coordinates
-                superiorCoordinates.push({ x: x - halfSizeNode, y: prevArc.elev2 + prevArc.cat_geom1 });
-                superiorCoordinates.push({ x: x - halfSizeNode, y: yMaxHeight });
-                superiorCoordinates.push({ x: x + halfSizeNode, y: yMaxHeight });
-                superiorCoordinates.push({ x: x + halfSizeNode, y: arc.elev1 + arc.cat_geom1 });
-            } else {
-                // End Node coordinates
-                superiorCoordinates.push({ x: x - halfSizeNode, y: prevArc.elev2 + prevArc.cat_geom1 });
-                superiorCoordinates.push({ x: x - halfSizeNode, y: yMaxHeight });
-                superiorCoordinates.push({ x: x + halfSizeNode, y: yMaxHeight });
-                superiorCoordinates.push({ x: x + halfSizeNode, y: y });
-            }
-            // Get coordinates to draw inferior line of nodes in the graphic
-            if (i === 0) {
-                // FirstNode
-                inferiorCoordinates.push({ x: x - halfSizeNode, y: y });
-                inferiorCoordinates.push({ x: x + halfSizeNode, y: y });
-                inferiorCoordinates.push({ x: x + halfSizeNode, y: arc.elev1 });
-            } else if (i !== numNodes - 1) {
-                // Mid nodes
-                inferiorCoordinates.push({ x: x - halfSizeNode, y: prevArc.elev2 });
-                inferiorCoordinates.push({ x: x - halfSizeNode, y: y });
-                inferiorCoordinates.push({ x: x + halfSizeNode, y: y });
-                inferiorCoordinates.push({ x: x + halfSizeNode, y: arc.elev1 });
-            } else {
-                // End Node
-                inferiorCoordinates.push({ x: x - halfSizeNode, y: prevArc.elev2 });
-                inferiorCoordinates.push({ x: x - halfSizeNode, y: y });
-                inferiorCoordinates.push({ x: x + halfSizeNode, y: y });
-            }
         }
-
+        
+        this.terrainLabels = [];
         // Get terrain info to show the labels
         for (let i = 0; i < jsonData.terrain.length; i++) {
-            terrainMarks.push({x: jsonData.terrain[i].total_x, y : jsonData.terrain[i].top_n1});
+            const localX = jsonData.terrain[i].total_x / totLength
+            const terrainIndex = Math.floor(localX * (this.props.samples-1))
+            terrainMarks.push({x: jsonData.terrain[i].total_x, y: terrain[terrainIndex].y});
+            // terrainMarks.push({x: jsonData.terrain[i].total_x, y : jsonData.terrain[i].top_n1});
             this.terrainLabels.push(JSON.parse(jsonData.terrain[i].label_n1));
-            this.nodeIds.push(this.terrainLabels[i].code);
         }
+
+        let minHeight = Math.min(...nodes.map(node => node.elev))
+        let maxHeight = Math.max(...nodes.map(node => node.top_elev)) + 1
 
         // Generates an array to draw a cross on each node location
         const nodesCross = [];
         for(let i = 0; i < terrainMarks.length; i++){
             nodesCross.push(
-                {x: terrainMarks[i]["x"] - 0.3, y: terrainMarks[i]["y"]},
-                {x: terrainMarks[i]["x"] + 0.3, y: terrainMarks[i]["y"]},
-                {x: null, y: null},
-                {x: terrainMarks[i]["x"], y: terrainMarks[i]["y"] + 0.3},
-                {x: terrainMarks[i]["x"], y: terrainMarks[i]["y"] - 0.3},
+                {x: terrainMarks[i].x, y: terrainMarks[i].y + 0.3},
+                {x: terrainMarks[i].x, y: minHeight - 2.5 },
+                // {x: terrainMarks[i].x, y: terrainMarks[i].y - 0.3},
                 {x: null, y: null},
             );
         }
 
-        // Terrain line coordinates
-        const terrain = highestYCoordinates.map((entry, index) => ({
-            x: nodeXCoordinates[index],
-            y: entry
-        }))
+        const [nodesTopCoords, nodesBottomCoords] = this.getNodeSequences(jsonData)
 
-        // Adds more space to start and end of terrain line
-        terrain.unshift({x: nodeXCoordinates[0] - 1, y: highestYCoordinates[0]});
-        terrain.push({x: nodeXCoordinates[nodeXCoordinates.length - 1] + 1, y: highestYCoordinates[highestYCoordinates.length -1]});
-        const terrainLabels = this.terrainLabels;
-        // All lines that will be displayed on the graphic
-        let data = {
-            series: [
-                {
-                    name: 'terrain',
-                    data: terrain,
-                    className: 'ct-terrain-line'
-                },
-                {
-                    name: "topLine",
-                    data: superiorCoordinates ,
-                    className: 'ct-node-pipes'
-                },
-                {
-                    name: "bottomLine",
-                    data: inferiorCoordinates,
-                    className: 'ct-node-pipes'
-                },
-                {
-                    name: "terrainMarks",
-                    data: terrainMarks,
-                    className: 'ct-terrain-marks'
-                },
-                {
-                    name: "nodesCross",
-                    data: nodesCross,
-                    className: 'ct-terrain-line'
+        // Combined data and options
+        let series = {
+            "topLine": {
+                data: nodesTopCoords,
+                className: 'ct-node-pipes',
+                options: {
+                    showArea: false,
+                    showPoint: false,
+                    lineSmooth: false
                 }
-            ]
-        };
-        let options;
-        // TODO: automatically adjust text sizes epending on height, also zoom
-        // Maximum height supported to draw the table
-        const max_height_supported = 13;
-        if (Math.max(...highestYCoordinates) - Math.min(...nodeYCoordinates) > max_height_supported){
-            // Draw the profile without table
-            const minHeight = Math.min(...nodeYCoordinates);
-            const maxHeight = Math.max(...highestYCoordinates) + 1;
-            // All lines to be drawn on profile and classnames to edit the css
-            options = {
-                width: this.state.width - 20 + 'px',
-                height: this.props.height,
-                chartPadding: {left: 5, bottom: 1, top: 0},
-                // Properties of each line
-                series: {
-                    'terrain': {
-                        showArea: true,
-                        showPoint: false,
-                        lineSmooth: false
-                    },
-                    "topLine": {
-                        showArea: false,
-                        showPoint: false,
-                        lineSmooth: false
-                    },
-                    "bottomLine": {
-                        showArea: false,
-                        showPoint: false,
-                        lineSmooth: false
-                    },
-                    "terrainMarks": {
-                        showPoint: true,
-                        showLine: false
-                    },
-                    "nodesCross": {
-                        showPoint: false,
-                        lineSmooth: false
+            },
+            "bottomLine": {
+                data: nodesBottomCoords,
+                className: 'ct-node-pipes',
+                options: {
+                    showArea: false,
+                    showPoint: false,
+                    lineSmooth: false
+                }
+            },
+            "terrainMarks": {
+                data: terrainMarks,
+                className: 'ct-terrain-marks',
+                options: {
+                    showPoint: true,
+                    showLine: false
+                },
+                labelFunc: (x, y) => {
+                    for (const label of this.terrainLabels) {
+                        if (x === label.total_distance) {
+                            return label.code.toString();
+                        }
                     }
-                },
-                scaleMinSpace: 20,
-                axisX: {
-                    // Generate x labels automatically to be able to zoom
-                    type: Chartist.AutoScaleAxis,
-                    onlyInteger: true
-                },
-                axisY: {
-                    //type: Chartist.AutoScaleAxis,
-                    low: minHeight,
-                    high: maxHeight
-                },
-                //Plugins used on profile
-                plugins: [
-                    // Add titles to the axisY and axisX
-                    ChartistAxisTitle({
-                        axisX: {
-                            axisTitle: distanceStr + " [m]",
-                            axisClass: 'ct-axis-title',
-                            offset: {x: 0, y: 30},
-                            textAnchor: 'middle'
-                        },
-                        axisY: {
-                            axisTitle: heightStr + " [m " + aslStr + "]",
-                            axisClass: 'ct-axis-title',
-                            offset: {x: -10, y: 10},
-                            flipTitle: true
-                        }
-                    }),
+                }
+            },
+            "nodesCross": {
+                data: nodesCross,
+                borderDash: [10, 5],
+                className: 'ct-nodes-cross',
+                options: {
+                    showPoint: false,
+                    lineSmooth: false
+                }
+            }
+        }
 
-                    // Adds Node Id label on top of each node
-                    CtPointLabels({
-                        textAnchor: 'middle',
-                        labelInterpolationFnc: function(value, serie) {
-                            let label = "";
-                            if (serie.name === 'terrainMarks') {
-                                let result = value.split(", ");
-                                result[0] = Number(result[0]);
-                                result[1] = Number(result[1]);
-                                terrainLabels.forEach(element => {
-                                    if (result[0] === element.total_distance && result[1] === element.top_elev){
-                                        label = element.code.toString();
-                                    }
-                                });
-                            }
-                            return label;
-                        }
-                    }),
+        if (this.state.showTerrain) {
+            series["terrain"] = {
+                data: terrain,
+                className: 'ct-terrain-line',
+                options: {
+                    showArea: true,
+                    showPoint: false,
+                    lineSmooth: true
+                }
+            }
+        }
 
-                    // Do zoom on x axis
-                    Zoom({
-                        onZoom : function(chart, reset) { resetZoom = reset; },
-                        noClipY: true,
-                        autoZoomY: {high: false, low: false},
-                    })
-            ]};
-        } else {
-            // Generate profile with table
-            const minHeight = Math.min(...nodeYCoordinates) - 12;
-            const maxHeight = Math.max(...highestYCoordinates) + 1;
+        if (this.state.showTrueTerrain) {
+            series["trueTerrain"] = {
+                data: trueTerrain,
+                className: 'ct-true-terrain',
+                options: {
+                    showArea: true,
+                    showPoint: false,
+                    lineSmooth: false
+                }
+            }
+        }
+
+        const max_height_supported = 13;
+        if (maxHeight - minHeight < max_height_supported) {
+            minHeight = minHeight - 12
 
             // Create all arrays with coordinates to draw guitar
-            const divisorGuitarLine = [];
-            for(let i = 0; i < jsonData["arc"].length; i++){
-                let firstNodeXCoordinate = jsonData["node"][i]["total_distance"];
-                let secondNodeXCoordinate = jsonData["node"][i + 1]["total_distance"];
-                divisorGuitarLine.push(
-                    {x: firstNodeXCoordinate, y: minHeight + 7.5},
-                    {x: firstNodeXCoordinate, y: minHeight + 9.5},
-                    {x: null, y: null},
-                    {x: secondNodeXCoordinate, y: minHeight + 7.5},
-                    {x: secondNodeXCoordinate, y: minHeight + 9.5}
-                    );
-            }
+            const divisorGuitarLine = nodes.reduce((res, node) => {
+                return res.concat([
+                    { x: node.total_distance, y: minHeight + 7.5 },
+                    { x: node.total_distance, y: minHeight + 9.5 },
+                    { x: null, y: null },
+                ])
+            }, []);
 
-            const catalogGuitarLabels = jsonData["arc"].map((entry, index) => ({
-                x: (jsonData["node"][index]["total_distance"] + jsonData["node"][index + 1]["total_distance"]) / 2,
+            const catalogGuitarLabels = arcs.map((arc, i) => ({
+                x: (nodes[i].total_distance + nodes[i + 1].total_distance) / 2,
                 y: minHeight + 8
             }))
 
-            const topElevGuitarLabels = nodeXCoordinates.map((entry, index) => ({
+            const topElevGuitarLabels = nodeXCoordinates.map((entry) => ({
                 x: entry,
                 y: minHeight + 5.6
             }))
 
-            const yMaxGuitarLabels = nodeXCoordinates.map((entry, index) => ({
+            const yMaxGuitarLabels = nodeXCoordinates.map((entry) => ({
                 x: entry,
                 y: minHeight + 3.1
             }))
 
-            const elevGuitarLabels = nodeXCoordinates.map((entry, index) => ({
+            const elevGuitarLabels = nodeXCoordinates.map((entry) => ({
                 x: entry,
                 y: minHeight + 0.6
             }))
@@ -459,192 +414,170 @@ class GwHeightProfile extends React.Component {
                 {x: nodeXCoordinates[nodeXCoordinates.length - 1] + 1, y: minGraphYValue + 0.1},
             ];
 
-            // Adds new lines to be drawn on the graphic
-            data.series.push({
-                name: "guitar",
-                data: guitar,
-                className: 'ct-guitar-line'
-            },
-            {
-                name: 'catalogGuitarArea',
-                data: catalogGuitarArea,
-                className: 'ct-guitar-area'
-            },
-            {
-                name: "divisorGuitarLine",
-                data: divisorGuitarLine,
-                className: 'ct-guitar-line'
-            },
-            {
-                name: "catalogGuitarLabels",
-                data: catalogGuitarLabels,
-                className: 'ct-guitar-label'
-            },
-            {
-                name: "topElevGuitarLabels",
-                data: topElevGuitarLabels,
-                className: 'ct-guitar-label'
-            },
-            {
-                name: "yMaxGuitarLabels",
-                data: yMaxGuitarLabels,
-                className: 'ct-guitar-label'
-            },
-            {
-                name: "elevGuitarLabels",
-                data: elevGuitarLabels,
-                className: 'ct-guitar-label'
-            });
-
-            options = {
-                width: this.state.width - 20 + 'px',
-                height: this.props.height,
-                chartPadding: {left: 5, bottom: 1, top: 0},
-                // Set each line properties
-                series: {
-                    'terrain': {
-                        showArea: true,
-                        showPoint: false,
-                        lineSmooth: false
-                    },
-                    "topLine": {
-                        showArea: false,
-                        showPoint: false,
-                        lineSmooth: false
-                    },
-                    "bottomLine": {
-                        showArea: false,
-                        showPoint: false,
-                        lineSmooth: false
-                    },
-                    "terrainMarks": {
-                        showPoint: true,
-                        showLine: false
-                    },
-                    "nodesCross": {
-                        showPoint: false,
-                        lineSmooth: false
-                    },
-                    "catalogGuitarArea": {
+            series = {
+                ...series,
+                "guitar": {
+                    data: guitar,
+                    className: 'ct-guitar-line'
+                },
+                "catalogGuitarArea": {
+                    data: catalogGuitarArea,
+                    className: 'ct-guitar-area',
+                    options: {
                         showArea: true,
                         showPoint: false
-                    },
-                    "divisorGuitarLine": {
+                    }
+                },
+                "divisorGuitarLine": {
+                    data: divisorGuitarLine,
+                    className: 'ct-guitar-line',
+                    options: {
                         showArea: false,
                         showPoint: false,
                         showLine: true,
                         lineSmooth: false
-                    },
-                    "catalogGuitarLabels": {
-                        showLine: false,
-                        showPoint: true
-                    },
-                    "topElevGuitarLabels": {
-                        showLine: false,
-                        showPoint: true
-                    },
-                    "yMaxGuitarLabels": {
-                        showLine: false,
-                        showPoint: true
-                    },
-                    "elevGuitarLabels": {
-                        showLine: false,
-                        showPoint: true
                     }
                 },
-                scaleMinSpace: 20,
-                axisX: {
-                    type: Chartist.AutoScaleAxis,
-                    onlyInteger: true
-                },
-                axisY: {
-                    // TODO: Fix sometimes low value gets -1
-                    low: minGraphYValue,
-                    high: maxHeight,
-                    onlyInteger: true
-                },
-                plugins: [
-                    // Displays a title for the axisX and axisY
-                    ChartistAxisTitle({
-                        axisX: {
-                            axisTitle: distanceStr + " [m]",
-                            axisClass: 'ct-axis-title',
-                            offset: {x: 0, y: 30},
-                            textAnchor: 'middle'
-                        },
-                        axisY: {
-                            axisTitle: heightStr + " [m " + aslStr + "]",
-                            axisClass: 'ct-axis-title',
-                            offset: {x: -10, y: 10},
-                            flipTitle: true
-                        }
-                    }),
-                    // Show labels on the table, depending on line series draw one label or another
-                    CtPointLabels({
-                        textAnchor: 'middle',
-                        labelInterpolationFnc: function(value, serie) {
-                            let label = "";
-                            if (serie.name === 'terrainMarks') {
-                                let result = value.split(", ");
-                                result[0] = Number(result[0]);
-                                result[1] = Number(result[1]);
-                                terrainLabels.forEach(element => {
-                                    if (result[0] === element.total_distance && result[1] === element.top_elev){
-                                        label = element.code.toString();
-                                    }
-                                });
-                            } else if (serie.name === 'catalogGuitarLabels') {
-                                let result = value.split(", ");
-                                result[0] = Number(result[0]);
-                                result[1] = Number(result[1]);
-
-                                for (let i = 0; i < jsonData["arc"].length; i++){
-                                    let firstNodeXCoordinate = jsonData["node"][i]["total_distance"]
-                                    let secondNodeXCoordinate = jsonData["node"][i + 1]["total_distance"]
-                                    if ((firstNodeXCoordinate + secondNodeXCoordinate) / 2 === result[0]){
-                                        const text = JSON.parse(jsonData["arc"][i]["descript"])
-                                        label = text["catalog"] + " " + text["dimensions"].toString();
-                                    }
-                                }
-                            } else if (serie.name === 'topElevGuitarLabels') {
-                                let result = value.split(", ");
-                                result[0] = Number(result[0]);
-                                result[1] = Number(result[1]);
-                                terrainLabels.forEach(element => {
-                                    if (result[0] === element.total_distance){
-                                        label = element.top_elev.toString();
-                                    }
-                                });
-                            } else if (serie.name === 'yMaxGuitarLabels') {
-                                let result = value.split(", ");
-                                result[0] = Number(result[0]);
-                                result[1] = Number(result[1]);
-                                terrainLabels.forEach(element => {
-                                    if (result[0] === element.total_distance){
-                                        label = element.ymax.toString();
-                                    }
-                                });
-                            } else if (serie.name === 'elevGuitarLabels') {
-                                let result = value.split(", ");
-                                result[0] = Number(result[0]);
-                                result[1] = Number(result[1]);
-                                terrainLabels.forEach(element => {
-                                    if (result[0] === element.total_distance){
-                                        label = element.elev.toString();
-                                    }
-                                });
+                "catalogGuitarLabels": {
+                    data: catalogGuitarLabels,
+                    className: 'ct-guitar-label',
+                    options: {
+                        showLine: false,
+                        showPoint: true
+                    },
+                    labelFunc: (x, y) => {
+                        for (let i = 0; i < arcs.length; i++) {
+                            let firstNodeX = nodes[i].total_distance
+                            let secondNodeX = nodes[i + 1].total_distance
+                            if ((firstNodeX + secondNodeX) / 2 === x){
+                                const text = JSON.parse(arcs[i].descript)
+                                return text.catalog + " " + text.dimensions.toString();
                             }
-                            return label;
                         }
-                    }),
-                    // Make zoom on axisX
-                    Zoom({
-                        onZoom : function(chart, reset) { resetZoom = reset; },
-                        noClipY: true,
-                        autoZoomY: {high: false, low: false},
-                    })
-            ]};
+                    }
+                },
+                "topElevGuitarLabels": {
+                    data: topElevGuitarLabels,
+                    className: 'ct-guitar-label',
+                    options: {
+                        showLine: false,
+                        showPoint: true
+                    },
+                    labelFunc: (x, y) => {
+                        for (const label of this.terrainLabels) {
+                            if (x === label.total_distance){
+                                return label.top_elev.toString();
+                            }
+                        }
+                    }
+                },
+                "yMaxGuitarLabels": {
+                    data: yMaxGuitarLabels,
+                    className: 'ct-guitar-label',
+                    options: {
+                        showLine: false,
+                        showPoint: true
+                    },
+                    labelFunc: (x, y) => {
+                        for (const label of this.terrainLabels) {
+                            if (x === label.total_distance){
+                                return label.ymax.toString();
+                            }
+                        }
+                    }
+                },
+                "elevGuitarLabels": {
+                    data: elevGuitarLabels,
+                    className: 'ct-guitar-label',
+                    options: {
+                        showLine: false,
+                        showPoint: true
+                    },
+                    labelFunc: (x, y) => {
+                        for (const label of this.terrainLabels) {
+                            if (x === label.total_distance){
+                                return label.elev.toString();
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+        const data = {
+            series: Object.entries(series).map(([name, data]) => {
+                return {
+                    name: name,
+                    data: data.data,
+                    className: data.className
+                }
+            })
+        };
+
+        const options = {
+            // width: this.state.width - 20 + 'px',
+            height: this.props.height,
+            chartPadding: {left: 5, bottom: 1, top: 0},
+            series: Object.entries(series).reduce((res, [name, data]) => {
+                return {
+                    ...res,
+                    [name]: data.options 
+                }
+            }, {}),
+            scaleMinSpace: 20,
+            axisX: { // Generate x labels automatically to be able to zoom
+                type: Chartist.AutoScaleAxis,
+                scaleMinSpace: 50,
+                // onlyInteger: true,
+                // low: 0,
+                // high: nodes.at(-1).total_distance,
+                referenceValue: totLength
+            },
+            axisY: {
+                low: minHeight,
+                high: maxHeight,
+            },
+            plugins: [
+                // Add titles to the axisY and axisX
+                ChartistAxisTitle({
+                    axisX: {
+                        axisTitle: distanceStr + " [m]",
+                        axisClass: 'ct-axis-title',
+                        offset: {x: 0, y: 30},
+                        textAnchor: 'middle'
+                    },
+                    axisY: {
+                        axisTitle: heightStr + " [m " + aslStr + "]",
+                        axisClass: 'ct-axis-title',
+                        offset: {x: -10, y: 10},
+                        flipTitle: true
+                    }
+                }),
+                CtPointLabels({
+                    textAnchor: 'middle',
+                    // labelOffset: {
+                    //     x: 0,
+                    //     y: 0
+                    // },
+                    labelInterpolationFnc: (value, serie) => {
+                        let result = value.split(", ");
+                        const x = Number(result[0]);
+                        const y = Number(result[1]);
+                        for (const key of Object.keys(series)) {
+                            if (serie.name === key && series[key].labelFunc) {
+                                return series[key].labelFunc(x, y);
+                            }
+                        }
+                        return "";
+                    }
+                }),
+                Zoom({
+                    onZoom : function(chart, reset) { resetZoom = reset; },
+                    noClipY: true,
+                    autoZoomY: {high: false, low: false},
+                })
+            ]
+        };
 
         const listeners = {
             // Draw map info when hovering in HeightProfile
@@ -690,11 +623,27 @@ class GwHeightProfile extends React.Component {
                 <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" />
                 <span className="height-profile-tooltip" ref={el => { this.tooltip = el; }} />
                 <span className="height-profile-marker" ref={el => { this.marker = el; }} />
-                <div>
-                    <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom()}}
-                        title={"Reset Zoom"} />
-                    <Icon className="export-profile-button" icon="export" onClick={() => this.getDialog()}
-                        title={"Export profile"} />
+                <div className='height-profile-buttons'>
+                    <div className='height-profile-buttons-top'>
+                        <div className="checkbox-container">
+                            <input id="showTerrain" type="checkbox" 
+                                checked={this.state.showTerrain} onChange={(ev) => {this.setState({showTerrain: ev.target.checked })}}
+                            />
+                            <label htmlFor="showTerrain">Adjusted</label>
+                        </div>
+                        <div className="checkbox-container">
+                            <input id="showTrueTerrain" type="checkbox" 
+                                checked={this.state.showTrueTerrain} onChange={(ev) => {this.setState({showTrueTerrain: ev.target.checked })}}
+                            />
+                            <label htmlFor="showTrueTerrain">Real</label>
+                        </div>
+                    </div>
+                    <div className='height-profile-buttons-bottom'>
+                        <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom()}}
+                            title={"Reset Zoom"} />
+                        <Icon className="export-profile-button" icon="export" onClick={() => this.getDialog()}
+                            title={"Export profile"} />
+                    </div>
                 </div>
             </div>
         );
@@ -704,15 +653,15 @@ class GwHeightProfile extends React.Component {
             let body = null;
             if (isEmpty(this.state.profileToolResult)) {
                 if (this.state.pendingRequestsDialog === true) {
-                    body = (<div className="date-selector-body" role="body"><span className="date-selector-body-message">Querying...</span></div>); // TODO: TRANSLATION
+                    body = (<div className="profile-export-body" role="body"><span className="profile-export-body-message">Querying...</span></div>); // TODO: TRANSLATION
                 } else {
-                    body = (<div className="date-selector-body" role="body"><span className="date-selector-body-message">No result</span></div>); // TODO: TRANSLATION
+                    body = (<div className="profile-export-body" role="body"><span className="profile-export-body-message">No result</span></div>); // TODO: TRANSLATION
                 }
             } else {
                 const result = this.state.profileToolResult
                 if (!isEmpty(result.form_xml)) {
                     body = (
-                        <div className="date-selector-body" role="body">
+                        <div className="profile-export-body" role="body">
                             <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} dispatchButton={this.dispatchButton} updateField={this.updateField} widgetValues={this.state.widget_values} getInitialValues={false}/>
                         </div>
                     )
@@ -774,10 +723,6 @@ class GwHeightProfile extends React.Component {
         //this.props.setCurrentTask(null);
     }
 
-    /**
-     * Gets the svg of actual profile
-     * @param {*} soloPozos Return a svg with only 'pozos'
-     */
     getProfileSvg = (vnode_dist, title, date) => {
         const requestUrl = GwUtils.getServiceUrl("profile");
         const result = this.props.measurement.feature;
@@ -898,20 +843,13 @@ class GwHeightProfile extends React.Component {
         }
     }
 
-    /**
-     * Removes created marker and tooltip
-     */
     clearMarkerAndTooltip = () => {
         this.props.removeMarker('gwheightprofile');
         if (this.tooltip) {
             this.marker.style.visibility = this.tooltip.style.visibility = 'hidden';
         }
     }
-    /**
-     * Unknown functionality
-     * @param {*} pos
-     * @returns
-     */
+
     pickPositionCallback = (pos) => {
         if (!pos) {
             this.clearMarkerAndTooltip();
@@ -953,13 +891,6 @@ class GwHeightProfile extends React.Component {
         this.updateTooltip(x, this.state.data[idx], path.getBoundingClientRect().left + k * path.getBoundingClientRect().width, false);
     }
 
-    /**
-     * Unknown functionality
-     * @param {*} q
-     * @param {*} p1
-     * @param {*} p2
-     * @returns
-     */
     pointOnSegment = (q, p1, p2) => {
         const tol = 1E-3;
         // Determine whether points lie on same line: cross-product (P2-P1) x (Q - P1) zero?
