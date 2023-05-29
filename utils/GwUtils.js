@@ -34,6 +34,9 @@ const GwUtils = {
     forEachWidgetInForm(form, func) {
         this._handleWidget(form.ui.widget, func)
     },
+    forEachWidgetInLayout(layout, func) {
+        this._handleLayout(layout, func)
+    },
     _handleWidget(widget, func) {
         func(widget)
 
