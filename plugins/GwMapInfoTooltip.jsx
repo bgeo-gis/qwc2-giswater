@@ -158,7 +158,7 @@ class GwMapInfoTooltip extends React.Component {
             this.props.processFinished(processNotificationId, true, "Update successful")
             const result = response.data
             console.log("tiling updated:", result)
-            this.props.setMapRequestKey(+new Date())
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }).catch((e) => {
             console.log(e);
             this.props.processFinished(processNotificationId, false, "Update failed")
