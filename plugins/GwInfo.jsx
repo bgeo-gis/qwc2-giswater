@@ -207,30 +207,23 @@ class GwInfo extends React.Component {
     getList = (tab, widget) => {
         try {
             var request_url = GwUtils.getServiceUrl("info");
-            var filtered = widget.widget.filter(child => {
-                return child.name === tab.name;
-            }).filter(child => {
-                return child.layout;
-            }).filter(child => {
-                return child.layout.item[0].layout.item.some((child2) => child2.widget.class === "QTableView");
-            });
-            if (isEmpty(filtered) || isEmpty(request_url)) {
+
+            let tableWidget = null;
+            GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
+                if (widget.class === "QTableView") {
+                    tableWidget = widget // There should only be one
+                }
+            })
+
+            if (isEmpty(tableWidget) || isEmpty(request_url)) {
                 return null;
             }
-            var tableWidgets = [];
-            filtered.forEach(childTab => {
-                childTab.layout.item[0].layout.item.forEach(child => {
-                    if (child.widget.class === "QTableView") {
-                        tableWidgets.push(child.widget);
-                    }
-                })
-            })
-            const prop = tableWidgets[0].property || {};
+            const prop = tableWidget.property || {};
 
             const params = {
                 "theme": this.props.theme.title,
                 "tabName": tab.name,  // tab.name, no? o widget.name?
-                "widgetname": tableWidgets[0].name,  // tabname_ prefix cal?
+                "widgetname": tableWidget.name,  // tabname_ prefix cal?
                 //"formtype": this.props.formtype,
                 "tableName": prop.linkedobject,
                 "idName": this.state.identifyResult.body.feature.idName,
@@ -241,7 +234,7 @@ class GwInfo extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState((state) => ({ listJson: {...state.listJson, [tableWidgets[0].name]: result} }));
+                this.setState((state) => ({ listJson: {...state.listJson, [tableWidget.name]: result} }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
