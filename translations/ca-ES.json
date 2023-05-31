@@ -63,7 +63,9 @@
       }
     },
     "colorschemes": {
-      "giswater": "Giswater"
+      "giswater": "Giswater",
+      "white": "Blanc",
+      "transparent": "Transparent"
     }
   }
 }
