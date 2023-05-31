@@ -311,7 +311,7 @@ class GwVisitManager extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow icon="visit" dockable="bottom" scrollable={true}
+                <ResizeableWindow icon="giswater" dockable="bottom" scrollable={true}
                     initialHeight={600} initialWidth= {900}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
                     key="GwVisitManagerWindow"

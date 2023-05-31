@@ -675,7 +675,7 @@ class GwHeightProfile extends React.Component {
 
             }
             datesWindow = (
-                <ResizeableWindow icon="date_selector" key="GwDateSelectorWindow" title="GW Profile Tool" id="GwDateSelector"
+                <ResizeableWindow icon="giswater" key="GwDateSelectorWindow" title="GW Profile Tool" id="GwDateSelector"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth} dockable={false}
                     onShow={this.onShow} onClose={this.onToolClose}
                 >

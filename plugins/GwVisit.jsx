@@ -408,7 +408,7 @@ class GwVisit extends React.Component {
             }
             let title = this.state.visitResult.body?.data?.form?.headerText || "Visit";
             resultWindow = (
-                <ResizeableWindow icon="info-sign" dockable={this.props.dockable}
+                <ResizeableWindow icon="giswater" dockable={this.props.dockable}
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} scrollable={this.state.mode === "Dma" ? true : false}
                     key="GwInfoWindow"

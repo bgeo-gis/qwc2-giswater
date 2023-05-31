@@ -223,7 +223,7 @@ class GwSelector extends React.Component {
         }
         if (this.props.selectorResult){
             return (
-                <ResizeableWindow icon="selector" dockable="right"
+                <ResizeableWindow icon="giswater" dockable="right"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
                     key="GwSelector"
@@ -234,7 +234,7 @@ class GwSelector extends React.Component {
             );
         } else {
             return (
-                <SideBar icon="selector" id="GwSelector" title="GW Selector"
+                <SideBar icon="giswater" id="GwSelector" title="GW Selector"
                     key="GwSelectorNull" onShow={this.onShow} >
                     {body}
                 </SideBar>

@@ -489,7 +489,7 @@ class GwInfo extends React.Component {
                 }
             }
             resultWindow = (               
-                <ResizeableWindow icon="info-sign" dockable={this.props.dockable} minHeight={this.props.minHeight}
+                <ResizeableWindow icon="giswater" dockable={this.props.dockable} minHeight={this.props.minHeight}
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} scrollable={this.state.mode === "Dma" ? true : false}
                     key="GwInfoWindow"
@@ -618,7 +618,7 @@ class GwInfo extends React.Component {
                     </div>
                 )
                 visitWindow = (
-                    <ResizeableWindow icon="info-sign"
+                    <ResizeableWindow icon="giswater"
                         initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                         initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={false} scrollable={true}
                         key="GwVisitWindow"

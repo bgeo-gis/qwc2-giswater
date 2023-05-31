@@ -400,7 +400,7 @@ class GwToolbox extends React.Component {
             console.log("Tool", tool)
 
             toolWindow = (
-                <ResizeableWindow icon="toolbox"
+                <ResizeableWindow icon="giswater"
                     key="ToolManager"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
@@ -421,7 +421,7 @@ class GwToolbox extends React.Component {
         }
 
         return [toolWindow, (
-            <SideBar icon="toolbox" id="GwToolbox" title="GW Toolbox"
+            <SideBar icon="giswater" id="GwToolbox" title="GW Toolbox"
                 key="GwToolboxNull" onShow={this.onShow} width={this.props.toolboxInitialWidth} >
                 {body}
             </SideBar>

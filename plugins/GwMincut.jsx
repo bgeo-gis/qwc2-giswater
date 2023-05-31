@@ -658,7 +658,7 @@ class GwMincut extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow icon="mincut" dockable="right"
+                <ResizeableWindow icon="giswater" dockable="right"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
                     key="GwMincutWindow"
