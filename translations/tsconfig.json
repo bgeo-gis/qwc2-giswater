@@ -31,7 +31,9 @@
     "appmenu.items.GwVisitIncidencia",
     "appmenu.items.GwVisitManager",
     "appmenu.items.GwToolbox",
-    "colorschemes.giswater"
+    "colorschemes.giswater",
+    "colorschemes.white",
+    "colorschemes.transparent"
   ],
   "strings": [
     "editing.select",

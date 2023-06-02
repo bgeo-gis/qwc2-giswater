@@ -282,14 +282,13 @@ class GwFlowtrace extends React.Component {
         this.panToResult(result)
     }
     render() {
-        let resultWindow = null;
-        return [resultWindow, (
+        return (
             <TaskBar key="GwFlowtraceTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwFlowtrace">
                 {() => ({
                     body: LocaleUtils.tr("infotool.clickhelpPoint")
                 })}
             </TaskBar>
-        )];
+        )
     }
 }
 

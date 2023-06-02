@@ -24,7 +24,6 @@ import Icon from 'qwc2/components/Icon';
 import displayCrsSelector from 'qwc2/selectors/displaycrs';
 import 'qwc2/plugins/style/MapInfoTooltip.css';
 import GwUtils from '../utils/GwUtils';
-import { setMapRequestKey } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 class GwMapInfoTooltip extends React.Component {
@@ -298,7 +297,6 @@ const selector = createSelector([state => state, displayCrsSelector], (state, di
 export default connect(selector, {
     setCurrentTask: setCurrentTask,
     refreshLayer: refreshLayer,
-    setMapRequestKey: setMapRequestKey,
     processStarted: processStarted,
     processFinished: processFinished,
 })(GwMapInfoTooltip);
