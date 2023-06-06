@@ -157,7 +157,7 @@ class GwVisit extends React.Component {
                     }).then((response) => {
                         const result = response.data;
                         // show message
-                        this.props.processFinished("visit_msg", result.status === "Accepted", "DB error:" + (result.SQLERR || result.message || "Check logs"));
+                        this.props.processFinished("visit_msg", result.status === "Accepted", "DB return:" + (result.SQLERR || result.message || "Check logs"));
                         if (result?.status === "Accepted") {
                             this.onToolClose();
                         }
