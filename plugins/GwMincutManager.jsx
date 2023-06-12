@@ -67,7 +67,6 @@ class GwMincutManager extends React.Component {
         currentTab: {},
         feature_id: null,
         listJson: null,
-        tableWidgets: new Set(),
         filters: {},
         widgetValues: {},
         mincutResult: null,
@@ -117,7 +116,7 @@ class GwMincutManager extends React.Component {
 
     updateField = (widget, value, action) => {
         // Get filterSign
-        var filterSign = "=";
+        let filterSign = "=";
         let widgetcontrols = {};
         let filtervalue = value;
         if (widget.property.widgetcontrols !== "null") {
@@ -126,7 +125,7 @@ class GwMincutManager extends React.Component {
                 filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
             }
         }
-        var columnname = widget.name;
+        let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
         }
@@ -150,26 +149,27 @@ class GwMincutManager extends React.Component {
 
     getList = (mincutManagerResult) => {
         try {
-            var request_url = GwUtils.getServiceUrl("util");
-            var widgets = mincutManagerResult.body.data.fields;
-            var tableWidgets = [];
+            const request_url = GwUtils.getServiceUrl("util");
+            // TODO: Change to use GwUtils.forEachWidgetInForm
+            const widgets = mincutManagerResult.body.data.fields;
+            let tableWidget = null;
             widgets.forEach(widget => {
                 if (widget.widgettype === "tablewidget"){
-                    tableWidgets.push(widget);
+                    tableWidget = widget;
                 }
             })
 
             const params = {
                 "theme": this.props.currentTheme.title,
-                "tabName": tableWidgets[0].tabname,
-                "widgetname": tableWidgets[0].columnname,
-                "tableName": tableWidgets[0].linkedobject,
+                "tabName": tableWidget.tabname,
+                "widgetname": tableWidget.columnname,
+                "tableName": tableWidget.linkedobject,
                 "filterFields": {}
             }
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 //this.setState({ listJson: result, mincutmanagerResult: null });
-                this.setState({ listJson: {...this.state.listJson, [tableWidgets[0].columnname]: result} });
+                this.setState({ listJson: {...this.state.listJson, [tableWidget.columnname]: result} });
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -293,7 +293,7 @@ class GwMincutManager extends React.Component {
 
     openMincut = (mincutId) => {
         try {
-            var request_url = GwUtils.getServiceUrl("mincut");
+            const request_url = GwUtils.getServiceUrl("mincut");
 
             const params = {
                 "theme": this.props.currentTheme.title,
@@ -312,7 +312,7 @@ class GwMincutManager extends React.Component {
 
     cancelMincut = (mincutId) => {
         try {
-            var request_url = GwUtils.getServiceUrl("mincut");
+            const request_url = GwUtils.getServiceUrl("mincut");
 
             const params = {
                 "theme": this.props.currentTheme.title,
@@ -331,7 +331,7 @@ class GwMincutManager extends React.Component {
 
     deleteMincut = (mincutId) => {
         try {
-            var request_url = GwUtils.getServiceUrl("mincut");
+            const request_url = GwUtils.getServiceUrl("mincut");
 
             const params = {
                 "theme": this.props.currentTheme.title,

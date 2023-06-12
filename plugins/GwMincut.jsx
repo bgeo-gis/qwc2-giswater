@@ -159,23 +159,25 @@ class GwMincut extends React.Component {
     };
     getList = (tab, widget) => {
         try {
-            var request_url = GwUtils.getServiceUrl("util");
-            var widgets = this.state.mincutResult?.body?.data?.fields;
-            var tableWidgets = [];
-            if (widgets) {
-                widgets.forEach(widget => {
-                    console.log(widget);
-                    if (widget.widgettype === "tableview") {
-                        tableWidgets.push(widget);
-                    }
-                })
+            let request_url = GwUtils.getServiceUrl("util");
+            let tableWidget = null;
+            GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
+                if (widget.class === "QTableView") {
+                    tableWidget = widget // There should only be one
+                }
+            })
+
+            if (isEmpty(tableWidget) || isEmpty(request_url)) {
+                return null;
             }
+            console.log("table widget:", tableWidget);
+            
 
             const params = {
                 "theme": this.props.theme.title,
-                "tableName": tableWidgets[0].linkedobject,
+                "tableName": tableWidget.property.linkedobject,
                 "tabName": tab.name,  // tab.name, no? o widget.name?
-                "widgetname": tableWidgets[0].widgetname,  // tabname_ prefix cal?
+                // "widgetname": tableWidgets[0].widgetname,  // tabname_ prefix cal?
                 //"formtype": this.props.formtype,
                 "idName": "result_id",
                 "id": this.state.mincutId
@@ -186,13 +188,13 @@ class GwMincut extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState((state) => ({ listJson: { ...state.listJson, [tableWidgets[0].columnname]: result } }));
+                this.setState((state) => ({ listJson: { ...state.listJson, [tableWidget.name]: result } }));
             }).catch((e) => {
-                console.log(e);
+                console.warn(e);
                 // this.setState({  });
             })
         } catch (error) {
-            console.warn(error);
+            console.error(error);
         }
     }
     manageLayers = (result) => {
@@ -338,11 +340,11 @@ class GwMincut extends React.Component {
     // #region DIALOG
     updateField = (widget, value, action) => {
         // Get filterSign
-        var filterSign = "=";
+        let filterSign = "=";
         if (widget.property.widgetcontrols !== "null") {
             filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
         }
-        var columnname = widget.name;
+        let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
         }
@@ -351,9 +353,6 @@ class GwMincut extends React.Component {
         this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } } }));
     }
     dispatchButton = (action) => {
-        var queryableLayers;
-        var request_url;
-        let pendingRequests = false;
         let disabledWidgets = [];
         switch (action.functionName) {
             case "accept":

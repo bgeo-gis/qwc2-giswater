@@ -9,7 +9,6 @@ import axios from 'axios';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import { changeSelectionState } from 'qwc2/actions/selection';
@@ -19,23 +18,12 @@ import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwInfoDmaForm from '../components/GwInfoDmaForm';
 import GwUtils from '../utils/GwUtils';
 
-import Chartist from 'chartist';
-import ChartistComponent from 'react-chartist';
-import ChartistAxisTitle from 'chartist-plugin-axistitle';
-import Icon from 'qwc2/components/Icon';
-import Zoom from 'qwc2-giswater/libs/bower_components/chartist-plugin-zoom/dist/chartist-plugin-zoom';
-
-import './style/GwInfoGraphs.css';
-
-var resetZoom = null;
 
 class GwVisit extends React.Component {
     static propTypes = {
@@ -73,6 +61,7 @@ class GwVisit extends React.Component {
         pendingRequests: false,
         widgetValues: {},
         mode: 'Visit',
+        coords: [null, null],
         identifyResult: null,
         prevIdentifyResult: null,
         pendingRequests: false,
@@ -85,13 +74,12 @@ class GwVisit extends React.Component {
         visitJson: null,
         visitWidgetValues: {},
         listJson: {},
-        filters: {},
         files: []
     }
     constructor(props) {
         super(props);
         if(props.visitResult){
-            this.state.visitResult = props.visitResult;            
+            this.state.visitResult = props.visitResult;
         }
     }
     componentDidUpdate(prevProps, prevState) {
@@ -101,19 +89,12 @@ class GwVisit extends React.Component {
         if (this.props.currentTask === "GwVisit" || this.props.currentIdentifyTool === "GwVisit") {
             this.identifyPoint(prevProps);
         }
-        // Check if list need to update (current tab or filters changed)
-        if (!isEmpty(this.state.currentTab) && ((prevState.currentTab !== this.state.currentTab) || (prevState.filters !== this.state.filters))) {
-            console.log('this.state.currentTab :>> ', this.state.currentTab);
-            this.getList(this.state.currentTab.tab, this.state.currentTab.widget);
-        }
     }
     crsStrToInt = (crs) => {
         const parts = crs.split(':')
         return parseInt(parts.slice(-1))
     }
     dispatchButton = (action, widget) => {
-        var queryableLayers;
-        let pendingRequests = false;
         const request_url = GwUtils.getServiceUrl("visit");
         switch (action.functionName) {
             case 'upload_file':
@@ -142,14 +123,27 @@ class GwVisit extends React.Component {
                 }, {});
                 if (!isEmpty(request_url)) {
                     this.props.processStarted("visit_msg", "Aceptar visita");
+
+                    let widgets = this.state.visitResult?.body?.data?.fields;
+                    let tableWidget = null;
+                    widgets.forEach(widget => {
+                        if (widget.widgettype === "tableview"){
+                            tableWidget = widget;
+                        }
+                    })
+
                     let formData = new FormData();
                     for (let i = 0; i < this.state.files.length; i++) {
                         const file = this.state.files[i];
                         formData.append('files[]', file);
                     }
+                    formData.append("xcoord", this.state.coords[0])
+                    formData.append("ycoord", this.state.coords[1])
+                    formData.append("epsg", this.crsStrToInt(this.props.map.projection))
                     formData.append("theme", this.props.theme.title);
-                    formData.append("tableName", 'om_visit_photo');
-                    if (this.state.visitId) formData.append("visitId", this.state.visitId);
+                    formData.append("tableName", tableWidget.linkedobject);
+                    const visitId = this.state.coords[0] ? null : this.state.visitResult?.body?.feature?.visitId;
+                    formData.append("visitId", visitId || null);
                     formData.append("fields", JSON.stringify(fields));
                     console.log("FIELDS: ", fields)
                     axios.post(request_url + 'setvisit', formData, {
@@ -171,7 +165,6 @@ class GwVisit extends React.Component {
                 this.clearResults();
                 break;
             case 'get_visit':
-                let pendingRequests = false;
                 const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
                     // TODO: If there are some wms external layers this would select more than one layer
                     return l.type === "wms";
@@ -195,21 +188,19 @@ class GwVisit extends React.Component {
                     }, {});
                     if (isEmpty(fields)) return;
                     const epsg = this.crsStrToInt(this.props.map.projection)
+                    const visitId = this.state.visitResult?.body?.feature?.visitId;
                     const params = {
                         "theme": this.props.theme.title,
                         "epsg": epsg,
                         "layers": layer.queryLayers.join(','),
                         "visitType": visitType,
-                        "visitId": this.state.visitId,
+                        "visitId": visitId,
                         "fields": fields
                     }
-    
-                    pendingRequests = true
+
                     axios.put(request_url + "getvisit", { ...params }).then(response => {
                         const result = response.data;
-                        const visitId = result.body.feature.visitId;
-                        const filters = `{"visitId": ${visitId}}`;
-                        this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters, widgetValues: {} });
+                        this.setState({ visitResult: result, pendingRequests: false, widgetValues: {} });
                     }).catch((e) => {
                         console.log(e);
                         this.setState({ pendingRequests: false });
@@ -221,13 +212,13 @@ class GwVisit extends React.Component {
                 break;
         }
     }
-    updateField = (widget, value, initial) => {
+    updateField = (widget, value, initial=false) => {
         // Get filterSign
-        var filterSign = "=";
+        let filterSign = "=";
         if (widget.property.widgetcontrols !== "null") {
             filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
         }
-        var columnname = widget.name;
+        let columnname = widget.name;
         if (widget.property.widgetfunction !== "null" && widget.property.widgetfunction !== "{}") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
             if (!initial) this.dispatchButton(JSON.parse(widget.property.widgetfunction), value);
@@ -242,40 +233,43 @@ class GwVisit extends React.Component {
     }
     getList = (tab, widget) => {
         try {
-            var request_url = GwUtils.getServiceUrl("util");
-            var widgets = this.state.visitResult?.body?.data?.fields;
-            var tableWidgets = [];
-            if (widgets) {
-                widgets.forEach(widget => {
-                    console.log(widget);
-                    if (widget.widgettype === "tableview") {
-                        tableWidgets.push(widget);
-                    }
-                })
+            let request_url = GwUtils.getServiceUrl("util");
+            let tableWidget = null;
+            GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
+                if (widget.class === "QTableView") {
+                    tableWidget = widget // There should only be one
+                }
+            })
+
+            if (isEmpty(tableWidget) || isEmpty(request_url)) {
+                return null;
             }
-            console.log("FILTERS---------",this.state.filters)
+
+            const visitId = this.state.visitResult?.body?.feature?.visitId;
+            const filters = `{"visit_id": {"columnname": "visit_id", "value": ${visitId || -1}}}`
+            console.log("FILTERS---------", filters)
             const params = {
                 "theme": this.props.theme.title,
-                "tableName": "om_visit_photo",
+                "tableName": tableWidget.property.linkedobject,
                 // "tabName": tab.name,  // tab.name, no? o widget.name?
                 // "widgetname": tableWidgets[0].name,  // tabname_ prefix cal?
                 //"formtype": this.props.formtype,
                 // "idName": this.state.identifyResult.feature.idName,
                 // "id": this.state.identifyResult.feature.id,
-                "filterFields": this.state.filters //visit id
+                "filterFields": filters //visit id
                 //"filterSign": action.params.tabName
             }
             console.log("TEST getList, params:", params);
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState({ listJson: { ...this.state.listJson, [tableWidgets[0].columnname]: result } });
+                this.setState((state) => ({ listJson: { ...state.listJson, [tableWidget.name]: result }}));
             }).catch((e) => {
-                console.log(e);
+                console.warn(e);
                 // this.setState({  });
             })
         } catch (error) {
-            console.warn(error);
+            console.error(error);
         }
 
     }
@@ -313,9 +307,7 @@ class GwVisit extends React.Component {
                 pendingRequests = true
                 axios.get(request_url + "getvisit", { params: params }).then(response => {
                     const result = response.data;
-                    const visitId = result.body.feature.visitId;
-                    const filters = `{"visitId": ${visitId}}`;
-                    this.setState({ visitResult: result, pendingRequests: false, visitId: visitId, filters: filters });
+                    this.setState({ visitResult: result, coords: clickPoint, pendingRequests: false });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
@@ -362,7 +354,7 @@ class GwVisit extends React.Component {
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
         this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {} });
+        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {} });
     }
 
     clearResults = () => {
@@ -374,7 +366,7 @@ class GwVisit extends React.Component {
         }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ visitResult: null, pendingRequests: false, visitId: null, files: [], widgetValues: {} });
+        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {} });
     }
 
     render() {
