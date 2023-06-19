@@ -60,6 +60,9 @@ const GwUtils = {
         })
     },
     getGeoJSONFeatures(data, styleName=null, styleOptions=null) {
+        if (isEmpty(data.features)) {
+            return []
+        }
         let defaultCrs = "EPSG:25831";
         let defaultStyleName = 'default'
         let defaultStyleOptions = {
