@@ -69,7 +69,7 @@ class GwTableWidget extends React.Component {
         const data = this.props.values;
         let cols = [];
         const headers = this.props.form.headers || [];
-        const tableParams = this.props.form.table;
+        const tableParams = this.props.form.table || {};
         if (!isEmpty(headers)){
             Object.keys(data[0]).map(key => {
                 const header = headers.filter(header => {
@@ -201,9 +201,9 @@ class GwTableWidget extends React.Component {
 
         if (inputProps.enablePagination){
             inputProps.muiTablePaginationProps={
-                rowsPerPageOptions: tableParams.muiTablePaginationProps.rowsPerPageOptions ?? [5, 10, 20, 50, 100],
-                showFirstButton: tableParams.muiTablePaginationProps.showFirstButton ?? true,
-                showLastButton: tableParams.muiTablePaginationProps.showLastButton ?? true
+                rowsPerPageOptions: tableParams.muiTablePaginationProps?.rowsPerPageOptions ?? [5, 10, 20, 50, 100],
+                showFirstButton: tableParams.muiTablePaginationProps?.showFirstButton ?? true,
+                showLastButton: tableParams.muiTablePaginationProps?.showLastButton ?? true
             }
         }
         

@@ -139,7 +139,7 @@ class GwQtDesignerForm extends React.Component {
             containerStyle.height = '100%';
         }
         return (
-            <div className={containerClass} key={layout.name} style={containerStyle}>
+            <div className={containerClass} name={layout.name} key={layout.name} style={containerStyle}>
                 {layout.item.sort((a, b) => (sortKey(a) - sortKey(b))).map((item, idx) => {
                     let child = null;
                     if (item.widget) {
@@ -254,30 +254,27 @@ class GwQtDesignerForm extends React.Component {
         const value = this.getWidgetValue(widget)
 
         if (widget.class === "QTableWidget") {
-            if (isEmpty(this.props.listJson) || !this.props.listJson[widget.name]?.body?.data?.fields) {
+            if (!value || !value.values) {
                 return null;
             }
-            const values = this.props.listJson[widget.name].body.data.fields[0].value;
-            const form = this.props.listJson[widget.name].body.form;
-            if (!values) {
-                return (<span>No results found</span>)
-            }
+            
+            const { values, form } = value
+            // if (!values) {
+            //     return (<span>No results found</span>)
+            // }
 
             return (<GwTableWidget values={values} form={form} dispatchButton={this.props.dispatchButton}/>);
         } else if (widget.class === "QTableView") {
-            if (isEmpty(this.props.listJson) || !this.props.listJson[widget.name]?.body?.data?.fields) {
-                return null;
+            if (!value) {
+                return null
             }
-            const values = this.props.listJson[widget.name].body.data.fields[0].value;
-            if (!values) {
-                return (<span>No results found</span>)
-            }
-            console.log(values)
+
+            console.log(value)
             return (
                 <div className="qtableview">
                     <table className="qtableview">
                         <tbody>
-                        {values.map((value, i) => (
+                        {value.map((value, i) => (
                             <tr className="qtableview-row" key={i}>
                                 <td className="qtableview">
                                     <ul>
@@ -285,7 +282,7 @@ class GwQtDesignerForm extends React.Component {
                                             if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value[field])) {
                                                 return (<a href={value[field]} rel="noreferrer" target="_blank" key={j}><img src={value[field]} /></a>);
                                             } else {
-                                                return (<li key={j}><b>{field}</b>: {value[field]}</li>)
+                                                return (<li key={j}><b>{field}</b>: {String(value[field])}</li>)
                                             }
                                             })}
                                     </ul>
@@ -496,6 +493,21 @@ class GwQtDesignerForm extends React.Component {
 
             return parts[1] ? parts[0] + "T" + parts[1] : parts[0]
         }
+        else if (widget.class === "QTableWidget") {
+            console.log("listJson", typeof this.props.listJson, this.props.listJson)
+            const data = this.props.listJson || {}
+            const values = data[widget.name]?.body.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
+            const form = data[widget.name]?.body.form || (prop.form ? JSON.parse(prop.form) : null)
+            console.log(values, form)
+            return {
+                values: values,
+                form: form
+            }
+        }
+        else if (widget.class === "QTableView") {
+            const data = this.props.listJson || {}
+            return data[widget.name]?.body.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
+        }
 
         return null
     }
@@ -538,6 +550,7 @@ class GwQtDesignerForm extends React.Component {
         });
     }
     reformatWidget = (widget, fields, externalFields, counters) => {
+        // console.log(widget.property)
         if (widget.property) {
             widget.property = MiscUtils.ensureArray(widget.property).reduce((res, prop) => {
                 return ({ ...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")] });
