@@ -150,9 +150,9 @@ class GwMincut extends React.Component {
         }
         return center;
     }
-    setOMLayersVisibility = (visible = true) => {
+    setOMLayersVisibility = (layerName, visible = true) => {
         const rootLayer = this.props.layers.find(l => l.type === "wms");
-        const { layer, path } = GwUtils.findLayer(rootLayer, 'Mincut');
+        const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
         if (layer) {
             this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
         }
@@ -198,11 +198,11 @@ class GwMincut extends React.Component {
         }
     }
     manageLayers = (result) => {
-        if (result?.tiled) {
+        if (result?.body?.data?.tiled) {
             this.addMincutLayers(result);
         }
         else {
-            this.setOMLayersVisibility(true);
+            this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true);
         }
     }
     addMincutLayers = (result) => {
