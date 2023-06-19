@@ -56,6 +56,8 @@ class GwToolbox extends React.Component {
     }
     state = {
         toolResult: null,
+        toolType: null,
+
         toolActiveTabs: {},
         executionResult: null,
         toolWidgetValues: {},
@@ -76,7 +78,19 @@ class GwToolbox extends React.Component {
 
             axios.post(request_url + "getprocess", { ...params }).then(callback || (() => {})).catch((e) => {
                 console.warn(e);
-                // this.setState({ pendingRequests: false });
+            });
+        }
+    }
+    getReport(report_id, callback) {
+        const request_url = GwUtils.getServiceUrl("toolbox");
+        if (!isEmpty(request_url)) {
+            const params = {
+                "theme": this.props.theme.title,
+                "id": report_id,
+            }
+
+            axios.post(request_url + "getreport", { ...params }).then(callback || (() => {})).catch((e) => {
+                console.warn(e);
             });
         }
     }
@@ -88,23 +102,28 @@ class GwToolbox extends React.Component {
                     this.getProcess(tool.id, {}, (response) => {
                         const result = response.data
                         console.log("getprocess result:", result)
-                        this.setState({ toolResult: result, toolWidgetValues: {}, toolActiveTabs: {} });
+                        this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
                     })
                 }
                 break;
+            case "reports":
+                if (this.state.toolResult?.body?.data.listname !== tool.id) {
+                    this.getReport(tool.id, (response) => {
+                        const result = response.data
+                        console.log("getraport result:", result)
+                        this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
+                    })
+                }
+                break
             default:
                 console.warn(`Type \`${type}\` cannot be handled.`)
                 break;
         }
     }
     clearToolManager = () => {
-        this.setState({ toolResult: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {} })
+        this.setState({ toolResult: null, toolType: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {} })
     }
     onShow = () => {
-        // Make service request
-        this.makeRequest();
-    }
-    makeRequest() {
         let pendingRequests = false;
 
         const request_url = GwUtils.getServiceUrl("toolbox");
@@ -155,7 +174,7 @@ class GwToolbox extends React.Component {
                 })
 
                 console.log("patata getprocess result:", result, cleanedWidgetVals)
-                this.setState({ toolWidgetValues: cleanedWidgetVals, toolResult: result });
+                this.setState({ toolWidgetValues: cleanedWidgetVals, toolResult: result, toolType: "process" });
             })
         }
         else {
@@ -175,7 +194,7 @@ class GwToolbox extends React.Component {
                 break
             
             case "run":
-                if (this.state.toolResult === null)
+                if (this.state.toolType !== "processes" && this.state.toolResult === null)
                     return
 
                 const data = this.state.toolResult.body.data
@@ -330,7 +349,6 @@ class GwToolbox extends React.Component {
             <div className={this.getExpandedTabClass(type, tab_name)} key={`${type}-${tab_name}`}>
                 <div className="identify-result-entry">
                     <span className="clickable" onClick={() => this.toggleTabExpanded(type, tab_name)}><b>{tab_name}</b></span>
-                    {/* <span className="clickable" onClick={()=> this.toggleExpanded(layer, true)}><b>{results[0].layertitle}</b></span> */}
                 </div>
                 <div className="identify-layer-entries toolbox-tool-list">
                     {tools.map(tool => this.renderTool(type, tool))}
@@ -339,12 +357,16 @@ class GwToolbox extends React.Component {
         )
     }
     renderTool(type, tool) {
+        let className = "clickable";
+        if (type === this.state.toolType && this.state.toolResult?.body.data.id === tool.id) {
+            className = "active clickable"
+        }
         return (
             <div className="identify-result-entry" key={`${tool.alias}`}>
                 <span 
-                    className={this.state.toolResult?.body.data.id === tool.id ? "active clickable" : "clickable"} 
+                    className={className} 
                     onClick={()=>{this.toolClicked(type, tool)}}
-                    title={`${tool.alias} - ${tool.functionname}`}
+                    title={`${tool.alias} - ${tool.functionname || ""}`}
                 >
                     {tool.alias}
                 </span>
@@ -367,27 +389,21 @@ class GwToolbox extends React.Component {
                     <div className="toolbox-body" role="body">
                         <div className='toolbox-filter'>
                             <InputContainer className="searchbox-field">
-                                {/* <Icon icon="search" role="prefix" /> */}
                                 <input onChange={ev => this.filterUpdate(ev.target.value)}
                                     role="input"
                                     type="text" value={this.state.toolboxFilter} />
                                 <Icon icon="remove" onClick={() => this.filterUpdate("")} role="suffix" />
                             </InputContainer>
-                            {/* <input onChange={(ev) => this.filterUpdate(ev.target.value)} type="text" value={this.state.toolboxFilter} /> */}
                         </div>
                         <div className='toolbox-results-container'>
-                            {Object.entries(result.body.data).map(([type, tabs]) => {
-                                if (type === "processes") {
-                                    return (
-                                        <div className="toolbox-type" key={type}>
-                                            <span><b>{type.toUpperCase()}</b></span>
-                                            <div className="toolbox-tabs-container">
-                                                {Object.entries(tabs.fields).map(([tab_name, tools]) => this.renderTab(type, tab_name, tools))}
-                                            </div>
-                                        </div>
-                                    )
-                                }
-                            })}
+                            {Object.entries(result.body.data).map(([type, tabs]) => (
+                                <div className="toolbox-type" key={type}>
+                                    <span><b>{type.toUpperCase()}</b></span>
+                                    <div className="toolbox-tabs-container">
+                                        {Object.entries(tabs.fields).map(([tab_name, tools]) => this.renderTab(type, tab_name, tools))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )
@@ -406,7 +422,7 @@ class GwToolbox extends React.Component {
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
                     onClose={this.clearToolManager} title={tool.body.data.alias}
                 >
-                    <div className='tool-manager-body' role='body'>
+                    <div className={`tool-manager-body toolbox-${this.state.toolType}`} role='body'>
                         <GwQtDesignerForm 
                             form_xml={tool.form_xml} 
                             dispatchButton={this.onToolButton} 

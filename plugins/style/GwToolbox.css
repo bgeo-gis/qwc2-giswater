@@ -29,12 +29,20 @@ div.tool-manager-body {
     height: 100%;
 }
 
-div.tool-manager-body > div.qt-designer-form {
+div.toolbox-processes > div.qt-designer-form {
     height: 100%;
 }
 
-div.tool-manager-body > div.qt-designer-form textarea {
+div.toolbox-processes > div.qt-designer-form textarea {
     resize: none;
+}
+
+div.toolbox-reports {
+    overflow: auto;
+}
+
+div.toolbox-reports > div.qt-designer-form > .qt-designer-layout-grid {
+    display: block;
 }
 
 /* div.tool-manager-body div.qt-designer-layout-grid {
