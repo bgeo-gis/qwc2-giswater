@@ -68,7 +68,6 @@ class GwVisitManager extends React.Component {
         pendingRequests: false,
         currentTab: {},
         feature_id: null,
-        listJson: null,
         tableWidgets: new Set(),
         filters: {},
         widgetValues: {},
@@ -111,13 +110,13 @@ class GwVisitManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ visitmanagerResult: null, pendingRequests: false, filters: {}, visitResult: null, widgetValues: {}, listJson: null});
+        this.setState({ visitmanagerResult: null, pendingRequests: false, filters: {}, visitResult: null, widgetValues: {}});
     }
 
 
     updateField = (widget, value, action) => {
         // Get filterSign
-        var filterSign = "=";
+        let filterSign = "=";
         let widgetcontrols = {};
         let filtervalue = value;
         if (widget.property.widgetcontrols !== "null") {
@@ -126,7 +125,7 @@ class GwVisitManager extends React.Component {
                 filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
             }
         }
-        var columnname = widget.name;
+        let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
         }
@@ -143,16 +142,16 @@ class GwVisitManager extends React.Component {
                 }
             }
         }
-        this.setState({ widgetValues: { ...this.state.widgetValues, [widget.name]: { value: value }},
-            filters: { ...this.state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } } });
+        this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { value: value }},
+            filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } } }));
 
     }
 
     getList = (visitManagerResult) => {
         try {
-            var request_url = GwUtils.getServiceUrl("util");
-            var widgets = visitManagerResult.body.data.fields;
-            var tableWidgets = [];
+            const request_url = GwUtils.getServiceUrl("util");
+            const widgets = visitManagerResult.body.data.fields;
+            let tableWidgets = [];
             widgets.forEach(widget => {
                 if (widget.widgettype === "tablewidget"){
                     tableWidgets.push(widget);
@@ -168,8 +167,7 @@ class GwVisitManager extends React.Component {
             }
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
-                //this.setState({ listJson: result, visitmanagerResult: null });
-                this.setState((state) => ({ listJson: {...state.listJson, [tableWidgets[0].columnname]: result} }));
+                this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidgets[0].columnname]: result} }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -236,7 +234,7 @@ class GwVisitManager extends React.Component {
 
     openvisit = (visitId, visitType) => {
         try {
-            var request_url = GwUtils.getServiceUrl("visit");
+            const request_url = GwUtils.getServiceUrl("visit");
 
             const params = {
                 "theme": this.props.currentTheme.title,
@@ -257,7 +255,7 @@ class GwVisitManager extends React.Component {
 
     deletevisit = (visitId) => {
         try {
-            var request_url = GwUtils.getServiceUrl("visit");
+            const request_url = GwUtils.getServiceUrl("visit");
 
             const params = {
                 "theme": this.props.currentTheme.title,
@@ -304,7 +302,7 @@ class GwVisitManager extends React.Component {
                             <GwQtDesignerForm form_xml={result.form_xml} readOnly={false}
                                 theme={this.props.currentTheme.title}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField}
-                                listJson={this.state.listJson} widgetValues={this.state.widgetValues} getInitialValues={false}
+                                widgetValues={this.state.widgetValues} getInitialValues={false}
                             />
                         </div>
                     )

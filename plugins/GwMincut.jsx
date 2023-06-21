@@ -69,7 +69,6 @@ class GwMincut extends React.Component {
         pendingRequests: false,
         currentTab: {},
         feature_id: null,
-        listJson: null,
         widgetValues: {},
         disabledWidgets: ['exec_start', 'exec_descript', 'exec_user', 'exec_from_plot', 'exec_depth', 'exec_appropiate', 'exec_end'],
         clickEnabled: true,
@@ -188,7 +187,7 @@ class GwMincut extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState((state) => ({ listJson: { ...state.listJson, [tableWidget.name]: result } }));
+                this.setState((state) => ({ widgetValues: { ...state.widgetValues, [tableWidget.name]: result } }));
             }).catch((e) => {
                 console.warn(e);
                 // this.setState({  });
@@ -649,7 +648,7 @@ class GwMincut extends React.Component {
                             <GwQtDesignerForm form_xml={result.form_xml} readOnly={false}
                                 autoResetTab={false} activetabs={this.state.activetabs}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
-                                listJson={this.state.listJson} widgetValues={this.state.widgetValues} disabledWidgets={this.state.disabledWidgets}
+                                widgetValues={this.state.widgetValues} disabledWidgets={this.state.disabledWidgets}
                             />
                         </div>
                     )

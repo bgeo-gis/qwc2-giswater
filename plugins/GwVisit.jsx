@@ -73,7 +73,7 @@ class GwVisit extends React.Component {
         showVisit: false,
         visitJson: null,
         visitWidgetValues: {},
-        listJson: {},
+        tableValues: {},
         files: []
     }
     constructor(props) {
@@ -263,7 +263,7 @@ class GwVisit extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState((state) => ({ listJson: { ...state.listJson, [tableWidget.name]: result }}));
+                this.setState((state) => ({ tableValues: { ...state.tableValues, [tableWidget.name]: result }}));
             }).catch((e) => {
                 console.warn(e);
                 // this.setState({  });
@@ -387,12 +387,16 @@ class GwVisit extends React.Component {
                     this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
                 }
                 else {
+                    const widgetValues = {
+                        ...this.state.widgetValues,
+                        ...this.state.tableValues
+                    }
                     body = (
                         <div className="identify-body" role="body">
                             <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={true}
                                 theme={this.state.theme} initiallyDocked={this.props.initiallyDocked}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
-                                widgetValues={this.state.widgetValues} listJson={this.state.listJson} replaceImageUrls={true} files={this.state.files}
+                                widgetValues={widgetValues} replaceImageUrls={true} files={this.state.files}
                             />
                         </div>
                     )

@@ -66,7 +66,6 @@ class GwMincutManager extends React.Component {
         pendingRequests: false,
         currentTab: {},
         feature_id: null,
-        listJson: null,
         filters: {},
         widgetValues: {},
         mincutResult: null,
@@ -110,7 +109,7 @@ class GwMincutManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetValues: {}, listJson: null, mincutId: null});
+        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetValues: {}, mincutId: null});
     }
 
 
@@ -168,8 +167,7 @@ class GwMincutManager extends React.Component {
             }
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
-                //this.setState({ listJson: result, mincutmanagerResult: null });
-                this.setState({ listJson: {...this.state.listJson, [tableWidget.columnname]: result} });
+                this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidget.columnname]: result} }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -379,7 +377,7 @@ class GwMincutManager extends React.Component {
                             <GwQtDesignerForm form_xml={result.form_xml} readOnly={false}
                                 theme={this.props.currentTheme.title}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField}
-                                listJson={this.state.listJson} widgetValues={this.state.widgetValues} getInitialValues={false}
+                                widgetValues={this.state.widgetValues} getInitialValues={false}
                             />
                         </div>
                     )

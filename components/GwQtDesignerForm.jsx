@@ -34,7 +34,6 @@ class GwQtDesignerForm extends React.Component {
         updateField: PropTypes.func,
         dispatchButton: PropTypes.func,
         onTabChanged: PropTypes.func,
-        listJson: PropTypes.object,
         widgetValues: PropTypes.object,
         disabledWidgets: PropTypes.array,
         getInitialValues: PropTypes.bool,
@@ -494,10 +493,8 @@ class GwQtDesignerForm extends React.Component {
             return parts[1] ? parts[0] + "T" + parts[1] : parts[0]
         }
         else if (widget.class === "QTableWidget") {
-            console.log("listJson", typeof this.props.listJson, this.props.listJson)
-            const data = this.props.listJson || {}
-            const values = data[widget.name]?.body.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
-            const form = data[widget.name]?.body.form || (prop.form ? JSON.parse(prop.form) : null)
+            const values = this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
+            const form = this.props.widgetValues[widget.name]?.body?.form || (prop.form ? JSON.parse(prop.form) : null)
             console.log(values, form)
             return {
                 values: values,
@@ -505,8 +502,7 @@ class GwQtDesignerForm extends React.Component {
             }
         }
         else if (widget.class === "QTableView") {
-            const data = this.props.listJson || {}
-            return data[widget.name]?.body.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
+            return this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
         }
 
         return null

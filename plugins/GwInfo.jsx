@@ -83,7 +83,7 @@ class GwInfo extends React.Component {
         showVisit: false,
         visitJson: null,
         visitWidgetValues: {},
-        listJson: {},
+        tableValues: {},
         filters: {}
     }
 
@@ -125,8 +125,6 @@ class GwInfo extends React.Component {
         return parseInt(parts.slice(-1))
     }
     dispatchButton = (action, widget) => {
-        // var queryableLayers;
-        var request_url;
         let pendingRequests = false;
         switch (action.functionName) {
             case "featureLink":
@@ -135,7 +133,7 @@ class GwInfo extends React.Component {
 
                 this.setState((state) => ({ identifyResult: {}, prevIdentifyResult: state.identifyResult, pendingRequests: pendingRequests }));
 
-                request_url = GwUtils.getServiceUrl("info");
+                const request_url = GwUtils.getServiceUrl("info");
                 if (!isEmpty(request_url)) {
 
                     const params = {
@@ -156,32 +154,6 @@ class GwInfo extends React.Component {
                     });
                 }
                 break;
-
-            case "getlist":
-                request_url = GwUtils.getServiceUrl("info");
-                if (!isEmpty(request_url)) {
-
-                    const params = {
-                        "theme": this.props.theme.title,
-                        "tabName": action.params.tabName,
-                        "widgetname": action.params.tabName,
-                        "tableName": action.params.tableName,
-                        "idName": action.params.idName,
-                        "id": action.params.id
-                    }
-                    pendingRequests = true
-                    axios.get(request_url + "getlist", { params: params }).then((response) => {
-                        const result = response.data
-                        console.log("getlist done:", this.state.identifyResult, result);
-                        this.setState((state) => ({ identifyResult: state.identifyResult, listJson: result, pendingRequests: false }));
-                    }).catch((e) => {
-                        console.log(e);
-                        this.setState({ pendingRequests: false });
-                    });
-                }
-                // TODO: maybe set pending results state
-                // this.setState((state) => ({ identifyResult: {}, prevIdentifyResult: state.identifyResult, pendingRequests: pendingRequests }));
-                break;
             default:
                 console.warn(`Action \`${action.functionName}\` cannot be handled.`)
                 break;
@@ -189,11 +161,11 @@ class GwInfo extends React.Component {
     }
     updateField = (widget, value) => {
         // Get filterSign
-        var filterSign = "=";
+        let filterSign = "=";
         if (widget.property.widgetcontrols !== "null") {
             filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
         }
-        var columnname = widget.name;
+        let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
         }
@@ -206,7 +178,7 @@ class GwInfo extends React.Component {
     }
     getList = (tab, widget) => {
         try {
-            var request_url = GwUtils.getServiceUrl("info");
+            const request_url = GwUtils.getServiceUrl("info");
 
             let tableWidget = null;
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
@@ -234,10 +206,9 @@ class GwInfo extends React.Component {
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data
                 console.log("getlist done:", result);
-                this.setState((state) => ({ listJson: {...state.listJson, [tableWidget.name]: result} }));
+                this.setState((state) => ({ tableValues: {...state.tableValues, [tableWidget.name]: result} }));
             }).catch((e) => {
                 console.log(e);
-                // this.setState({  });
             })
         } catch (error) {
             console.warn(error);
@@ -470,12 +441,16 @@ class GwInfo extends React.Component {
                     this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
                 }
                 else if (this.state.mode === "Point") {
+                    const widgetValues = { 
+                        ...this.state.filters,
+                        ...this.state.tableValues
+                    }
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
                             <GwQtDesignerForm form_xml={result.form_xml} readOnly={false} getInitialValues={false}
                                 dispatchButton={this.dispatchButton} updateField={this.updateField} onTabChanged={this.onTabChanged}
-                                listJson={this.state.listJson} widgetValues={this.state.filters}
+                                widgetValues={widgetValues}
                             />                            
                         </div>
                     )
