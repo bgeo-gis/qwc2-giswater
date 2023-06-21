@@ -12,7 +12,6 @@ import { connect } from 'react-redux';
 import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
-import { changeSelectionState } from 'qwc2/actions/selection';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
@@ -40,7 +39,6 @@ var resetZoom = null;
 class GwInfo extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
-        changeSelectionState: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
@@ -191,14 +189,17 @@ class GwInfo extends React.Component {
                 return null;
             }
             const prop = tableWidget.property || {};
-
+            let idName = this.state.identifyResult.body.feature.idName;
+            if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
+                idName = 'feature_id';
+            }
             const params = {
                 "theme": this.props.theme.title,
                 "tabName": tab.name,  // tab.name, no? o widget.name?
                 "widgetname": tableWidget.name,  // tabname_ prefix cal?
                 //"formtype": this.props.formtype,
                 "tableName": prop.linkedobject,
-                "idName": this.state.identifyResult.body.feature.idName,
+                "idName": idName,
                 "id": this.state.identifyResult.body.feature.id,
                 "filterFields": JSON.stringify(this.state.filters)
                 //"filterSign": action.params.tabName
@@ -397,7 +398,6 @@ class GwInfo extends React.Component {
     onToolClose = () => {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
-        this.props.changeSelectionState({ geomType: undefined });
         this.setState({ identifyResult: null, pendingRequests: false, showGraph: false, graphJson: null, mode: 'Point' });
     }
     clearResults = () => {
@@ -627,7 +627,6 @@ const selector = (state) => ({
 export default connect(selector, {
     addLayerFeatures: addLayerFeatures,
     addMarker: addMarker,
-    changeSelectionState: changeSelectionState,
     panTo: panTo,
     removeMarker: removeMarker,
     removeLayer: removeLayer,
