@@ -223,11 +223,11 @@ class GwToolbox extends React.Component {
 
                 // Send request
                 axios.post(request_url + "execute_process", {...params}).then(response => {
-
-                    this.props.processFinished("process_msg", true, "Execution successful")
-                    
                     const result = response.data
                     console.log("process result:", result)
+
+                    this.props.processFinished("process_msg", result.status === "Accepted", result.message.text)
+                    
                     let log_text = ""
                     let log = result.body?.data?.info?.values;
                     if (log) {
@@ -313,7 +313,7 @@ class GwToolbox extends React.Component {
                 // this.setState({ toolboxResult: result, pendingRequests: false });
                 }).catch((e) => {
                     console.log(e);
-                    this.props.processFinished("process_msg", false, "Execution failed")
+                    this.props.processFinished("process_msg", false, `Execution failed "${e}"`)
                     // this.setState({ pendingRequests: false });
                 });
                 break

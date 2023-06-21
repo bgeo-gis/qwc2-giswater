@@ -11,8 +11,6 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import GwUtils from '../utils/GwUtils';
-import { zoomToExtent } from 'qwc2/actions/map';
-import { refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
 
 
 class GwLoadPlugin extends React.Component {
@@ -29,16 +27,11 @@ class GwLoadPlugin extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.theme != this.props.theme) {
-            this.makeRequest(true)
+            this.makeRequest()
         }
     }
-    componentDidMount() {
-        console.log("MOUNTED LOAD PLUGIn")
-    }
 
-    makeRequest(hide_form = false) {
-        let pendingRequests = false;
-
+    makeRequest() {
         const request_url = GwUtils.getServiceUrl("util");
         if (!isEmpty(request_url)) {
             // Get request paramas
@@ -47,10 +40,8 @@ class GwLoadPlugin extends React.Component {
                 "theme": this.props.theme.title,
                 "epsg": epsg,
             }
-            // Send request
-            pendingRequests = true
 
-               // Send request
+            // Send request
             axios.post(request_url + "setinitproject", { ...params }).then(response => {
                 const result = response.data
                 console.log("LOADED PLUGIN: ", result);
@@ -80,8 +71,4 @@ const loadplugin = (state) => ({
     theme: state.theme.current
 });
 
-export default connect(loadplugin, {
-    zoomToExtent: zoomToExtent,
-    refreshLayer: refreshLayer,
-    changeLayerProperty: changeLayerProperty
-})(GwLoadPlugin);
+export default connect(loadplugin, {})(GwLoadPlugin);

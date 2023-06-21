@@ -12,7 +12,6 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
@@ -34,7 +33,7 @@ class GwDateSelector extends React.Component {
         map: PropTypes.object,
         refreshLayer: PropTypes.func,
         setCurrentTask: PropTypes.func,
-        selection: PropTypes.object
+        theme: PropTypes.object,
     }
     static defaultProps = {
         replaceImageUrls: true,
@@ -47,7 +46,6 @@ class GwDateSelector extends React.Component {
         dateSelectorResult: null,
         getDatesResult: null,
         pendingRequests: false,
-        dockerLoaded: false,
         filters: {}
     }
 
@@ -66,9 +64,9 @@ class GwDateSelector extends React.Component {
 
         if (!isEmpty(queryableLayers)) {
             // Get values
-            var values = this.getFilterValues(result);
+            const values = this.getFilterValues(result);
             // Get filter query
-            var filter = this.getFilterStr(values, layerFilters, result.body.data.layerColumns);
+            const filter = this.getFilterStr(values, layerFilters, result.body.data.layerColumns);
             console.log("filter query =", filter);
 
             // Apply filter, zoom to extent & refresh map
@@ -89,12 +87,12 @@ class GwDateSelector extends React.Component {
         console.log("layerFilters ->", layerFilters);
         console.log("layerColumns ->", layerColumns);
         let filterStr = "";
-        for (var lyr in layerColumns) {
+        for (const lyr in layerColumns) {
             const cols = layerColumns[lyr];  // Get columns for layer
-            var fields = layerFilters;  // Get columns to filter
+            const fields = layerFilters;  // Get columns to filter
             let fieldsFilterStr = "";
             for (let i = 0; i < fields.length; i++) {
-                var field = fields[i];  // Column to filter
+                const field = fields[i];  // Column to filter
                 if (!values || !cols.includes(field)) {  // If no value defined or layer doesn't have column to filter
                     continue;
                 }
@@ -110,16 +108,14 @@ class GwDateSelector extends React.Component {
         }
         return filterStr;
     }
+    componentDidMount() {
+        this.getDates();
+    }
     componentDidUpdate(prevProps, prevState) {
-        // Load docker initially
-        if (!this.state.dockerLoaded && !isEmpty(this.getQueryableLayers())) {
-            this.getDates();
-            this.state.dockerLoaded = true;
+        if (prevProps.theme != this.props.theme) {
+            this.getDates()
         }
-        // Reload docker if switched theme
-        if (prevProps.currentTask === "ThemeSwitcher") {
-            this.state.dockerLoaded = false;
-        }
+
         // Filter layers if any layer changed visibility
         if (!isEmpty(this.getQueryableLayers())) {
             const prevLayers = IdentifyUtils.getQueryLayers(prevProps.layers, prevProps.map).filter(l => {
@@ -137,7 +133,7 @@ class GwDateSelector extends React.Component {
         }
 
         // Manage open tool
-        if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "DateSelector") {
+        if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "GwDateSelector") {
             this.getDialog();
         }
         // Manage close tool
@@ -313,8 +309,9 @@ class GwDateSelector extends React.Component {
             }
             datesWindow = (
                 <ResizeableWindow icon="date_selector" key="GwDateSelectorWindow" title="GW Date Selector" id="GwDateSelector"
-                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth} dockable={false}
-                    onShow={this.onShow} onClose={this.onToolClose}
+                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth} 
+                    initialX={this.props.initialX} initialY={this.props.initialY}
+                    dockable={false} onShow={this.onShow} onClose={this.onToolClose}
                 >
                     {body}
                 </ResizeableWindow>
@@ -333,7 +330,8 @@ class GwDateSelector extends React.Component {
 const selector = (state) => ({
     currentTask: state.task.id,
     layers: state.layers.flat,
-    map: state.map
+    map: state.map,
+    theme: state.theme.current
 });
 
 export default connect(selector, {

@@ -41,7 +41,6 @@ class GwHeightProfile extends React.Component {
         heighProfilePrecision: PropTypes.number,
         height: PropTypes.number,
         measurement: PropTypes.object,
-        mobile: PropTypes.bool,
         projection: PropTypes.string,
         removeMarker: PropTypes.func,
         samples: PropTypes.number
@@ -910,7 +909,6 @@ class GwHeightProfile extends React.Component {
 export default connect((state) => ({
     measurement: state.measurement,
     projection: state.map.projection,
-    mobile: state.browser.mobile
 }), {
     addMarker: addMarker,
     changeMeasurementState: changeMeasurementState,

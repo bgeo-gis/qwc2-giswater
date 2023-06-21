@@ -67,7 +67,7 @@ class GwInfoDmaForm extends React.Component {
         const expl_nightvol = info.expl_nightvol; // expl min nocturno
 
         const data = this.props.jsonData?.info?.values?.chart;
-        var { data_piechart, options_piechart, data_chart, listeners, options_chart } = this.getChartData(data, dma, exploitation, nrw, auth);
+        const { data_piechart, options_piechart, data_chart, listeners, options_chart } = this.getChartData(data, dma, exploitation, nrw, auth);
 
         const periodBody = (
             <div className="periodBody">
@@ -214,7 +214,7 @@ class GwInfoDmaForm extends React.Component {
 
         }
 
-        let data_chart = {
+        const data_chart = {
             series: [
                 {
                     name: 'line1',
@@ -229,7 +229,7 @@ class GwInfoDmaForm extends React.Component {
             ]
         };
 
-        let options_chart = {
+        const options_chart = {
             width: '100%',
             height: 200,
             chartPadding: { left: 5, bottom: 1, top: 0 },
@@ -270,12 +270,12 @@ class GwInfoDmaForm extends React.Component {
         };
 
         // Pie Chart
-        let data_piechart = {
+        const data_piechart = {
             labels: ['VANC ('+nrw+')', 'Total abonados ('+auth+')'],
             series: [nrw, auth]
         };
 
-        let options_piechart = {
+        const options_piechart = {
             labelInterpolationFnc: function (value) {
                 return value;
             }

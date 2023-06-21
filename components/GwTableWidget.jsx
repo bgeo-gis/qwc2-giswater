@@ -33,10 +33,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FilterAltOff from '@mui/icons-material/FilterAltOff';
 import { ExportToCsv } from 'export-to-csv'; //or use your library of choice here
 
-//Icons Imports
-//import { OpenInBrowser, Cancel, Delete } from '@mui/icons-material';
 import * as icons from '@mui/icons-material';
-// import 'qwc2-giswater/components/style/GwInfoDmaForm.css';
 
 class GwTableWidget extends React.Component {
     static propTypes = {
@@ -79,7 +76,7 @@ class GwTableWidget extends React.Component {
                 if (header !== undefined && header['filterVariant'] !== undefined){
                     if (header.filterVariant === 'datetime'){
                         header['accessorFn'] = ((row) => {
-                            var date = new Date(new Date(row[header.accessorKey]).toDateString());
+                            const date = new Date(new Date(row[header.accessorKey]).toDateString()); // TODO: What?
                             return date;
                         });
                         header['Cell'] = ({ cell }) => {
@@ -139,12 +136,11 @@ class GwTableWidget extends React.Component {
             csvExporter.generateCsv(rows.map((row) => row.original));
         };
 
-        const handleExportData = () => {
-            csvExporter.generateCsv(data);
-        };
-
+        // const handleExportData = () => {
+        //     csvExporter.generateCsv(data);
+        // };
         
-        var inputProps = {
+        let inputProps = {
             enableGlobalFilter: tableParams.enableGlobalFilter ?? false,
             enableStickyHeader: tableParams.enableStickyHeader ?? true,
             positionToolbarAlertBanner: tableParams.positionToolbarAlertBanner ?? "bottom",

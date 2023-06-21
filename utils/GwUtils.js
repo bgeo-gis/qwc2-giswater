@@ -63,6 +63,7 @@ const GwUtils = {
         if (isEmpty(data.features)) {
             return []
         }
+        
         let defaultCrs = "EPSG:25831";
         let defaultStyleName = 'default'
         let defaultStyleOptions = {

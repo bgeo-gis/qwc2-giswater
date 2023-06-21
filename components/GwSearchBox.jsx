@@ -10,12 +10,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash.isempty';
 import axios from 'axios';
-import { logAction } from 'qwc2/actions/logging';
-import { panTo, zoomToExtent, zoomToPoint } from 'qwc2/actions/map';
-import { LayerRole, addLayerFeatures, addThemeSublayer, removeLayer, addLayer } from 'qwc2/actions/layers';
-import { setCurrentTheme } from 'qwc2/actions/theme';
-import { openExternalUrl, setCurrentTask } from 'qwc2/actions/task';
-import { showIframeDialog, showNotification } from 'qwc2/actions/windows';
+import { panTo, zoomToPoint } from 'qwc2/actions/map';
+import { LayerRole, addLayerFeatures, removeLayer, addLayer } from 'qwc2/actions/layers';
+import { setCurrentTask } from 'qwc2/actions/task';
 import Icon from 'qwc2/components/Icon';
 import InputContainer from 'qwc2/components/InputContainer';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
@@ -31,13 +28,8 @@ class GwSearchBox extends React.Component {
     static propTypes = {
         addLayer: PropTypes.func,
         addLayerFeatures: PropTypes.func,
-        addThemeSublayer: PropTypes.func,
-        displaycrs: PropTypes.string,
         layers: PropTypes.array,
-        localConfig: PropTypes.object,
-        logAction: PropTypes.func,
         map: PropTypes.object,
-        openExternalUrl: PropTypes.func,
         panTo: PropTypes.func,
         removeLayer: PropTypes.func,
         searchFilter: PropTypes.string,
@@ -46,14 +38,8 @@ class GwSearchBox extends React.Component {
             resultLimit: PropTypes.number,
             sectionsDefaultCollapsed: PropTypes.bool
         }),
-        searchProviders: PropTypes.object,
         setCurrentTask: PropTypes.func,
-        setCurrentTheme: PropTypes.func,
-        showIframeDialog: PropTypes.func,
-        showNotification: PropTypes.func,
         theme: PropTypes.object,
-        themes: PropTypes.object,
-        zoomToExtent: PropTypes.func,
         zoomToPoint: PropTypes.func,
         infoDockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     }
@@ -62,16 +48,10 @@ class GwSearchBox extends React.Component {
     }
     state = {
         searchText: "",
-        searchSession: null,
-        pendingSearches: [],
-        recentSearches: [],
         searchResults: {},
         resultsVisible: false,
         collapsedSections: [],
-        expandedLayerGroup: null,
-        activeLayerInfo: null,
         identifyResult: null,
-        pendingRequests: false,
         searchAdd: false
     }
     constructor(props) {
@@ -81,12 +61,7 @@ class GwSearchBox extends React.Component {
         this.preventBlur = false;
     }
 
-    componentDidUpdate(prevProps, prevState) {
-
-    }
-
     getSearch = () => {
-        let pendingSearches = false;
         const request_url = GwUtils.getServiceUrl("search");
         if (!isEmpty(request_url) && !isEmpty(this.state.searchText)) {
             //TO DO isTiled:True/False
@@ -97,13 +72,11 @@ class GwSearchBox extends React.Component {
                 "theme": this.props.theme.title,
                 "filterFields": filterSearch
             }
-            pendingSearches = true
             axios.get(request_url + "getsearch", { params: params }).then(response => {
                 const result = response.data;
-                this.setState({ searchResults: result, pendingSearches: null })
+                this.setState({ searchResults: result })
             }).catch((e) => {
                 console.log(e);
-                this.setState({ pendingSearches: false });
             });
         }
     }
@@ -137,26 +110,21 @@ class GwSearchBox extends React.Component {
     }
 
     identifyFromId = (execParam, tableName) => {
-        var request_url;
-        var pendingRequests;
-
-        request_url = GwUtils.getServiceUrl("info");
+        const request_url = GwUtils.getServiceUrl("info");
         if (!isEmpty(request_url)) {
             const params = {
                 "theme": this.props.theme.title,
                 "id": execParam,
                 "tableName": tableName
             }
-            pendingRequests = true
             axios.get(request_url + "fromid", { params: params }).then((response) => {
                 const result = response.data
-                this.setState({ identifyResult: result, pendingRequests: false });
+                this.setState({ identifyResult: result });
             }).catch((e) => {
                 console.log(e);
-                this.setState({ pendingRequests: false });
             });
         }
-        this.setState({ identifyResult: {}, pendingRequests: pendingRequests });
+        this.setState({ identifyResult: {} });
     }
 
     panToResult = (geometry) => {
@@ -317,7 +285,7 @@ class GwSearchBox extends React.Component {
         if (this.props.layers.find(layer => layer.id === 'searchselection')) {
             this.props.removeLayer('searchselection');
         }
-        this.setState({ searchText: text, expandedLayerGroup: null, activeLayerInfo: null });
+        this.setState({ searchText: text });
         clearTimeout(this.searchTimeout);
         this.searchTimeout = setTimeout(() => this.getSearch(pasted), 250);
     }
@@ -336,7 +304,7 @@ class GwSearchBox extends React.Component {
         if (this.preventBlur && this.searchBox) {
             this.searchBox.focus();
         } else {
-            this.setState({ resultsVisible: false, expandedLayerGroup: null, activeLayerInfo: null });
+            this.setState({ resultsVisible: false });
         }
     }
 
@@ -368,22 +336,13 @@ const selector = (state) => ({
     map: state.map,
     layers: state.layers.flat,
     theme: state.theme.current,
-    themes: state.theme.themes,
-    localConfig: state.localConfig,
 });
 
 export default connect(selector, {
-    addThemeSublayer: addThemeSublayer,
     addLayer: addLayer,
     addLayerFeatures: addLayerFeatures,
     removeLayer: removeLayer,
     setCurrentTask: setCurrentTask,
-    zoomToExtent: zoomToExtent,
     zoomToPoint: zoomToPoint,
     panTo: panTo,
-    logAction: logAction,
-    setCurrentTheme: setCurrentTheme,
-    showNotification: showNotification,
-    openExternalUrl: openExternalUrl,
-    showIframeDialog: showIframeDialog
 })(GwSearchBox);
