@@ -29,8 +29,10 @@
     "appmenu.items.GwMincutManager",
     "appmenu.items.GwVisitVisit",
     "appmenu.items.GwVisitIncidencia",
+    "appmenu.items.GwDateSelector",
     "appmenu.items.GwVisitManager",
     "appmenu.items.GwToolbox",
+    "appmenu.items.NetCDFExplorer",
     "colorschemes.giswater",
     "colorschemes.white",
     "colorschemes.transparent"

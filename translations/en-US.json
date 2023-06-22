@@ -58,8 +58,10 @@
         "GwMincutManager": "Mincut Manager",
         "GwVisitVisit": "New Visit",
         "GwVisitIncidencia": "New Incidence",
+        "GwDateSelector": "Date Selector",
         "GwVisitManager": "Visit Manager",
-        "GwToolbox": "Toolbox"
+        "GwToolbox": "Toolbox",
+        "NetCDFExplorer": "NetCDF Viewer (Beta)"
       }
     },
     "colorschemes": {

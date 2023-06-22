@@ -58,8 +58,10 @@
         "GwMincutManager": "Gestor de polígons de tall",
         "GwVisitVisit": "Nova Visita",
         "GwVisitIncidencia": "Nova Incidencia",
+        "GwDateSelector": "Selector de Data",
         "GwVisitManager": "Gestor de Visites",
-        "GwToolbox": "Caixa d'eines"
+        "GwToolbox": "Caixa d'eines",
+        "NetCDFExplorer": "Visualitzador de NetCDF (Beta)"
       }
     },
     "colorschemes": {

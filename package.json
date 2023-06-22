@@ -12,7 +12,9 @@
         "@mui/material": "^5.11.7",
         "@mui/x-date-pickers": "^5.0.17",
         "export-to-csv": "^0.2.1",
-        "material-react-table": "^1.6.5"
+        "material-react-table": "^1.6.5",
+        "react-datepicker": "^4.14.0",
+        "react-widgets": "^3.5.0"
     },
     "peerDependencies": {
         "react": "^18.2.0",

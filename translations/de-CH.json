@@ -58,8 +58,10 @@
         "GwMincutManager": "",
         "GwVisitVisit": "",
         "GwVisitIncidencia": "",
+        "GwDateSelector": "",
         "GwVisitManager": "",
-        "GwToolbox": ""
+        "GwToolbox": "",
+        "NetCDFExplorer": ""
       }
     },
     "colorschemes": {
