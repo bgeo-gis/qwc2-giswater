@@ -11,16 +11,14 @@ import PropTypes from 'prop-types';
 import MaterialReactTable from 'material-react-table';
 import isEmpty from 'lodash.isempty';
 
-import {
-    MRT_ToggleFiltersButton
-  } from 'material-react-table';
+import { MRT_ToggleFiltersButton } from 'material-react-table';
+
 //Material-UI Imports
 import {
     Box,
     Button,
     ListItemIcon,
     MenuItem,
-    Typography,
     TextField,
     IconButton
   } from '@mui/material';

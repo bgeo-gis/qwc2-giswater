@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, addLayer } from 'qwc2/actions/layers';
+import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 import { changeSelectionState } from 'qwc2/actions/selection';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
@@ -62,6 +63,8 @@ class GwProfileTool extends React.Component {
         firstNodeCoordinates: PropTypes.object,
         secondNodeCoordinates: PropTypes.object,
         changeMeasurementState: PropTypes.func,
+        processStarted: PropTypes.func,
+        processFinished: PropTypes.func,
         measurement: PropTypes.object,
         options: PropTypes.object,
         projection: PropTypes.string
@@ -82,8 +85,6 @@ class GwProfileTool extends React.Component {
     state = {
         mode: 'nodefromcoordinates',
         identifyResult: null,
-        prevIdentifyResult: null,
-        pendingRequests: false,
         firstNodeId: null,
         secondNodeId: null,
         firstNodeCoordinates: null,
@@ -383,7 +384,6 @@ class GwProfileTool extends React.Component {
      * @param {*} node Node order (1 or 2)
      */
     makeRequestNodeId = (clickPoint, node) => {
-        let pendingRequests = false;
         const queryableLayers = this.getQueryableLayers();
         const requestUrl = GwUtils.getServiceUrl("profile");
         let result;
@@ -404,7 +404,6 @@ class GwProfileTool extends React.Component {
                 "layers": layer.queryLayers.join(',')
             }
             // Send request
-            pendingRequests = true;
             axios.get(requestUrl + "nodefromcoordinates", { params: params }).then(response => {
                 result = parseInt(response.data.body.feature.id[0]);
                 console.log("Node Id -> ", result)
@@ -416,14 +415,14 @@ class GwProfileTool extends React.Component {
                     this.setState({ secondNodeId: result});
                     this.highlightResult(response.data);
                 }
-                this.setState({ identifyResult: result, pendingRequests: false });
+                this.setState({ identifyResult: result });
             }).catch((e) => {
                 console.log(e);
-                this.setState({ identifyResult: null, pendingRequests: false });
+                this.setState({ identifyResult: null });
             });
         }
         // Set "Waiting for request..." message
-        this.setState({ identifyResult: {}, pendingRequests: pendingRequests });
+        this.setState({ identifyResult: {} });
     }
 
     highlightResult = (result) => {
@@ -455,7 +454,6 @@ class GwProfileTool extends React.Component {
      */
     makeRequestData = () => {
         this.reset();
-        let pendingRequests = false;
         const queryableLayers = this.getQueryableLayers();
         const requestUrl = GwUtils.getServiceUrl("profile");
         let result;
@@ -470,22 +468,25 @@ class GwProfileTool extends React.Component {
                 "endNode": this.state.secondNodeId
             }
             // Send request
-            pendingRequests = true;
+            this.props.processStarted("profile_calc_msg", "Calculating Profile...");
+            // this.props.processStarted("profile_calc_msg", "Calculating Profile (1/2)...");
+
             axios.get(requestUrl + "profileinfo", { params: params }).then(response => {
                 result = response.data;
                 this.addProfileLayers(result);
                 this.updateMeasurementResults(result, true);
+                this.props.processFinished("profile_calc_msg", true, "Success!");
                 //this.props.removeLayer("profilehighlight")
                 console.log("result -> ", result);
                 //let arcs = result['body']['data']['arc']
-                this.setState({ identifyResult: result, pendingRequests: false });
+                this.setState({ identifyResult: result });
             }).catch((e) => {
-                console.log(e);
-                this.setState({ pendingRequests: false });
+                console.error(e);
+                this.props.processFinished("profile_calc_msg", false, `Error: ${e}`);
             });
         }
         // Set "Waiting for request..." message
-        this.setState({ identifyResult: {}, pendingRequests: pendingRequests });
+        this.setState({ identifyResult: {} });
     }
 
     /**
@@ -613,7 +614,7 @@ class GwProfileTool extends React.Component {
         this.props.removeLayer('flowtrace_trace_lines.geojson');
         this.props.map.removeLayer(this.measureLayer);
         this.props.map.removeLayer(this.pointLayer);
-        this.setState({ firstNodeId: null, secondNodeId: null, firstNodeCoordinates: null, secondNodeCoordinates: null, identifyResult: null, pendingRequests: false, prevPoint: null });
+        this.setState({ firstNodeId: null, secondNodeId: null, firstNodeCoordinates: null, secondNodeCoordinates: null, identifyResult: null, prevPoint: null });
         this.updateMeasurementResults(null, false);
     }
 
@@ -663,5 +664,7 @@ export default connect(selector, {
     panTo: panTo,
     removeMarker: removeMarker,
     removeLayer: removeLayer,
+    processFinished: processFinished,
+    processStarted: processStarted,
     changeMeasurementState: changeMeasurementState
 })(GwProfileTool);

@@ -75,7 +75,12 @@ class GwQtDesignerForm extends React.Component {
                 ...GwQtDesignerForm.defaultState,
                 activetabs: props.autoResetTab ? {} : state.activetabs
             }));
-            this.parseForm(this.props.form_xml);
+            if (this.props.form_xml) {
+                this.parseForm(this.props.form_xml);
+            }
+            else {
+                console.error("Empty xml")
+            }
         }
     }
     render() {
@@ -92,6 +97,10 @@ class GwQtDesignerForm extends React.Component {
                     {this.renderLayout(root.layout, this.props.updateField)}
                 </div>
             );
+        } else if (!this.state.form_xml) {
+            return (
+                <span>XML is empty!</span>
+            )
         } else {
             return null;
         }

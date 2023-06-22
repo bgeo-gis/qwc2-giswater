@@ -43,6 +43,8 @@ class GwHeightProfile extends React.Component {
         measurement: PropTypes.object,
         projection: PropTypes.string,
         removeMarker: PropTypes.func,
+        processStarted: PropTypes.func,
+        processFinished: PropTypes.func,
         samples: PropTypes.number
     }
     static defaultProps = {
@@ -103,14 +105,16 @@ class GwHeightProfile extends React.Component {
     queryElevations(coordinates, distances, projection) {
         const serviceUrl = (ConfigUtils.getConfigProp("elevationServiceUrl") || "").replace(/\/$/, '');
         if (serviceUrl) {
+            // this.props.processStarted("profile_msg", "Calculating Profile (2/2)...");
             this.setState({ isloading: true });
             axios.post(serviceUrl + '/getheightprofile', {coordinates, distances, projection, samples: this.props.samples}).then(response => {
-                this.setState({ isloading: false });
-                this.setState({data: response.data.elevations});
+                // this.props.processFinished("profile_msg", true, "Success!");
+                this.setState({data: response.data.elevations, isloading: false});
                 this.props.changeMeasurementState({...this.props.measurement, pickPositionCallback: this.pickPositionCallback});
             }).catch(e => {
+                // this.props.processFinished("profile_msg", false, `Failed to get profile: ${e}`);
                 this.setState({ isloading: false });
-                console.log("Query failed: " + e);
+                console.error("Query failed: " + e);
             });
         }
     }

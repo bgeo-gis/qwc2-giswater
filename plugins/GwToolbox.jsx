@@ -67,7 +67,7 @@ class GwToolbox extends React.Component {
         pendingRequests: false,
         toolboxFilter: ""
     }
-    getProcess(process_id, parentVals, callback) {
+    getProcess(process_id, parentVals, callback, errorCallback) {
         const request_url = GwUtils.getServiceUrl("toolbox");
         if (!isEmpty(request_url)) {
             const params = {
@@ -78,10 +78,13 @@ class GwToolbox extends React.Component {
 
             axios.post(request_url + "getprocess", { ...params }).then(callback || (() => {})).catch((e) => {
                 console.warn(e);
+                if (errorCallback) {
+                    errorCallback(e)
+                }
             });
         }
     }
-    getReport(report_id, callback) {
+    getReport(report_id, callback, errorCallback) {
         const request_url = GwUtils.getServiceUrl("toolbox");
         if (!isEmpty(request_url)) {
             const params = {
@@ -91,6 +94,9 @@ class GwToolbox extends React.Component {
 
             axios.post(request_url + "getreport", { ...params }).then(callback || (() => {})).catch((e) => {
                 console.warn(e);
+                if (errorCallback) {
+                    errorCallback(e)
+                }
             });
         }
     }
@@ -103,15 +109,22 @@ class GwToolbox extends React.Component {
                         const result = response.data
                         console.log("getprocess result:", result)
                         this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
+                    }, (error) => {
+                        this.props.processStarted("get_process", "Get process");
+                        this.props.processFinished("get_process", false, `Failed to get process: ${error}`);
                     })
                 }
                 break;
             case "reports":
                 if (this.state.toolResult?.body?.data.listname !== tool.id) {
+                    this.props.processStarted("get_report", "Gettings report...");
                     this.getReport(tool.id, (response) => {
                         const result = response.data
                         console.log("getraport result:", result)
+                        this.props.processFinished("get_report", true, "Report successful!");
                         this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
+                    }, (error) => {
+                        this.props.processFinished("get_report", false, `Failed to get report: ${error}`);
                     })
                 }
                 break

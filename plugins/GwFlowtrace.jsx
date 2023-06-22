@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash.isempty';
 import { addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
+import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 import TaskBar from 'qwc2/components/TaskBar';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import GwUtils from '../utils/GwUtils';
@@ -26,6 +27,8 @@ class GwFlowtrace extends React.Component {
         map: PropTypes.object,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
+        processStarted: PropTypes.func,
+        processFinished: PropTypes.func,
     }
     state = {
         mode: 'trace',
@@ -67,6 +70,7 @@ class GwFlowtrace extends React.Component {
         if (!isEmpty(request_url)) {
             let mode = this.state.mode === "trace" ? "upstream" : "downstream";
             this.setState({ bodyText: `Calculating ${mode} flowtrace...` })
+            this.props.processStarted("flowtrace_msg", `Calculating ${mode} flowtrace...`);
 
             // Get request paramas
             const epsg = this.crsStrToInt(this.props.map.projection)
@@ -83,8 +87,9 @@ class GwFlowtrace extends React.Component {
                 console.log("flowtrace", mode, "result", result);
                 this.addFlowtraceLayers(result);
             }).catch((e) => {
-                console.log(e);
+                console.error(e);
                 this.setState({ bodyText: "Could not execute the flowtrace" });
+                this.props.processFinished("flowtrace_msg", false, `Could not execute the flowtrace ${e}`);
             });
         }
         else {
@@ -140,8 +145,10 @@ class GwFlowtrace extends React.Component {
 
         if (!isEmpty(line_features) || !isEmpty(point_features)) {
             this.setState({ bodyText: "Drawing flowtrace (you can click again)" })
+            this.props.processFinished("flowtrace_msg", true, "Flowtrace calculated!");
         }
         else {
+            this.props.processFinished("flowtrace_msg", false, "No node found in position");
             this.setState({ bodyText: "No node found in this position... (you can click again)" })
         }
     }
@@ -179,5 +186,7 @@ export default connect(selector, {
     addMarker: addMarker,
     removeMarker: removeMarker,
     removeLayer: removeLayer,
-    addLayerFeatures: addLayerFeatures
+    addLayerFeatures: addLayerFeatures,
+    processFinished: processFinished,
+    processStarted: processStarted
 })(GwFlowtrace);
