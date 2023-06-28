@@ -215,13 +215,8 @@ class GwMincut extends React.Component {
         // Arc
         let arc = result.body.data.arc;
         let arc_style = {
-            strokeColor: [232, 179, 93, 0.9],
+            strokeColor: [255, 206, 128, 1],
             strokeWidth: 6,
-            strokeDash: [1],
-            fillColor: [232, 179, 93, 0.66],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
         }
         const arc_features = GwUtils.getGeoJSONFeatures(arc, "default", arc_style)
 
@@ -238,62 +233,46 @@ class GwMincut extends React.Component {
         // Init
         let init_point = result.body.data.init;
         let init_point_style = {
-            strokeColor: [45, 84, 255, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [45, 84, 255, 0.66],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
+            strokeColor: [0, 24, 124, 1],
+            strokeWidth: 1,
+            circleRadius: 4,
+            fillColor: [45, 84, 255, 1],
         }
         const init_point_features = GwUtils.getGeoJSONFeatures(init_point, "default", init_point_style)
         // Node
         let node = result.body.data.node;
         let node_style = {
-            strokeColor: [241, 209, 66, 1],
-            strokeWidth: 2,
-            circleRadius: 5,
-            strokeDash: [4],
+            strokeColor: [160, 134, 17, 1],
+            strokeWidth: 1,
+            circleRadius: 3,
             fillColor: [241, 209, 66, 1],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
         }
         const node_features = GwUtils.getGeoJSONFeatures(node, "default", node_style)
         // Connec
         let connec = result.body.data.connec;
         let connec_style = {
-            strokeColor: [176, 123, 103, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [76, 123, 103, 0.66],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
+            strokeColor: [102, 46, 25, 1],
+            strokeWidth: 1,
+            circleRadius: 3,
+            fillColor: [176, 123, 103, 1],
         }
         const connec_features = GwUtils.getGeoJSONFeatures(connec, "default", connec_style)
         // Valve proposed
         let valve_proposed = result.body.data.valveClose;
         let valve_proposed_style = {
-            strokeColor: [237, 55, 58, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [237, 55, 58, 0.9],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
+            strokeColor: [134, 13, 13, 1],
+            strokeWidth: 1,
+            circleRadius: 6,
+            fillColor: [237, 55, 58, 1],
         }
         const valve_proposed_features = GwUtils.getGeoJSONFeatures(valve_proposed, "default", valve_proposed_style)
         // Valve not proposed
         let valve_not_proposed = result.body.data.valveNot;
         let valve_not_proposed_style = {
-            strokeColor: [51, 160, 44, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [51, 160, 44, 0.9],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
+            strokeColor: [6, 94, 0, 1],
+            strokeWidth: 1,
+            circleRadius: 6,
+            fillColor: [51, 160, 44, 1],
         }
         const valve_not_proposed_features = GwUtils.getGeoJSONFeatures(valve_not_proposed, "default", valve_not_proposed_style)
 
