@@ -119,7 +119,7 @@ class GwMapInfoTooltip extends React.Component {
                 "theme": this.props.theme.title,
                 "id": id,
                 "tableName": tableName,
-                "fields": fields
+                "fields": JSON.stringify(fields)
             };
 
             axios.put(request_url + "setfields", { ...params }).then((response) => {
