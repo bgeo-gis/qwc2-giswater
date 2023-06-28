@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
-import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
+import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, refreshLayer } from 'qwc2/actions/layers';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
@@ -52,6 +52,7 @@ class GwInfo extends React.Component {
         map: PropTypes.object,
         theme: PropTypes.object,
         removeLayer: PropTypes.func,
+        refreshLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
         identifyResult: PropTypes.object,
@@ -82,7 +83,8 @@ class GwInfo extends React.Component {
         visitJson: null,
         visitWidgetValues: {},
         tableValues: {},
-        filters: {}
+        filters: {},
+        widgetValues: {}
     }
 
     constructor(props) {
@@ -152,24 +154,38 @@ class GwInfo extends React.Component {
                     });
                 }
                 break;
+            case "accept":
+                console.log("widgetValues :>>", this.state.widgetValues);
+                const data = {id: this.state.feature_id, tableName: "v_edit_arc", fields: this.state.widgetValues};
+                this.setFields(data);
+                
+                break;
+            case "cancel":
+                this.clearResults();
+                break;
             default:
                 console.warn(`Action \`${action.functionName}\` cannot be handled.`)
                 break;
         }
     }
     updateField = (widget, value) => {
-        // Get filterSign
-        let filterSign = "=";
-        if (widget.property.widgetcontrols !== "null") {
-            filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
-        }
+        console.log("widget :>> ", widget);
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
         }
         columnname = columnname ?? widget.name;
-        // Update filters
-        this.setState((state) => ({ filters: {...state.filters, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}} }));
+        if (widget.property.isfilter === "true") {
+            // Get filterSign
+            let filterSign = "=";
+            if (widget.property.widgetcontrols !== "null") {
+                filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
+            }
+            // Update filters
+            this.setState((state) => ({ filters: {...state.filters, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}} }));
+        } else {
+            this.setState((state) => ({ widgetValues: {...state.widgetValues, [widget.name]: {columnname: columnname, value: value}} }))
+        }
     }
     onTabChanged = (tab, widget) => {
         this.setState({ currentTab: {tab: tab, widget: widget} });
@@ -215,6 +231,39 @@ class GwInfo extends React.Component {
             console.warn(error);
         }
 
+    }
+    setFields = (data) => {
+        const id = data.id;
+        const tableName = data.tableName;
+        const fields = data.fields;
+
+        const request_url = GwUtils.getServiceUrl("util");
+        if (!isEmpty(request_url)) {
+            const params = {
+                "theme": this.props.theme.title,
+                "id": id,
+                "tableName": tableName,
+                "fields": JSON.stringify(fields)
+            };
+
+            this.props.processStarted("info_msg", "Update feature");
+            axios.put(request_url + "setfields", { ...params }).then((response) => {
+                const result = response.data;
+                this.props.processFinished("info_msg", result.status === "Accepted", result.message.text);
+                // refresh map
+                if (this.props.theme.tiled) {
+                    //this.refreshTiles()
+                }
+                else {
+                    this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                }
+                // close
+                this.clearResults();
+            }).catch((e) => {
+                console.warn(e);
+                this.props.processFinished("info_msg", false, `Execution failed "${e}"`);
+            });
+        }
     }
     showGraph = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
@@ -403,7 +452,7 @@ class GwInfo extends React.Component {
     clearResults = () => {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
-        this.setState({ identifyResult: null, pendingRequests: false, showGraph: false, graphJson: null });
+        this.setState({ identifyResult: null, pendingRequests: false, widgetValues: {}, filters: {}, showGraph: false, graphJson: null });
         if(this.props.onClose){
             this.props.onClose();
         }
@@ -443,7 +492,8 @@ class GwInfo extends React.Component {
                 else if (this.state.mode === "Point") {
                     const widgetValues = { 
                         ...this.state.filters,
-                        ...this.state.tableValues
+                        ...this.state.tableValues,
+                        ...this.state.widgetValues
                     }
                     body = (
                         <div className="identify-body" role="body">
@@ -630,6 +680,7 @@ export default connect(selector, {
     panTo: panTo,
     removeMarker: removeMarker,
     removeLayer: removeLayer,
+    refreshLayer: refreshLayer,
     processFinished: processFinished,
     processStarted: processStarted
 })(GwInfo);
