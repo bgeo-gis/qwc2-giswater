@@ -96,7 +96,8 @@ const GwUtils = {
                 feature.geometry.coordinates = feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d);
             }
             
-            return { ...feature, 
+            return { 
+                ...feature, 
                 crs: crs, 
                 styleName: styleName,
                 styleOptions: styleOptions

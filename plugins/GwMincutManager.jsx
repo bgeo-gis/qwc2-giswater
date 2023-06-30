@@ -238,7 +238,6 @@ class GwMincutManager extends React.Component {
             })
             let idsString = ids.join(",");
             try {
-                let pendingRequests = false;
                 const queryableLayers = this.getQueryableLayers();
     
                 const request_url = GwUtils.getServiceUrl("selector");
@@ -247,12 +246,12 @@ class GwMincutManager extends React.Component {
                     const layer = queryableLayers[0];
                     const epsg = this.crsStrToInt(this.props.map.projection)
                     const params = {
-                        "theme": layer.title,
+                        "theme": this.props.currentTheme.title,
                         "epsg": epsg,
                         "currentTab": "tab_mincut",
                         "selectorType": "selector_mincut",
-                        "layers": String(layer.queryLayers),
-                        "loadProject": false,
+                        // "layers": String(layer.queryLayers),
+                        // "loadProject": false,
                         "ids": idsString
                     }
                     // Send request
