@@ -456,10 +456,10 @@ class GwQtDesignerForm extends React.Component {
         const prop = widget.property || {};
 
         if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit" || widget.class === "QLineEdit") {
-            return (this.props.widgetValues[widget.name]?.value || prop.text);
+            return (this.props.widgetValues[widget.name]?.value ?? prop.text);
         } 
         else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
-            const checked = (this.props.widgetValues[widget.name]?.value || prop.checked);
+            const checked = (this.props.widgetValues[widget.name]?.value ?? prop.checked);
             return checked === true || checked === "true" || checked === "True";
         } 
         else if (widget.class === "QComboBox") {
@@ -470,7 +470,7 @@ class GwQtDesignerForm extends React.Component {
             }
 
             const optObj = items.find(obj => obj.property.value === prop.value);
-            return (this.props.widgetValues[widget.name]?.value || optObj.property.value);
+            return (this.props.widgetValues[widget.name]?.value ?? optObj.property.value);
 
             // Commented out because the updateField called when it updates only uses the value, not the text
             // let option_value = null
@@ -491,27 +491,26 @@ class GwQtDesignerForm extends React.Component {
             widget.class === "QDateEdit" || 
             widget.class === "QTimeEdit"
         ) {
-            return (this.props.widgetValues[widget.name]?.value || prop.value);
+            return (this.props.widgetValues[widget.name]?.value ?? prop.value);
         } 
         else if (widget.class === "QDateTimeEdit") { // Removes milliseconds from the value
-            const value = (this.props.widgetValues[widget.name]?.value || prop.value);
+            const value = (this.props.widgetValues[widget.name]?.value ?? prop.value);
             
             const parts = (value || "T").split("T");
-            parts[1] = (parts[1] || "").replace(/\.\d+$/, ''); // Strip milliseconds
+            parts[1] = (parts[1] ?? "").replace(/\.\d+$/, ''); // Strip milliseconds
 
             return parts[1] ? parts[0] + "T" + parts[1] : parts[0]
         }
         else if (widget.class === "QTableWidget") {
-            const values = this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
-            const form = this.props.widgetValues[widget.name]?.body?.form || (prop.form ? JSON.parse(prop.form) : null)
-            console.log(values, form)
+            const values = this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null)
+            const form = this.props.widgetValues[widget.name]?.body?.form ?? (prop.form ? JSON.parse(prop.form) : null)
             return {
                 values: values,
                 form: form
             }
         }
         else if (widget.class === "QTableView") {
-            return this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value || (prop.values ? JSON.parse(prop.values) : null)
+            return this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null)
         }
 
         return null
