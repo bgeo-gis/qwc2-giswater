@@ -232,18 +232,11 @@ class GwMincutManager extends React.Component {
         if (rows.length === 0){
             console.log("No rows");
         } else {
-            let ids = [];
-            rows.map(row => {
-                ids.push(row.original.id);
-            })
-            let idsString = ids.join(",");
+            const ids = rows.map((row) => row.original.id);
             try {
-                const queryableLayers = this.getQueryableLayers();
-    
                 const request_url = GwUtils.getServiceUrl("selector");
-                if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+                if (!isEmpty(request_url)) {
                     // Get request paramas
-                    const layer = queryableLayers[0];
                     const epsg = this.crsStrToInt(this.props.map.projection)
                     const params = {
                         "theme": this.props.currentTheme.title,
@@ -252,22 +245,20 @@ class GwMincutManager extends React.Component {
                         "selectorType": "selector_mincut",
                         // "layers": String(layer.queryLayers),
                         // "loadProject": false,
-                        "ids": idsString
+                        "ids": ids.join(",")
                     }
-                    // Send request
-                    pendingRequests = true
                     // Send request
                     axios.get(request_url + "get", { params: params }).then(response => {
                         const result = response.data
                         this.setState({ selectorResult: result, pendingRequests: false });
-                        //this.filterLayers(result);
+                        // this.filterLayers(result);
                     }).catch((e) => {
                         console.log(e);
                         this.setState({ pendingRequests: false });
                     });
                 }
             } catch (error) {
-                console.warn(error);
+                console.error(error);
             }
         }
     }
