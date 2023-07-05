@@ -34,23 +34,23 @@ class GwVisitManager extends React.Component {
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
+        getInitialValues: PropTypes.bool,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
         initialY: PropTypes.number,
         initiallyDocked: PropTypes.bool,
+        keepManagerOpen: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
-        removeLayer: PropTypes.func,
         refreshLayer: PropTypes.func,
+        removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
-        setCurrentTask: PropTypes.func,
         selection: PropTypes.object,
-        getInitialValues: PropTypes.bool,
-        keepManagerOpen: PropTypes.bool,
-        vistDockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
-  }
-    
+        setCurrentTask: PropTypes.func,
+        vistDockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string])
+    };
+
     static defaultProps = {
         initialWidth: 800,
         initialHeight: 500,
@@ -59,7 +59,7 @@ class GwVisitManager extends React.Component {
         initiallyDocked: false,
         keepManagerOpen: false,
         visitDockable: "right"
-    }
+    };
     state = {
         action: 'visitNetwork',
         visitmanagerState: 0,
@@ -72,7 +72,7 @@ class GwVisitManager extends React.Component {
         filters: {},
         widgetValues: {},
         visitResult: null
-    }
+    };
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentTask !== prevProps.currentTask && prevProps.currentTask === "GwVisitManager") {
             this.onToolClose();
@@ -80,11 +80,11 @@ class GwVisitManager extends React.Component {
         if (!this.state.visitmanagerResult && this.props.currentTask === "GwVisitManager" && this.props.currentTask !== prevProps.currentTask) {
             this.openVisitManager();
         }
-        
+
         if (this.state.visitmanagerResult && this.state.filters !== prevState.filters) {
             this.getList(this.state.visitmanagerResult);
         }
-        
+
     }
 
     openVisitManager = (updateState = true, action = this.state.action) => {
@@ -92,7 +92,7 @@ class GwVisitManager extends React.Component {
         const request_url = GwUtils.getServiceUrl("visit");
         if (!isEmpty(request_url)) {
             const params = {
-                "theme": this.props.currentTheme.title
+                theme: this.props.currentTheme.title
             };
 
             pendingRequests = true;
@@ -106,12 +106,12 @@ class GwVisitManager extends React.Component {
             });
         }
         if (updateState) this.setState({ visitmanagerResult: {}, prevvisitmanagerResult: null, pendingRequests: pendingRequests });
-    }
+    };
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
         this.setState({ visitmanagerResult: null, pendingRequests: false, filters: {}, visitResult: null, widgetValues: {}});
-    }
+    };
 
 
     updateField = (widget, value, action) => {
@@ -121,7 +121,7 @@ class GwVisitManager extends React.Component {
         let filtervalue = value;
         if (widget.property.widgetcontrols !== "null") {
             widgetcontrols = JSON.parse(widget.property.widgetcontrols);
-            if (widgetcontrols.filterSign !== undefined){
+            if (widgetcontrols.filterSign !== undefined) {
                 filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
             }
         }
@@ -131,12 +131,12 @@ class GwVisitManager extends React.Component {
         }
         columnname = columnname ?? widget.name;
         // Update filters
-        if (widget.name === "spm_next_days"){
+        if (widget.name === "spm_next_days") {
             this.setState({ filters: { ...this.state.filters } });
-        } else if (widget.class === "QComboBox"){
-            if (widgetcontrols.getIndex !== undefined && widgetcontrols.getIndex === false){
-                for(let key in widget.item){
-                    if (widget.item[key].property.value === value){
+        } else if (widget.class === "QComboBox") {
+            if (widgetcontrols.getIndex !== undefined && widgetcontrols.getIndex === false) {
+                for (const key in widget.item) {
+                    if (widget.item[key].property.value === value) {
                         filtervalue = widget.item[key].property.text;
                     }
                 }
@@ -145,75 +145,75 @@ class GwVisitManager extends React.Component {
         this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { value: value }},
             filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } } }));
 
-    }
+    };
 
     getList = (visitManagerResult) => {
         try {
             const request_url = GwUtils.getServiceUrl("util");
             const widgets = visitManagerResult.body.data.fields;
-            let tableWidgets = [];
+            const tableWidgets = [];
             widgets.forEach(widget => {
-                if (widget.widgettype === "tablewidget"){
+                if (widget.widgettype === "tablewidget") {
                     tableWidgets.push(widget);
                 }
-            })
+            });
 
             const params = {
-                "theme": this.props.currentTheme.title,
-                "tabName": tableWidgets[0].tabname,
-                "widgetname": tableWidgets[0].columnname,
-                "tableName": tableWidgets[0].linkedobject,
-                "filterFields": {}
-            }
+                theme: this.props.currentTheme.title,
+                tabName: tableWidgets[0].tabname,
+                widgetname: tableWidgets[0].columnname,
+                tableName: tableWidgets[0].linkedobject,
+                filterFields: {}
+            };
             axios.get(request_url + "getlist", { params: params }).then((response) => {
-                const result = response.data
+                const result = response.data;
                 this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidgets[0].columnname]: result} }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
-            })
+            });
         } catch (error) {
             console.warn(error);
         }
-    }
+    };
 
     dispatchButton = (action) => {
-        let functionName = action.widgetfunction.functionName;
-        let params = action.widgetfunction.params ?? {};
+        const functionName = action.widgetfunction.functionName;
+        const params = action.widgetfunction.params ?? {};
         switch (functionName) {
-            case "open":                
-                this.openvisit(action.row[0].original.id, action.row[0].original.visit_type);             
-                this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-                if (!this.props.keepManagerOpen){
-                    this.setState({ visitmanagerResult: null });
-                }               
+        case "open":
+            this.openvisit(action.row[0].original.id, action.row[0].original.visit_type);
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+            if (!this.props.keepManagerOpen) {
+                this.setState({ visitmanagerResult: null });
+            }
+            break;
+        case "delete":
+            const ids = [];
+            action.row.map((row) => {
+                ids.push(row.original.id);
+            });
+            if (
+                !confirm(`Are you sure you want to delete these visits ${ids.toString()}`)
+            ) {
                 break;
-            case "delete":
-                let ids = [];
-                action.row.map((row) => {
-                    ids.push(row.original.id)
-                })
-                if (
-                    !confirm(`Are you sure you want to delete these visits ${ids.toString()}`)
-                ) {
-                    break;
-                }
-                action.row.map((row) => {  
-                    this.deletevisit(row.original.id);                    
-                })
-                this.setState( { filters: {"visitId": action.row[0].original.id, "action":"delete"} } );
-                break; 
-            case "visitClose":
-                this.setState({ visitResult: null });
-                if (!this.props.keepManagerOpen){
-                    this.onToolClose();
-                }
-                break;
-            default:
-                console.warn(`Action \`${functionName}\` cannot be handled.`)
-                break;
+            }
+            action.row.map((row) => {
+                this.deletevisit(row.original.id);
+            });
+            this.setState( { filters: {visitId: action.row[0].original.id, action: "delete"} } );
+            break;
+        case "visitClose":
+            this.setState({ visitResult: null });
+            if (!this.props.keepManagerOpen) {
+                this.onToolClose();
+            }
+            break;
+        default:
+            console.warn(`Action \`${functionName}\` cannot be handled.`);
+            break;
         }
-    }
+    };
 
 
     getQueryableLayers = () => {
@@ -223,34 +223,34 @@ class GwVisitManager extends React.Component {
 
         return IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
             // TODO: If there are some wms external layers this would select more than one layer
-            return l.type === "wms"
+            return l.type === "wms";
         });
-    }
+    };
 
     crsStrToInt = (crs) => {
-        const parts = crs.split(':')
-        return parseInt(parts.slice(-1))
-    }
+        const parts = crs.split(':');
+        return parseInt(parts.slice(-1));
+    };
 
     openvisit = (visitId, visitType) => {
         try {
             const request_url = GwUtils.getServiceUrl("visit");
 
             const params = {
-                "theme": this.props.currentTheme.title,
-                "visitId": visitId,
-                "visitType": visitType
-            }
+                theme: this.props.currentTheme.title,
+                visitId: visitId,
+                visitType: visitType
+            };
             axios.get(request_url + "getvisit", { params: params }).then((response) => {
-                const result = response.data
+                const result = response.data;
                 this.setState({ visitResult: result });
             }).catch((e) => {
                 console.log(e);
-            })
+            });
         } catch (error) {
             console.warn(error);
-        }         
-    }
+        }
+    };
 
 
     deletevisit = (visitId) => {
@@ -258,26 +258,26 @@ class GwVisitManager extends React.Component {
             const request_url = GwUtils.getServiceUrl("visit");
 
             const params = {
-                "theme": this.props.currentTheme.title,
-                "visitId": visitId
-            }
+                theme: this.props.currentTheme.title,
+                visitId: visitId
+            };
             axios.delete(request_url + "delete", { params }).then((response) => {
-                const result = response.data
+                const result = response.data;
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
-            })
+            });
         } catch (error) {
             console.warn(error);
         }
-    }
+    };
 
     render() {
         let resultWindow = null;
         let bodyvisit = null;
         if (this.state.pendingRequests === true || this.state.visitmanagerResult !== null) {
             let body = null;
-            
+
             if (isEmpty(this.state.visitmanagerResult)) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="visitmanager-body" role="body"><Spinner /><span className="visitmanager-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
@@ -290,43 +290,41 @@ class GwVisitManager extends React.Component {
                     body = null;
                     this.props.processStarted("visitmanager_msg", "GwVisitManager Error!");
                     this.props.processFinished("visitmanager_msg", false, "Couldn't find schema, please check service config.");
-                }
-                else if (result.status === "Failed") {
+                } else if (result.status === "Failed") {
                     body = null;
                     this.props.processStarted("visitmanager_msg", "GwVisitManager Error!");
                     this.props.processFinished("visitmanager_msg", false, "DB error:" + (result.SQLERR || result.message || "Check logs"));
-                }
-                else {
+                } else {
                     body = (
                         <div className="manager-body" role="body">
-                            <GwQtDesignerForm form_xml={result.form_xml} readOnly={false}
-                                theme={this.props.currentTheme.title}
-                                dispatchButton={this.dispatchButton} updateField={this.updateField}
-                                widgetValues={this.state.widgetValues} getInitialValues={false}
+                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml}
+                                getInitialValues={false}
+                                readOnly={false} theme={this.props.currentTheme.title}
+                                updateField={this.updateField} widgetValues={this.state.widgetValues}
                             />
                         </div>
-                    )
+                    );
                 }
             }
             resultWindow = (
-                <ResizeableWindow icon="giswater" dockable="bottom" scrollable={true}
-                    initialHeight={600} initialWidth= {900}
-                    initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
-                    key="GwVisitManagerWindow"
-                    onClose={this.onToolClose} title="Giswater Visit Manager"
+                <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={600}
+                    initialWidth= {900} initialX={this.props.initialX}
+                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwVisitManagerWindow"
+                    onClose={this.onToolClose}
+                    scrollable title="Giswater Visit Manager"
                 >
                     {body}
                 </ResizeableWindow>
-            );            
+            );
         }
 
-        if (this.state.visitResult){            
+        if (this.state.visitResult) {
             bodyvisit = (
-                <GwVisit visitResult={this.state.visitResult} dispatchButton={this.dispatchButton} dockable={this.props.visitDockable} initiallyDocked={true} key="visitFromManager"/>
-            )
+                <GwVisit dispatchButton={this.dispatchButton} dockable={this.props.visitDockable} initiallyDocked key="visitFromManager" visitResult={this.state.visitResult}/>
+            );
         }
 
-        if (bodyvisit){
+        if (bodyvisit) {
             return [resultWindow, bodyvisit];
         }
         return [resultWindow];

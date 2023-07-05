@@ -18,16 +18,16 @@ class GwLoadPlugin extends React.Component {
         currentTask: PropTypes.string,
         layers: PropTypes.array,
         map: PropTypes.object,
-        theme: PropTypes.object,
-    }
+        theme: PropTypes.object
+    };
 
     state = {
-        pendingRequests: false,
-    }
+        pendingRequests: false
+    };
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.theme != this.props.theme) {
-            this.makeRequest()
+            this.makeRequest();
         }
     }
 
@@ -35,15 +35,15 @@ class GwLoadPlugin extends React.Component {
         const request_url = GwUtils.getServiceUrl("util");
         if (!isEmpty(request_url)) {
             // Get request paramas
-            const epsg = this.crsStrToInt(this.props.map.projection)
+            const epsg = this.crsStrToInt(this.props.map.projection);
             const params = {
-                "theme": this.props.theme.title,
-                "epsg": epsg,
-            }
+                theme: this.props.theme.title,
+                epsg: epsg
+            };
 
             // Send request
             axios.post(request_url + "setinitproject", { ...params }).then(response => {
-                const result = response.data
+                const result = response.data;
                 console.log("LOADED PLUGIN: ", result);
                 this.setState({pendingRequests: false });
             }).catch((e) => {
@@ -51,16 +51,16 @@ class GwLoadPlugin extends React.Component {
                 this.setState({ pendingRequests: false });
             });
         }
-        
+
     }
 
     crsStrToInt = (crs) => {
-        const parts = crs.split(':')
-        return parseInt(parts.slice(-1))
-    }
-    
+        const parts = crs.split(':');
+        return parseInt(parts.slice(-1));
+    };
+
     render() {
-        return null
+        return null;
     }
 }
 

@@ -23,7 +23,7 @@ import Icon from 'qwc2/components/Icon';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import { ThirtyFpsOutlined, WidgetsRounded } from '@mui/icons-material';
-import 'qwc2-giswater/plugins/style/GwToolbox.css'
+import 'qwc2-giswater/plugins/style/GwToolbox.css';
 import 'qwc2/components/style/IdentifyViewer.css';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
@@ -32,25 +32,25 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 class GwToolbox extends React.Component {
     static propTypes = {
         currentTask: PropTypes.string,
-        theme: PropTypes.object,
-        toolboxResult: PropTypes.object,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
         initialY: PropTypes.number,
         initiallyDocked: PropTypes.bool,
-        toolboxInitialWidth: PropTypes.number,
-        removeLayer: PropTypes.func,
-        processStarted: PropTypes.func,
         processFinished: PropTypes.func,
-    }
+        processStarted: PropTypes.func,
+        removeLayer: PropTypes.func,
+        theme: PropTypes.object,
+        toolboxInitialWidth: PropTypes.number,
+        toolboxResult: PropTypes.object
+    };
     static defaultProps = {
         initialWidth: 480,
         initialHeight: 550,
         initialX: null,
         initialY: null,
         initiallyDocked: false
-    }
+    };
     constructor(props) {
         super(props);
     }
@@ -66,20 +66,20 @@ class GwToolbox extends React.Component {
         toolboxResult: null,
         pendingRequests: false,
         toolboxFilter: ""
-    }
+    };
     getProcess(process_id, parentVals, callback, errorCallback) {
         const request_url = GwUtils.getServiceUrl("toolbox");
         if (!isEmpty(request_url)) {
             const params = {
-                "theme": this.props.theme.title,
-                "id": process_id,
-                "parentVals": parentVals,
-            }
+                theme: this.props.theme.title,
+                id: process_id,
+                parentVals: parentVals
+            };
 
             axios.post(request_url + "getprocess", { ...params }).then(callback || (() => {})).catch((e) => {
                 console.warn(e);
                 if (errorCallback) {
-                    errorCallback(e)
+                    errorCallback(e);
                 }
             });
         }
@@ -88,54 +88,54 @@ class GwToolbox extends React.Component {
         const request_url = GwUtils.getServiceUrl("toolbox");
         if (!isEmpty(request_url)) {
             const params = {
-                "theme": this.props.theme.title,
-                "id": report_id,
-            }
+                theme: this.props.theme.title,
+                id: report_id
+            };
 
             axios.post(request_url + "getreport", { ...params }).then(callback || (() => {})).catch((e) => {
                 console.warn(e);
                 if (errorCallback) {
-                    errorCallback(e)
+                    errorCallback(e);
                 }
             });
         }
     }
     toolClicked(type, tool) {
-        console.log("Clicked:", type, tool)
+        console.log("Clicked:", type, tool);
         switch (type) {
-            case "processes":
-                if (this.state.toolResult?.body?.data.id !== tool.id) {
-                    this.getProcess(tool.id, {}, (response) => {
-                        const result = response.data
-                        console.log("getprocess result:", result)
-                        this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
-                    }, (error) => {
-                        this.props.processStarted("get_process", "Get process");
-                        this.props.processFinished("get_process", false, `Failed to get process: ${error}`);
-                    })
-                }
-                break;
-            case "reports":
-                if (this.state.toolResult?.body?.data.listname !== tool.id) {
-                    this.props.processStarted("get_report", "Gettings report...");
-                    this.getReport(tool.id, (response) => {
-                        const result = response.data
-                        console.log("getraport result:", result)
-                        this.props.processFinished("get_report", true, "Report successful!");
-                        this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
-                    }, (error) => {
-                        this.props.processFinished("get_report", false, `Failed to get report: ${error}`);
-                    })
-                }
-                break
-            default:
-                console.warn(`Type \`${type}\` cannot be handled.`)
-                break;
+        case "processes":
+            if (this.state.toolResult?.body?.data.id !== tool.id) {
+                this.getProcess(tool.id, {}, (response) => {
+                    const result = response.data;
+                    console.log("getprocess result:", result);
+                    this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
+                }, (error) => {
+                    this.props.processStarted("get_process", "Get process");
+                    this.props.processFinished("get_process", false, `Failed to get process: ${error}`);
+                });
+            }
+            break;
+        case "reports":
+            if (this.state.toolResult?.body?.data.listname !== tool.id) {
+                this.props.processStarted("get_report", "Gettings report...");
+                this.getReport(tool.id, (response) => {
+                    const result = response.data;
+                    console.log("getraport result:", result);
+                    this.props.processFinished("get_report", true, "Report successful!");
+                    this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
+                }, (error) => {
+                    this.props.processFinished("get_report", false, `Failed to get report: ${error}`);
+                });
+            }
+            break;
+        default:
+            console.warn(`Type \`${type}\` cannot be handled.`);
+            break;
         }
     }
     clearToolManager = () => {
-        this.setState({ toolResult: null, toolType: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {} })
-    }
+        this.setState({ toolResult: null, toolType: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {} });
+    };
     onShow = () => {
         let pendingRequests = false;
 
@@ -143,157 +143,154 @@ class GwToolbox extends React.Component {
         if (!isEmpty(request_url)) {
             // Get request paramas
             const params = {
-                "theme": this.props.theme.title,
-                "filter": this.state.toolboxFilter
-            }
+                theme: this.props.theme.title,
+                filter: this.state.toolboxFilter
+            };
 
             // Send request
-            pendingRequests = true
+            pendingRequests = true;
             this.getToolbox(params);
         }
         // Set "Waiting for request..." message
         this.setState({ toolboxResult: {}, pendingRequests: pendingRequests });
-    }
+    };
     getToolbox = (params) => {
         const request_url = GwUtils.getServiceUrl("toolbox");
         if (isEmpty(request_url)) {
             return false;
         }
-        
+
         // Send request
         axios.get(request_url + "gettoolbox", { params: params }).then(response => {
-            const result = response.data
-            console.log("gettoolbox result:", result)
+            const result = response.data;
+            console.log("gettoolbox result:", result);
             this.setState({ toolboxResult: result, pendingRequests: false });
         }).catch((e) => {
             console.log(e);
             this.setState({ pendingRequests: false });
         });
-    }
+    };
     toolOnFieldUpdated = (widget, value, action) => {
         // console.log(widget, value, this.state.toolWidgetValues)
         if (this.state.toolWidgetValues[widget.name] && widget.property.isParent === "true") {
-            const newToolWidgetValues = { ...this.state.toolWidgetValues, [widget.name]: { value: value } }
+            const newToolWidgetValues = { ...this.state.toolWidgetValues, [widget.name]: { value: value } };
             this.getProcess(this.state.toolResult.body.data.id, newToolWidgetValues, (response) => {
-                const result = response.data
-                
-                const cleanedWidgetVals = {...newToolWidgetValues}
-                delete cleanedWidgetVals[widget.name]
+                const result = response.data;
+
+                const cleanedWidgetVals = {...newToolWidgetValues};
+                delete cleanedWidgetVals[widget.name];
 
                 Object.entries(newToolWidgetValues).map(([widget_name, props]) => {
                     if (props.parentId || "" === widget.name) {
-                        delete cleanedWidgetVals[widget_name]
+                        delete cleanedWidgetVals[widget_name];
                     }
-                })
+                });
 
-                console.log("patata getprocess result:", result, cleanedWidgetVals)
+                console.log("patata getprocess result:", result, cleanedWidgetVals);
                 this.setState({ toolWidgetValues: cleanedWidgetVals, toolResult: result, toolType: "process" });
-            })
+            });
+        } else {
+            this.setState((prevState, props) => ({
+                toolWidgetValues: {
+                    ...prevState.toolWidgetValues,
+                    [widget.name]: { value: value, parentId: widget.property.parentId || null }
+                }
+            }));
         }
-        else {
-            this.setState((prevState, props) => ({ 
-                toolWidgetValues: { 
-                    ...prevState.toolWidgetValues, 
-                    [widget.name]: { value: value, parentId: widget.property.parentId || null } 
-                } 
-            }))
-        }
-    }
+    };
     onToolButton = (action, widget) => {
-        console.log("Tool Clicked", action)
+        console.log("Tool Clicked", action);
         switch (action.functionName) {
-            case "close":
-                this.clearToolManager()
-                break
-            
-            case "run":
-                if (this.state.toolType !== "processes" && this.state.toolResult === null)
-                    return
+        case "close":
+            this.clearToolManager();
+            break;
 
-                const data = this.state.toolResult.body.data
+        case "run":
+            if (this.state.toolType !== "processes" && this.state.toolResult === null) {return;}
 
-                const request_url = GwUtils.getServiceUrl("toolbox");
-                if (isEmpty(request_url))
-                    return
-                
-                    
-                const inputs = data.fields?.reduce((acc, val) => {
-                    return { ...acc, [val.widgetname]: this.state.toolWidgetValues[val.widgetname].value}
-                }, {})
-                const params = {
-                    "theme": this.props.theme.title,
-                    "functionname": data.functionname,
-                    "params": inputs || {}
+            const data = this.state.toolResult.body.data;
+
+            const request_url = GwUtils.getServiceUrl("toolbox");
+            if (isEmpty(request_url)) {return;}
+
+
+            const inputs = data.fields?.reduce((acc, val) => {
+                return { ...acc, [val.widgetname]: this.state.toolWidgetValues[val.widgetname].value};
+            }, {});
+            const params = {
+                theme: this.props.theme.title,
+                functionname: data.functionname,
+                params: inputs || {}
+            };
+
+            if (this.state.toolWidgetValues.cmb_layers) { // It will only have a value if it exists
+                params.tableName = this.state.toolWidgetValues.cmb_layers.value;
+                const toolFeatureType = data.functionparams.featureType;
+                params.featureType = this.state.toolWidgetValues.cmb_feature_type?.value || Object.keys(toolFeatureType)[0];
+            }
+
+            this.props.processStarted("process_msg", `Executing "${data.alias}"`);
+
+            // Send request
+            axios.post(request_url + "execute_process", {...params}).then(response => {
+                const result = response.data;
+                console.log("process result:", result);
+
+                this.props.processFinished("process_msg", result.status === "Accepted", result.message.text);
+
+                let log_text = "";
+                const log = result.body?.data?.info?.values;
+                if (log) {
+                    log_text = log
+                        .sort((a, b) => a.id - b.id) // sort by id
+                        .map(value => value.message)
+                        .join("\n");
                 }
 
-                if (this.state.toolWidgetValues.cmb_layers) { // It will only have a value if it exists
-                    params["tableName"] = this.state.toolWidgetValues.cmb_layers.value
-                    const toolFeatureType = data.functionparams.featureType;
-                    params["featureType"] = this.state.toolWidgetValues.cmb_feature_type?.value || Object.keys(toolFeatureType)[0]
+                this.props.removeLayer("temp_points.geojson");
+                this.props.removeLayer("temp_lines.geojson");
+                this.props.removeLayer("temp_polygons.geojson");
+
+                // Points
+                let all_features = [];
+                const point = result.body.data.point;
+                if (point && !isEmpty(point?.features)) {
+                    const points_style = {
+                        strokeColor: [235, 74, 117, 1],
+                        strokeWidth: 2,
+                        strokeDash: [4],
+                        fillColor: [191, 156, 40, 0.33],
+                        textFill: "blue",
+                        textStroke: "white",
+                        textFont: '20pt sans-serif'
+                    };
+                    const features = GwUtils.getGeoJSONFeatures(point, 'default', points_style);
+                    if (!isEmpty(features)) {
+                        all_features = all_features.concat(features);
+                        this.props.addLayerFeatures({
+                            id: "temp_points.geojson",
+                            name: "temp_points.geojson",
+                            title: "Temporal Points",
+                            zoomToExtent: false
+                        }, features, true);
+                    }
                 }
 
-                this.props.processStarted("process_msg", `Executing "${data.alias}"`)
-
-                // Send request
-                axios.post(request_url + "execute_process", {...params}).then(response => {
-                    const result = response.data
-                    console.log("process result:", result)
-
-                    this.props.processFinished("process_msg", result.status === "Accepted", result.message.text)
-                    
-                    let log_text = ""
-                    let log = result.body?.data?.info?.values;
-                    if (log) {
-                        log_text = log
-                            .sort((a, b) => a.id - b.id) // sort by id
-                            .map(value => value.message)
-                            .join("\n");
-                    }
-                        
-                    this.props.removeLayer("temp_points.geojson")
-                    this.props.removeLayer("temp_lines.geojson")
-                    this.props.removeLayer("temp_polygons.geojson")
-                    
-                    // Points
-                    let all_features = []
-                    const point = result.body.data.point;
-                    if (point && !isEmpty(point?.features)) {
-                        const points_style = {
-                            strokeColor: [235, 74, 117, 1],
-                            strokeWidth: 2,
-                            strokeDash: [4],
-                            fillColor: [191, 156, 40, 0.33],
-                            textFill: "blue",
-                            textStroke: "white",
-                            textFont: '20pt sans-serif'
-                        }
-                        const features = GwUtils.getGeoJSONFeatures(point, 'default', points_style);
-                        if (!isEmpty(features)) {
-                            all_features = all_features.concat(features)
-                            this.props.addLayerFeatures({
-                                id: "temp_points.geojson",
-                                name: "temp_points.geojson",
-                                title: "Temporal Points",
-                                zoomToExtent: false
-                            }, features, true);
-                        }
-                    }
-                    
-                    const line = result.body.data.line;
-                    if (line && !isEmpty(line?.features)) {
-                        const lines_style = {
-                            strokeColor: [235, 74, 117, 1],
-                            strokeWidth: 6,
-                            strokeDash: [1],
-                            fillColor: [255, 255, 255, 0.33],
-                            textFill: "blue",
-                            textStroke: "white",
-                            textFont: '20pt sans-serif'
-                        }
+                const line = result.body.data.line;
+                if (line && !isEmpty(line?.features)) {
+                    const lines_style = {
+                        strokeColor: [235, 74, 117, 1],
+                        strokeWidth: 6,
+                        strokeDash: [1],
+                        fillColor: [255, 255, 255, 0.33],
+                        textFill: "blue",
+                        textStroke: "white",
+                        textFont: '20pt sans-serif'
+                    };
                     const features = GwUtils.getGeoJSONFeatures(line, 'default', lines_style);
                     // console.log("Tool Lines Features", features)
                     if (!isEmpty(features)) {
-                        all_features = all_features.concat(features)
+                        all_features = all_features.concat(features);
                         this.props.addLayerFeatures({
                             id: "temp_lines.geojson",
                             name: "temp_lines.geojson",
@@ -301,49 +298,49 @@ class GwToolbox extends React.Component {
                             zoomToExtent: false
                         }, features, true);
                     }
-                    }
-                    // console.log(all_features)
-                    if (!isEmpty(all_features)) {
-                        const bbox = VectorLayerUtils.computeFeaturesBBox(all_features)
-                        // console.log(bbox)
-                        this.props.zoomToExtent(bbox.bounds, bbox.crs)
-                    }
-                    
-                    // if (!isEmpty(all_features)) {
-                    //     this.props.addLayerFeatures({
-                        //         id: "temp_all.geojson",
-                        //         name: "temp_all.geojson",
-                        //         title: "Temporal Al",
-                    //         zoomToExtent: true
-                    //     }, all_features, true);
-                    // }
+                }
+                // console.log(all_features)
+                if (!isEmpty(all_features)) {
+                    const bbox = VectorLayerUtils.computeFeaturesBBox(all_features);
+                    // console.log(bbox)
+                    this.props.zoomToExtent(bbox.bounds, bbox.crs);
+                }
 
-                    this.setState((prevState, props) => ({ 
-                        executionResult: result, 
-                        toolWidgetValues: { ...prevState.toolWidgetValues, txt_infolog: { value: log_text } },
-                        toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
-                    }))
+                // if (!isEmpty(all_features)) {
+                //     this.props.addLayerFeatures({
+                //         id: "temp_all.geojson",
+                //         name: "temp_all.geojson",
+                //         title: "Temporal Al",
+                //         zoomToExtent: true
+                //     }, all_features, true);
+                // }
+
+                this.setState((prevState, props) => ({
+                    executionResult: result,
+                    toolWidgetValues: { ...prevState.toolWidgetValues, txt_infolog: { value: log_text } },
+                    toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
+                }));
                 // this.setState({ toolboxResult: result, pendingRequests: false });
-                }).catch((e) => {
-                    console.log(e);
-                    this.props.processFinished("process_msg", false, `Execution failed "${e}"`)
-                    // this.setState({ pendingRequests: false });
-                });
-                break
+            }).catch((e) => {
+                console.log(e);
+                this.props.processFinished("process_msg", false, `Execution failed "${e}"`);
+                // this.setState({ pendingRequests: false });
+            });
+            break;
         }
-    }
+    };
     filterUpdate(value) {
-        this.setState({toolboxFilter: value})
-        
+        this.setState({toolboxFilter: value});
+
         const params = {
-            "theme": this.props.theme.title,
-            "filter": value
-        }
+            theme: this.props.theme.title,
+            filter: value
+        };
 
         this.getToolbox(params);
     }
     toggleTabExpanded(type, tab_name, default_val = false) {
-        const path = `${type}.${tab_name}`
+        const path = `${type}.${tab_name}`;
         const newstate = this.state.expandedTabs[path] !== undefined ? !this.state.expandedTabs[path] : !default_val;
 
         this.setState((prevState, props) => ({ expandedTabs: {...prevState.expandedTabs, [path]: newstate} }));
@@ -351,9 +348,9 @@ class GwToolbox extends React.Component {
     onToolTabChanged = (tab, widget) => {
         // console.log("Tool Tab:", tab, widget)
         this.setState((prevState, props) => ({ toolActiveTabs: { ...prevState.toolActiveTabs, [widget.name]: tab.name } }));
-    }
+    };
     getExpandedTabClass(type, tab_name, default_val = false) {
-        const path = `${type}.${tab_name}`
+        const path = `${type}.${tab_name}`;
         const expanded = this.state.expandedTabs[path] !== undefined ? this.state.expandedTabs[path] : default_val;
         return (expanded || !isEmpty(this.state.toolboxFilter)) ? "identify-layer-expandable identify-layer-expanded" : "identify-layer-expandable";
     }
@@ -367,24 +364,24 @@ class GwToolbox extends React.Component {
                     {tools.map(tool => this.renderTool(type, tool))}
                 </div>
             </div>
-        )
+        );
     }
     renderTool(type, tool) {
         let className = "clickable";
         if (type === this.state.toolType && this.state.toolResult?.body.data.id === tool.id) {
-            className = "active clickable"
+            className = "active clickable";
         }
         return (
             <div className="identify-result-entry" key={`${tool.alias}`}>
-                <span 
-                    className={className} 
-                    onClick={()=>{this.toolClicked(type, tool)}}
+                <span
+                    className={className}
+                    onClick={()=>{this.toolClicked(type, tool);}}
                     title={`${tool.alias} - ${tool.functionname || ""}`}
                 >
                     {tool.alias}
                 </span>
             </div>
-        )
+        );
     }
     render() {
         // Create window
@@ -419,43 +416,43 @@ class GwToolbox extends React.Component {
                             ))}
                         </div>
                     </div>
-                )
+                );
             }
         }
-        let toolWindow = null
+        let toolWindow = null;
         if (this.state.toolResult !== null) {
-            const tool = this.state.toolResult
-            console.log("Tool Widget Vals", this.state.toolWidgetValues)
-            console.log("Tool", tool)
+            const tool = this.state.toolResult;
+            console.log("Tool Widget Vals", this.state.toolWidgetValues);
+            console.log("Tool", tool);
 
             toolWindow = (
                 <ResizeableWindow icon="giswater"
-                    key="ToolManager"
-                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
-                    initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
+                    initialHeight={this.props.initialHeight}
+                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
+                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="ToolManager"
                     onClose={this.clearToolManager} title={tool.body.data.alias}
                 >
                     <div className={`tool-manager-body toolbox-${this.state.toolType}`} role='body'>
-                        <GwQtDesignerForm 
-                            form_xml={tool.form_xml} 
-                            dispatchButton={this.onToolButton} 
-                            updateField={this.toolOnFieldUpdated} 
-                            onTabChanged={this.onToolTabChanged} 
-                            activetabs={this.state.toolActiveTabs} 
-                            widgetValues={this.state.toolWidgetValues} 
+                        <GwQtDesignerForm
+                            activetabs={this.state.toolActiveTabs}
+                            dispatchButton={this.onToolButton}
+                            form_xml={tool.form_xml}
+                            onTabChanged={this.onToolTabChanged}
+                            updateField={this.toolOnFieldUpdated}
+                            widgetValues={this.state.toolWidgetValues}
                         />
                     </div>
                 </ResizeableWindow>
-            )
+            );
         }
 
         return [toolWindow, (
-            <SideBar icon="giswater" id="GwToolbox" title="GW Toolbox"
-                key="GwToolboxNull" onShow={this.onShow} width={this.props.toolboxInitialWidth} >
+            <SideBar icon="giswater" id="GwToolbox" key="GwToolboxNull"
+                onShow={this.onShow} title="GW Toolbox" width={this.props.toolboxInitialWidth} >
                 {body}
             </SideBar>
         )];
-        
+
     }
 }
 
@@ -472,5 +469,5 @@ export default connect(selector, {
     addLayerFeatures: addLayerFeatures,
     removeLayer: removeLayer,
     processStarted: processStarted,
-    processFinished: processFinished,
+    processFinished: processFinished
 })(GwToolbox);

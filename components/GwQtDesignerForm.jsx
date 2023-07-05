@@ -21,30 +21,30 @@ import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
 import 'qwc2/components/style/QtDesignerForm.css';
 import 'qwc2-giswater/components/style/GwQtDesignerForm.css';
 import FileSelector from 'qwc2/components/widgets/FileSelector';
-import GwUtils from 'qwc2-giswater/utils/GwUtils'
+import GwUtils from 'qwc2-giswater/utils/GwUtils';
 import Icon from 'qwc2/components/Icon';
 
 
 class GwQtDesignerForm extends React.Component {
     static propTypes = {
-        form_xml: PropTypes.string,
+        activetabs: PropTypes.object,
         autoResetTab: PropTypes.bool,
-        locale: PropTypes.string,
-        readOnly: PropTypes.bool,
-        updateField: PropTypes.func,
-        dispatchButton: PropTypes.func,
-        onTabChanged: PropTypes.func,
-        widgetValues: PropTypes.object,
         disabledWidgets: PropTypes.array,
-        getInitialValues: PropTypes.bool,
-        replaceImageUrls: PropTypes.bool,
+        dispatchButton: PropTypes.func,
         files: PropTypes.array,
-        activetabs: PropTypes.object
-    }
+        form_xml: PropTypes.string,
+        getInitialValues: PropTypes.bool,
+        locale: PropTypes.string,
+        onTabChanged: PropTypes.func,
+        readOnly: PropTypes.bool,
+        replaceImageUrls: PropTypes.bool,
+        updateField: PropTypes.func,
+        widgetValues: PropTypes.object
+    };
     static defaultProps = {
-        updateField: (name, value, initial = false) => { console.log(name, value, initial) },
-        dispatchButton: (action) => { console.log(action) },
-        onTabChanged: (tab, widget) => { console.log(tab, widget) },
+        updateField: (name, value, initial = false) => { console.log(name, value, initial); },
+        dispatchButton: (action) => { console.log(action); },
+        onTabChanged: (tab, widget) => { console.log(tab, widget); },
         autoResetTab: true,
         widgetValues: {},
         disabledWidgets: [],
@@ -52,14 +52,14 @@ class GwQtDesignerForm extends React.Component {
         replaceimageUrls: false,
         files: [],
         activetabs: {}
-    }
+    };
     static defaultState = {
         activetabs: {},
         formData: null,
         loading: false,
         loadingReqId: null,
         files: null
-    }
+    };
     constructor(props) {
         super(props);
         this.state = GwQtDesignerForm.defaultState;
@@ -70,16 +70,15 @@ class GwQtDesignerForm extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         // Query form
         if (this.props.form_xml !== prevProps.form_xml) {
-            console.log("Form  updated")
+            console.log("Form  updated");
             this.setState((state, props) => ({
                 ...GwQtDesignerForm.defaultState,
                 activetabs: props.autoResetTab ? {} : state.activetabs
             }));
             if (this.props.form_xml) {
                 this.parseForm(this.props.form_xml);
-            }
-            else {
-                console.error("Empty xml")
+            } else {
+                console.error("Empty xml");
             }
         }
     }
@@ -100,7 +99,7 @@ class GwQtDesignerForm extends React.Component {
         } else if (!this.state.form_xml) {
             return (
                 <span>XML is empty!</span>
-            )
+            );
         } else {
             return null;
         }
@@ -147,7 +146,7 @@ class GwQtDesignerForm extends React.Component {
             containerStyle.height = '100%';
         }
         return (
-            <div className={containerClass} name={layout.name} key={layout.name} style={containerStyle}>
+            <div className={containerClass} key={layout.name} name={layout.name} style={containerStyle}>
                 {layout.item.sort((a, b) => (sortKey(a) - sortKey(b))).map((item, idx) => {
                     let child = null;
                     if (item.widget) {
@@ -167,7 +166,7 @@ class GwQtDesignerForm extends React.Component {
                 })}
             </div>
         );
-    }
+    };
     computeLayoutColumns = (items, useIndex = false) => {
         const columns = [];
         const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line", "QDateTimeEdit", "QDateEdit", "QTimeEdit", "QSpinBox", "QDoubleSpinBox", "QSlider"];
@@ -193,7 +192,7 @@ class GwQtDesignerForm extends React.Component {
             columns[col] = hasAuto ? (columns[col] || fit) : 'auto';
         }
         return columns;
-    }
+    };
     computeLayoutRows = (items, useIndex = false) => {
         const rows = [];
         const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line", "QDateTimeEdit", "QDateEdit", "QTimeEdit", "QPushButton", "QComboBox", "QLineEdit"];
@@ -219,11 +218,11 @@ class GwQtDesignerForm extends React.Component {
             rows[row] = hasAuto ? (rows[row] || fit) : 'auto';
         }
         return rows;
-    }
+    };
     tabChanged = (tab, widget) => {
         this.setState((prevState, props) => ({ activetabs: { ...prevState.activetabs, [widget.name]: tab.name } }));
         this.props.onTabChanged(tab, widget);
-    }
+    };
     renderWidget = (widget, updateField, nametransform = (name) => name) => {
         const prop = widget.property || {};
         if (prop.visible === "false") {
@@ -259,44 +258,44 @@ class GwQtDesignerForm extends React.Component {
             return null;
         }
 
-        const value = this.getWidgetValue(widget)
+        const value = this.getWidgetValue(widget);
 
         if (widget.class === "QTableWidget") {
             if (!value || !value.values) {
                 return null;
             }
-            
-            const { values, form } = value
+
+            const { values, form } = value;
             // if (!values) {
             //     return (<span>No results found</span>)
             // }
 
-            return (<GwTableWidget values={values} form={form} dispatchButton={this.props.dispatchButton}/>);
+            return (<GwTableWidget dispatchButton={this.props.dispatchButton} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
             if (!value) {
-                return null
+                return null;
             }
 
-            console.log(value)
+            console.log(value);
             return (
                 <div className="qtableview">
                     <table className="qtableview">
                         <tbody>
-                        {value.map((value, i) => (
-                            <tr className="qtableview-row" key={i}>
-                                <td className="qtableview">
-                                    <ul>
-                                        {Object.keys(value).map((field, j) => {
-                                            if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value[field])) {
-                                                return (<a href={value[field]} rel="noreferrer" target="_blank" key={j}><img src={value[field]} /></a>);
-                                            } else {
-                                                return (<li key={j}><b>{field}</b>: {String(value[field])}</li>)
-                                            }
+                            {value.map((value, i) => (
+                                <tr className="qtableview-row" key={i}>
+                                    <td className="qtableview">
+                                        <ul>
+                                            {Object.keys(value).map((field, j) => {
+                                                if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value[field])) {
+                                                    return (<a href={value[field]} key={j} rel="noreferrer" target="_blank"><img src={value[field]} /></a>);
+                                                } else {
+                                                    return (<li key={j}><b>{field}</b>: {String(value[field])}</li>);
+                                                }
                                             })}
-                                    </ul>
-                                </td>
-                            </tr>
-                        ))}
+                                        </ul>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -386,7 +385,7 @@ class GwQtDesignerForm extends React.Component {
                         );
                     })}
                 </select>
-            )
+            );
         } else if (widget.class === "QSpinBox" || widget.class === "QDoubleSpinBox" || widget.class === "QSlider") {
             const min = prop.minimum ?? undefined;
             const max = prop.maximum ?? undefined;
@@ -408,7 +407,7 @@ class GwQtDesignerForm extends React.Component {
         } else if (widget.class === "QDateTimeEdit") {
 
             // We need to send this format EVERYWHERE
-            // Storage (xml or widgetVars) 
+            // Storage (xml or widgetVars)
             //    data if time is none
             //    {data}T{time} if time is NOT none
 
@@ -417,22 +416,22 @@ class GwQtDesignerForm extends React.Component {
             const parts = (value || "").split("T");
             return (
                 <span className="qt-designer-form-datetime">
-                    <input 
-                        max={max[0]} 
-                        min={min[0]} 
-                        onChange={(ev) => updateField(widget, ev.target.value ? ev.target.value + (parts[1] ? ("T" + parts[1]) : "") : "")} 
-                        readOnly={inputConstraints.readOnly} 
-                        required={inputConstraints.required} 
-                        style={fontStyle} 
-                        type="date" 
-                        value={parts[0]} 
+                    <input
+                        max={max[0]}
+                        min={min[0]}
+                        onChange={(ev) => updateField(widget, ev.target.value ? ev.target.value + (parts[1] ? ("T" + parts[1]) : "") : "")}
+                        readOnly={inputConstraints.readOnly}
+                        required={inputConstraints.required}
+                        style={fontStyle}
+                        type="date"
+                        value={parts[0]}
                     />
-                    <input 
-                        disabled={!parts[0]} 
-                        onChange={(ev) => updateField(widget, parts[0] + (ev.target.value ? "T" + ev.target.value : ""))} 
-                        {...inputConstraints} style={fontStyle} 
-                        type="time" 
-                        value={parts[1] || ""} 
+                    <input
+                        disabled={!parts[0]}
+                        onChange={(ev) => updateField(widget, parts[0] + (ev.target.value ? "T" + ev.target.value : ""))}
+                        {...inputConstraints} style={fontStyle}
+                        type="time"
+                        value={parts[1] || ""}
                     />
                     <input name={elname} type="hidden" value={prop.value} />
                 </span>
@@ -442,27 +441,25 @@ class GwQtDesignerForm extends React.Component {
         } else if (widget.class === "QPushButton") {
             let text = prop.text;
             if (widgetControls.icon) {
-                text = (<Icon icon={widgetControls.icon} />)
+                text = (<Icon icon={widgetControls.icon} />);
             }
-            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{text}</button>)
+            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{text}</button>);
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
-            return (<FileSelector accept={accept} file={this.state.files} onFilesSelected={this.onFilesSelected} multiple={true} showAllFilenames={false} overrideText={overrideText} />);
+            return (<FileSelector accept={accept} file={this.state.files} multiple onFilesSelected={this.onFilesSelected} overrideText={overrideText} showAllFilenames={false} />);
         }
         return null;
-    }
+    };
     getWidgetValue = (widget) => {
         const prop = widget.property || {};
 
         if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit" || widget.class === "QLineEdit") {
             return (this.props.widgetValues[widget.name]?.value ?? prop.text);
-        } 
-        else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
+        } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const checked = (this.props.widgetValues[widget.name]?.value ?? prop.checked);
             return checked === true || checked === "true" || checked === "True";
-        } 
-        else if (widget.class === "QComboBox") {
+        } else if (widget.class === "QComboBox") {
             // console.log(widget)
             let items = widget.item;
             if (!Array.isArray(widget.item)) {
@@ -483,49 +480,45 @@ class GwQtDesignerForm extends React.Component {
             //     option_value = optObj.property.value
             // }
             // return (this.props.widgetValues[widget.name]?.value || option_value);
-        } 
-        else if (
-            widget.class === "QSpinBox" || 
-            widget.class === "QDoubleSpinBox" || 
-            widget.class === "QSlider" || 
-            widget.class === "QDateEdit" || 
+        } else if (
+            widget.class === "QSpinBox" ||
+            widget.class === "QDoubleSpinBox" ||
+            widget.class === "QSlider" ||
+            widget.class === "QDateEdit" ||
             widget.class === "QTimeEdit"
         ) {
             return (this.props.widgetValues[widget.name]?.value ?? prop.value);
-        } 
-        else if (widget.class === "QDateTimeEdit") { // Removes milliseconds from the value
+        } else if (widget.class === "QDateTimeEdit") { // Removes milliseconds from the value
             const value = (this.props.widgetValues[widget.name]?.value ?? prop.value);
-            
+
             const parts = (value || "T").split("T");
             parts[1] = (parts[1] ?? "").replace(/\.\d+$/, ''); // Strip milliseconds
 
-            return parts[1] ? parts[0] + "T" + parts[1] : parts[0]
-        }
-        else if (widget.class === "QTableWidget") {
-            const values = this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null)
-            const form = this.props.widgetValues[widget.name]?.body?.form ?? (prop.form ? JSON.parse(prop.form) : null)
+            return parts[1] ? parts[0] + "T" + parts[1] : parts[0];
+        } else if (widget.class === "QTableWidget") {
+            const values = this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null);
+            const form = this.props.widgetValues[widget.name]?.body?.form ?? (prop.form ? JSON.parse(prop.form) : null);
             return {
                 values: values,
                 form: form
-            }
-        }
-        else if (widget.class === "QTableView") {
-            return this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null)
+            };
+        } else if (widget.class === "QTableView") {
+            return this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null);
         }
 
-        return null
-    }
+        return null;
+    };
 
     onFilesSelected = (files) => {
         this.props.dispatchButton({ functionName: "upload_file", file: files });
         this.setState({files});
-    }
+    };
     groupOrName = (widget) => {
         return widget.attribute && widget.attribute.buttonGroup ? widget.attribute.buttonGroup._ : widget.name;
-    }
+    };
     dateConstraint = (constr) => {
         return (constr.year + "-" + ("0" + constr.month).slice(-2) + "-" + ("0" + constr.day).slice(-2));
-    }
+    };
     parseForm = (data) => {
         const options = {
             explicitArray: false,
@@ -552,7 +545,7 @@ class GwQtDesignerForm extends React.Component {
             this.setState({ formData: json, loading: false, loadingReqId: null });
             // this.setState({ formData: json, loading: false, loadingReqId: null, activetabs: activetabs });
         });
-    }
+    };
     reformatWidget = (widget, fields, externalFields, counters) => {
         // console.log(widget.property)
         if (widget.property) {
@@ -576,9 +569,10 @@ class GwQtDesignerForm extends React.Component {
         widget.name = widget.name || (":widget_" + counters.widget++);
 
         if (this.props.getInitialValues) {
-            const value = this.getWidgetValue(widget)
-            if (value !== null)
-                this.props.updateField(widget, value, true)
+            const value = this.getWidgetValue(widget);
+            if (value !== null) {
+                this.props.updateField(widget, value, true);
+            }
         }
 
         if (widget.layout) {
@@ -591,7 +585,7 @@ class GwQtDesignerForm extends React.Component {
                 this.reformatWidget(child, fields, externalFields, counters);
             });
         }
-    }
+    };
     reformatLayout = (layout, fields, externalFields, counters) => {
         layout.item = MiscUtils.ensureArray(layout.item);
         layout.name = layout.name || (":layout_" + counters.layout++);
@@ -608,25 +602,30 @@ class GwQtDesignerForm extends React.Component {
                 this.reformatLayout(item.layout, fields, externalFields, counters);
             }
         });
-    }
+    };
     filterActiveTabs = (formJson, oldActiveTabs) => {
-        let tabs = []
+        const tabs = [];
         GwUtils.forEachWidgetInForm(formJson, widget => {
-            if (widget.class == "QTabWidget")
-                tabs.push(widget)
-        })
+            if (widget.class == "QTabWidget") {
+                tabs.push(widget);
+            }
+        });
 
-        const activetabsArr = Object.entries(oldActiveTabs)
+        const activetabsArr = Object.entries(oldActiveTabs);
         const newTabsArr = activetabsArr.filter(([widget, activetab]) => {
-            const tabWidget = tabs.find(tabWidget => tabWidget.name == widget)
-            if (tabWidget) // if the tab widget exists
-                if (tabWidget.widget.find(tab => tab.name == activetab)) // if the tab widget has the active tab
-                    return true
-            return false
-        })
-        const activetabs = Object.fromEntries(newTabsArr)
-        return activetabs
-    }
+            const tabWidget = tabs.find(tabWidget => tabWidget.name == widget);
+            // if the tab widget exists
+            if (tabWidget) {
+                // if the tab widget has the active tab
+                if (tabWidget.widget.find(tab => tab.name == activetab)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        const activetabs = Object.fromEntries(newTabsArr);
+        return activetabs;
+    };
     buildErrMsg = (record) => {
         let message = record.error;
         const errorDetails = record.error_details || {};
@@ -641,7 +640,7 @@ class GwQtDesignerForm extends React.Component {
             message += ":\n - " + errorDetails.validation_errors.join("\n - ");
         }
         return message;
-    }
+    };
 }
 
 export default connect((state) => ({

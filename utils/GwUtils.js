@@ -12,7 +12,7 @@ import ol from 'openlayers';
 
 const GwUtils = {
     getServiceUrl(service) {
-        const request_url = ConfigUtils.getConfigProp("giswaterServiceUrl")
+        const request_url = ConfigUtils.getConfigProp("giswaterServiceUrl");
         if (isEmpty(request_url)) {
             return "";
         }
@@ -32,41 +32,39 @@ const GwUtils = {
         return { layer: null, path };
     },
     forEachWidgetInForm(form, func) {
-        this._handleWidget(form.ui.widget, func)
+        this._handleWidget(form.ui.widget, func);
     },
     forEachWidgetInLayout(layout, func) {
-        this._handleLayout(layout, func)
+        this._handleLayout(layout, func);
     },
     _handleWidget(widget, func) {
-        func(widget)
+        func(widget);
 
         if (widget.layout) {
-            this._handleLayout(widget.layout, func)
-        }
-        else if (widget.widget) {
+            this._handleLayout(widget.layout, func);
+        } else if (widget.widget) {
             widget.widget.map(tab => {
-                this._handleWidget(tab, func)
-            })
+                this._handleWidget(tab, func);
+            });
         }
     },
     _handleLayout(layout, func) {
         layout.item.map(item => {
             if (item.layout) {
-                this._handleLayout(item.layout, func)
+                this._handleLayout(item.layout, func);
+            } else if (item.widget) {
+                this._handleWidget(item.widget, func);
             }
-            else if (item.widget) {
-                this._handleWidget(item.widget, func)
-            }
-        })
+        });
     },
-    getGeoJSONFeatures(data, styleName=null, styleOptions=null) {
+    getGeoJSONFeatures(data, styleName = null, styleOptions = null) {
         if (isEmpty(data.features)) {
-            return []
+            return [];
         }
-        
+
         let defaultCrs = "EPSG:25831";
-        let defaultStyleName = 'default'
-        let defaultStyleOptions = {
+        const defaultStyleName = 'default';
+        const defaultStyleOptions = {
             strokeColor: [255, 0, 0, 1],
             strokeWidth: 4,
             strokeDash: [4],
@@ -74,7 +72,7 @@ const GwUtils = {
             textFill: "blue",
             textStroke: "white",
             textFont: '20pt sans-serif'
-        }
+        };
         if (!styleName) {
             styleName = defaultStyleName;
         }
@@ -95,44 +93,44 @@ const GwUtils = {
             if (feature.geometry && feature.geometry.coordinates) {
                 feature.geometry.coordinates = feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d);
             }
-            
-            return { 
-                ...feature, 
-                crs: crs, 
+
+            return {
+                ...feature,
+                crs: crs,
                 styleName: styleName,
                 styleOptions: styleOptions
             };
         });
-        return features
+        return features;
     },
     getGeometryCenter(geom) {
         const geometry = new ol.format.WKT().readGeometry(geom);
         const type = geometry.getType();
         let center = null;
         switch (type) {
-            case "Polygon":
-                center = geometry.getInteriorPoint().getCoordinates();
-                break;
-            case "MultiPolygon":
-                center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "Point":
-                center = geometry.getCoordinates();
-                break;
-            case "MultiPoint":
-                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "LineString":
-                center = geometry.getCoordinateAt(0.5);
-                break;
-            case "MultiLineString":
-                center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-                break;
-            case "Circle":
-                center = geometry.getCenter();
-                break;
-            default:
-                break;
+        case "Polygon":
+            center = geometry.getInteriorPoint().getCoordinates();
+            break;
+        case "MultiPolygon":
+            center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+            break;
+        case "Point":
+            center = geometry.getCoordinates();
+            break;
+        case "MultiPoint":
+            center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+            break;
+        case "LineString":
+            center = geometry.getCoordinateAt(0.5);
+            break;
+        case "MultiLineString":
+            center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
+            break;
+        case "Circle":
+            center = geometry.getCenter();
+            break;
+        default:
+            break;
         }
         return center;
     }

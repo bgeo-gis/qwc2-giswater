@@ -25,19 +25,19 @@ import 'qwc2-giswater/components/style/GwInfoDmaForm.css';
 class GwInfoDmaForm extends React.Component {
     static propTypes = {
         jsonData: PropTypes.object
-    }
+    };
 
     render() {
-        const info = this.props.jsonData?.info?.values?.info || {}
+        const info = this.props.jsonData?.info?.values?.info || {};
 
         const dma = info.dma;
         const exploitation = info.exploitation;
 
-        //Período e intérvalo
+        // Período e intérvalo
         const period = info.period;
         const period_dates = info.period_dates;
 
-        //Datos de la red
+        // Datos de la red
         const meters_in = info.meters_in; //
         const meters_out = info.meters_out; //
         const n_connec = info.n_connec; // numero acometidas
@@ -45,22 +45,22 @@ class GwInfoDmaForm extends React.Component {
         const arc_length = info.arc_length; // longitud red
         const link_length = info.link_length; // longitud acometidas
 
-        //Pie Chart
-        //Datos
+        // Pie Chart
+        // Datos
         const total = info.total; // total inyectado
         const flow = "2.55"; // TODO: FALTA!!!
         const dma_rw_eff = (info.dma_rw_eff * 100)?.toFixed(2); // rendimiento
         const dma_nrw_eff = (info.dma_nrw_eff * 100)?.toFixed(2); // dma agua no controlada
 
-        //Gràfico
+        // Gràfico
         const nrw = info?.nrw; // VANC
         const auth = info?.auth; // total abonados
 
-        //Otros indicadores
+        // Otros indicadores
         // dma agua no controlada
         const expl_nrw_eff = (info.expl_nrw_eff * 100)?.toFixed(2); // expl agua no controlada
-        const dma_ili = info.dma_ili?.toFixed(2) // dma indice perdidas
-        const expl_ili = info.expl_ili?.toFixed(2) // expl indice perdidas
+        const dma_ili = info.dma_ili?.toFixed(2); // dma indice perdidas
+        const expl_ili = info.expl_ili?.toFixed(2); // expl indice perdidas
         const dma_m4day = info.dma_m4day?.toFixed(2); // dma m3kmdia
         const expl_m4day = info.expl_m4day?.toFixed(2); // expl m3kmdia
         const dma_nightvol = info.dma_nightvol; // dma min nocturno
@@ -234,13 +234,13 @@ class GwInfoDmaForm extends React.Component {
             height: 200,
             chartPadding: { left: 5, bottom: 1, top: 0 },
             series: {
-                'line1': {
+                line1: {
                     low: 0,
                     showArea: false,
                     showPoint: false,
                     lineSmooth: false
                 },
-                'line2': {
+                line2: {
                     low: 0,
                     showArea: false,
                     showPoint: false,
@@ -271,12 +271,12 @@ class GwInfoDmaForm extends React.Component {
 
         // Pie Chart
         const data_piechart = {
-            labels: ['VANC ('+nrw+')', 'Total abonados ('+auth+')'],
+            labels: ['VANC (' + nrw + ')', 'Total abonados (' + auth + ')'],
             series: [nrw, auth]
         };
 
         const options_piechart = {
-            labelInterpolationFnc: function (value) {
+            labelInterpolationFnc: function(value) {
                 return value;
             }
         };

@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Icon from 'qwc2/components/Icon';
 import { removeLayer } from 'qwc2/actions/layers';
-import 'qwc2/plugins/style/Buttons.css'
+import 'qwc2/plugins/style/Buttons.css';
 
 class GwClearTempLayersButton extends React.Component {
     static propTypes = {
@@ -18,9 +18,9 @@ class GwClearTempLayersButton extends React.Component {
         removeLayer: PropTypes.func
     };
     clearLayers() {
-        this.props.removeLayer("temp_points.geojson")
-        this.props.removeLayer("temp_lines.geojson")
-        this.props.removeLayer("temp_polygons.geojson")
+        this.props.removeLayer("temp_points.geojson");
+        this.props.removeLayer("temp_lines.geojson");
+        this.props.removeLayer("temp_polygons.geojson");
     }
     render() {
         return (

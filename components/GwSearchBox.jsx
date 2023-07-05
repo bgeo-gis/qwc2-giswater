@@ -28,6 +28,7 @@ class GwSearchBox extends React.Component {
     static propTypes = {
         addLayer: PropTypes.func,
         addLayerFeatures: PropTypes.func,
+        infoDockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         layers: PropTypes.array,
         map: PropTypes.object,
         panTo: PropTypes.func,
@@ -40,12 +41,11 @@ class GwSearchBox extends React.Component {
         }),
         setCurrentTask: PropTypes.func,
         theme: PropTypes.object,
-        zoomToPoint: PropTypes.func,
-        infoDockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
-    }
+        zoomToPoint: PropTypes.func
+    };
     static defaultProps = {
         infoDockable: "right"
-    }
+    };
     state = {
         searchText: "",
         searchResults: {},
@@ -53,7 +53,7 @@ class GwSearchBox extends React.Component {
         collapsedSections: [],
         identifyResult: null,
         searchAdd: false
-    }
+    };
     constructor(props) {
         super(props);
         this.searchBox = null;
@@ -64,99 +64,98 @@ class GwSearchBox extends React.Component {
     getSearch = () => {
         const request_url = GwUtils.getServiceUrl("search");
         if (!isEmpty(request_url) && !isEmpty(this.state.searchText)) {
-            //TO DO isTiled:True/False
+            // TO DO isTiled:True/False
             const filterText = this.state.searchText;
             const filterSearch = '"searchText": { "filterSign":"", "value": "' + filterText + '" } ';
 
             const params = {
-                "theme": this.props.theme.title,
-                "filterFields": filterSearch
-            }
+                theme: this.props.theme.title,
+                filterFields: filterSearch
+            };
             axios.get(request_url + "getsearch", { params: params }).then(response => {
                 const result = response.data;
-                this.setState({ searchResults: result })
+                this.setState({ searchResults: result });
             }).catch((e) => {
                 console.log(e);
             });
         }
-    }
+    };
 
     setSearch = (display_name, section, filterKey, filterValue, execFunc, tableName, searchAdd) => {
-        this.setState({ searchText: display_name })
+        this.setState({ searchText: display_name });
         const request_url = GwUtils.getServiceUrl("search");
         if (!isEmpty(request_url)) {
             const extras = '"value": "' + display_name + '", "section": "' + section + '", "filterKey": "' + filterKey + '","filterValue": "' + filterValue + '", "execFunc": "' + execFunc + '", "tableName": "' + tableName + '", "searchAdd": "' + searchAdd + '"';
             const params = {
-                "theme": this.props.theme.title,
-                "extras": extras
-            }
+                theme: this.props.theme.title,
+                extras: extras
+            };
             axios.get(request_url + "setsearch", { params: params }).then(response => {
                 const result = response.data;
-                this.panToResult(result.data.geometry)
-                this.highlightResult(result)
+                this.panToResult(result.data.geometry);
+                this.highlightResult(result);
 
-                //Info if execFunc is present
+                // Info if execFunc is present
                 if (execFunc) {
-                    this.identifyFromId(filterValue, tableName)
+                    this.identifyFromId(filterValue, tableName);
                 }
                 if (section == "basic_search_v2_address" && !searchAdd) {
-                    this.searchTextChanged(null, display_name + ", ")
+                    this.searchTextChanged(null, display_name + ", ");
                 }
-                this.clearResults()
+                this.clearResults();
             }).catch((e) => {
                 console.log(e);
             });
         }
-    }
-
+    };
     identifyFromId = (execParam, tableName) => {
         const request_url = GwUtils.getServiceUrl("info");
         if (!isEmpty(request_url)) {
             const params = {
-                "theme": this.props.theme.title,
-                "id": execParam,
-                "tableName": tableName
-            }
+                theme: this.props.theme.title,
+                id: execParam,
+                tableName: tableName
+            };
             axios.get(request_url + "fromid", { params: params }).then((response) => {
-                const result = response.data
+                const result = response.data;
                 this.setState({ identifyResult: result });
             }).catch((e) => {
                 console.log(e);
             });
         }
         this.setState({ identifyResult: {} });
-    }
+    };
 
     panToResult = (geometry) => {
         if (!isEmpty(geometry)) {
-            const center = GwUtils.getGeometryCenter(geometry.st_astext)
-            //Pan to result
-            this.props.panTo(center, this.props.map.projection)
-            //Zoom to result
+            const center = GwUtils.getGeometryCenter(geometry.st_astext);
+            // Pan to result
+            this.props.panTo(center, this.props.map.projection);
+            // Zoom to result
             const maxZoom = MapUtils.computeZoom(this.props.map.scales, this.props.theme.minSearchScaleDenom || this.props.searchOptions.minScaleDenom);
-            this.props.zoomToPoint(center, maxZoom, this.props.map.projection)
+            this.props.zoomToPoint(center, maxZoom, this.props.map.projection);
         }
-    }
+    };
 
     highlightResult = (result) => {
         // console.log('result :>> ', result);
         if (isEmpty(result) || !result?.data?.geometry) {
-            this.props.removeLayer("identifyslection")
+            this.props.removeLayer("identifyslection");
         } else {
             const layer = {
                 id: "identifyslection",
                 role: LayerRole.SELECTION
             };
-            const crs = this.props.map.projection
-            const geometry = VectorLayerUtils.wktToGeoJSON(result.data.geometry.st_astext, crs, crs)
+            const crs = this.props.map.projection;
+            const geometry = VectorLayerUtils.wktToGeoJSON(result.data.geometry.st_astext, crs, crs);
             const feature = {
                 id: result.funcValue,
                 geometry: geometry.geometry
-            }
-            this.props.addLayerFeatures(layer, [feature], true)
+            };
+            this.props.addLayerFeatures(layer, [feature], true);
         }
         this.resultProcessed = true;
-    }
+    };
 
     renderSearchResults = () => {
         if (!this.state.resultsVisible || !this.state.searchResults || !this.state.searchResults.data || isEmpty(this.state.searchText)) {
@@ -169,18 +168,18 @@ class GwSearchBox extends React.Component {
             const searchAdd = result.searchAdd;
             const alias = result.alias;
             const values = result.values;
-            const title = alias + " title"
-            const body = alias + " body"
+            const title = alias + " title";
+            const body = alias + " body";
             const resultItems = [];
 
             if (typeof values !== 'undefined') {
                 for (const value of result.values) {
-                    const display = value.display_name
+                    const display = value.display_name;
                     resultItems.push(
                         <div
                             className="searchbox-result"
-                            onClick={() => this.setSearch(display, result.section, value.key, value.value, result.execFunc, result.tableName, searchAdd)}
                             key={display}
+                            onClick={() => this.setSearch(display, result.section, value.key, value.value, result.execFunc, result.tableName, searchAdd)}
                         >
                             <span className="searchbox-result-label" title={display}>
                                 {display}
@@ -190,8 +189,8 @@ class GwSearchBox extends React.Component {
                 }
                 searchResultItems.push(
                     <div className="searchbox-results-section" key={alias}>
-                        <div className="searchbox-results-section-title" onClick={() => this.handleCollapseClick(alias)} key={title}>
-                            <span className={`icon ${this.state.collapsedSections.includes(alias) ? 'icon-expand' : 'icon-collapse'}`}></span>
+                        <div className="searchbox-results-section-title" key={title} onClick={() => this.handleCollapseClick(alias)}>
+                            <span className={`icon ${this.state.collapsedSections.includes(alias) ? 'icon-expand' : 'icon-collapse'}`} />
                             <span>{result.alias}</span>
                         </div>
                         {!this.state.collapsedSections.includes(alias) && (
@@ -205,7 +204,7 @@ class GwSearchBox extends React.Component {
         });
 
         return (
-            <div className="searchbox-results" onMouseDown={this.setPreventBlur} ref={MiscUtils.setupKillTouchEvents} key="searchbox-results">
+            <div className="searchbox-results" key="searchbox-results" onMouseDown={this.setPreventBlur} ref={MiscUtils.setupKillTouchEvents}>
                 {searchResultItems.length > 0 ? (
                     searchResultItems
                 ) : (
@@ -218,7 +217,7 @@ class GwSearchBox extends React.Component {
     setPreventBlur = () => {
         this.preventBlur = true;
         setTimeout(() => { this.preventBlur = false; return false; }, 100);
-    }
+    };
 
     handleCollapseClick = (section) => {
         this.setState(prevState => {
@@ -235,7 +234,7 @@ class GwSearchBox extends React.Component {
 
     onCloseInfo = () => {
         this.setState({ identifyResult: null });
-    }
+    };
 
     render() {
         const placeholder = LocaleUtils.tr("searchbox.placeholder");
@@ -260,12 +259,12 @@ class GwSearchBox extends React.Component {
 
         if (!isEmpty(this.state.identifyResult)) {
             bodyInfo = (
-                <GwInfo identifyResult={this.state.identifyResult} onClose={this.onCloseInfo} dockable={this.props.infoDockable} initiallyDocked={true}
-                    initialWidth={480}
-                    initialHeight={800}
+                <GwInfo dockable={this.props.infoDockable} identifyResult={this.state.identifyResult} initialHeight={800} initialWidth={480}
+                    initiallyDocked
                     key="GwInfoFromSearch"
+                    onClose={this.onCloseInfo}
                 />
-            )
+            );
         }
 
         if (bodyInfo) {
@@ -276,7 +275,7 @@ class GwSearchBox extends React.Component {
     }
 
     searchTextChanged = (el, text) => {
-        this.setState({ searchResults: {} })
+        this.setState({ searchResults: {} });
         let pasted = false;
         if (el) {
             pasted = el.getAttribute('__pasted');
@@ -288,7 +287,7 @@ class GwSearchBox extends React.Component {
         this.setState({ searchText: text });
         clearTimeout(this.searchTimeout);
         this.searchTimeout = setTimeout(() => this.getSearch(pasted), 250);
-    }
+    };
 
     onFocus = () => {
         this.setState({ resultsVisible: true });
@@ -298,7 +297,7 @@ class GwSearchBox extends React.Component {
         if (isEmpty(this.state.searchResults)) {
             this.getSearch(false);
         }
-    }
+    };
 
     onBlur = () => {
         if (this.preventBlur && this.searchBox) {
@@ -306,7 +305,7 @@ class GwSearchBox extends React.Component {
         } else {
             this.setState({ resultsVisible: false });
         }
-    }
+    };
 
     clear = () => {
         if (this.searchBox) {
@@ -314,12 +313,12 @@ class GwSearchBox extends React.Component {
         }
         this.setState({ searchText: '', searchResults: {} });
         this.props.removeLayer('searchselection');
-    }
+    };
 
     clearResults = () => {
         this.setState({ searchResults: {} });
         this.props.removeLayer('searchselection');
-    }
+    };
 
     onKeyDown = (ev) => {
         if (ev.keyCode === 27 && this.searchBox) {
@@ -329,13 +328,13 @@ class GwSearchBox extends React.Component {
                 this.searchBox.blur();
             }
         }
-    }
+    };
 }
 
 const selector = (state) => ({
     map: state.map,
     layers: state.layers.flat,
-    theme: state.theme.current,
+    theme: state.theme.current
 });
 
 export default connect(selector, {
@@ -344,5 +343,5 @@ export default connect(selector, {
     removeLayer: removeLayer,
     setCurrentTask: setCurrentTask,
     zoomToPoint: zoomToPoint,
-    panTo: panTo,
+    panTo: panTo
 })(GwSearchBox);

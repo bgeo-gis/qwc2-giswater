@@ -13,7 +13,7 @@ import isEmpty from 'lodash.isempty';
 
 import { MRT_ToggleFiltersButton } from 'material-react-table';
 
-//Material-UI Imports
+// Material-UI Imports
 import {
     Box,
     Button,
@@ -21,33 +21,33 @@ import {
     MenuItem,
     TextField,
     IconButton
-  } from '@mui/material';
-//Date Picker Imports
+} from '@mui/material';
+// Date Picker Imports
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FilterAltOff from '@mui/icons-material/FilterAltOff';
-import { ExportToCsv } from 'export-to-csv'; //or use your library of choice here
+import { ExportToCsv } from 'export-to-csv'; // or use your library of choice here
 
 import * as icons from '@mui/icons-material';
 
 class GwTableWidget extends React.Component {
     static propTypes = {
-        values: PropTypes.array,
         dispatchButton: PropTypes.func,
         form: PropTypes.object,
-    }
+        values: PropTypes.array
+    };
     static defaultState = {
         loading: false
-    }
+    };
     constructor(props) {
         super(props);
         this.state = GwTableWidget.defaultState;
-        this.state = { 
+        this.state = {
             ...this.state,
-            rowSelection: {} 
+            rowSelection: {}
         };
     }
 
@@ -58,26 +58,26 @@ class GwTableWidget extends React.Component {
         const IconComponent = icons[iconComponentName];
         // Return the icon component
         return IconComponent ? React.createElement(IconComponent) : null;
-    }
+    };
 
     render() {
         const data = this.props.values;
-        let cols = [];
+        const cols = [];
         const headers = this.props.form.headers || [];
         const tableParams = this.props.form.table || {};
-        if (!isEmpty(headers)){
+        if (!isEmpty(headers)) {
             Object.keys(data[0]).map(key => {
                 const header = headers.filter(header => {
                     return header.accessorKey === key;
                 })[0];
 
-                if (header !== undefined && header['filterVariant'] !== undefined){
-                    if (header.filterVariant === 'datetime'){
-                        header['accessorFn'] = ((row) => {
+                if (header !== undefined && header.filterVariant !== undefined) {
+                    if (header.filterVariant === 'datetime') {
+                        header.accessorFn = ((row) => {
                             const date = new Date(new Date(row[header.accessorKey]).toDateString()); // TODO: What?
                             return date;
                         });
-                        header['Cell'] = ({ cell }) => {
+                        header.Cell = ({ cell }) => {
                             const date = new Date(cell.getValue());
                             if (!date || date.getTime() === 0) {
                                 return "";
@@ -88,21 +88,21 @@ class GwTableWidget extends React.Component {
                                 year: 'numeric'
                             });
                         };
-                        header['Filter'] = ({ column }) => (
+                        header.Filter = ({ column }) => (
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
                                     inputFormat="DD/MM/YYYY"
                                     onChange={(newValue) => {
                                         newValue = new Date(new Date(newValue).toDateString());
                                         column.setFilterValue(newValue);
-                                      }}
+                                    }}
                                     renderInput={(params) => {
                                         return (
-                                          <TextField
-                                            {...params}
-                                            helperText={'Filter Mode: ' + column.getFilterFn().name}
-                                            sx={{ minWidth: '120px' }}
-                                            variant="standard" />
+                                            <TextField
+                                                {...params}
+                                                helperText={'Filter Mode: ' + column.getFilterFn().name}
+                                                sx={{ minWidth: '120px' }}
+                                                variant="standard" />
                                         );
                                     }}
                                     value={column.getFilterValue()} />
@@ -111,7 +111,7 @@ class GwTableWidget extends React.Component {
                     }
                 }
 
-                if (header !== undefined){
+                if (header !== undefined) {
                     cols.push(header);
                 }
 
@@ -125,7 +125,7 @@ class GwTableWidget extends React.Component {
             showLabels: true,
             useBom: true,
             useKeysAsHeaders: false,
-            headers: cols.map((c) => c.header),
+            headers: cols.map((c) => c.header)
         };
 
         const csvExporter = new ExportToCsv(csvOptions);
@@ -137,8 +137,8 @@ class GwTableWidget extends React.Component {
         // const handleExportData = () => {
         //     csvExporter.generateCsv(data);
         // };
-        
-        let inputProps = {
+
+        const inputProps = {
             enableGlobalFilter: tableParams.enableGlobalFilter ?? false,
             enableStickyHeader: tableParams.enableStickyHeader ?? true,
             positionToolbarAlertBanner: tableParams.positionToolbarAlertBanner ?? "bottom",
@@ -146,70 +146,70 @@ class GwTableWidget extends React.Component {
             enablePinning: tableParams.enablePinning ?? true,
             enableColumnOrdering: tableParams.enableColumnOrdering ?? true,
             enableColumnFilterModes: tableParams.enableColumnFilterModes ?? true,
-            //enableFullScreenToggle: tableParams.enableFullScreenToggle ?? false,
+            // enableFullScreenToggle: tableParams.enableFullScreenToggle ?? false,
             enablePagination: tableParams.enablePagination ?? true,
             enableExporting: tableParams.enableExporting ?? true,
             enableRowActions: tableParams.enableRowActions ?? false,
             initialState: tableParams.initialState ?? {},
-            modifyTopToolBar: tableParams.modifyTopToolBar ?? false,
-        }
-        
-        if (inputProps.initialState.columnFilters){
+            modifyTopToolBar: tableParams.modifyTopToolBar ?? false
+        };
+
+        if (inputProps.initialState.columnFilters) {
             inputProps.initialState.columnFilters.forEach(filter => {
-                if (filter.range){
-                    let value = filter.range.value;
-                    let timePeriod = filter.range.timePeriod ?? "month";
-                    let today = new Date();
+                if (filter.range) {
+                    const value = filter.range.value;
+                    const timePeriod = filter.range.timePeriod ?? "month";
+                    const today = new Date();
                     delete filter.range;
 
-                    if (value == 0){
+                    if (value == 0) {
                         filter.value = today;
                     }
-                    switch(timePeriod){
-                        case "year":
-                            if (value < 0){
-                                today.setFullYear(today.getFullYear() - Math.abs(value));
-                            } else {
-                                today.setFullYear(today.getFullYear() + value);
-                            }
-                            break;
-                        case "month":
-                            if (value < 0){
-                                today.setMonth(today.getMonth() - Math.abs(value));
-                            } else {
-                                today.setMonth(today.getMonth() + value);
-                            }
-                            break;
-                        case "day":
-                            if (value < 0){
-                                today.setDate(today.getDate() - Math.abs(value));
-                            } else {
-                                today.setDate(today.getDate() + value);
-                            }
-                            break;
+                    switch (timePeriod) {
+                    case "year":
+                        if (value < 0) {
+                            today.setFullYear(today.getFullYear() - Math.abs(value));
+                        } else {
+                            today.setFullYear(today.getFullYear() + value);
+                        }
+                        break;
+                    case "month":
+                        if (value < 0) {
+                            today.setMonth(today.getMonth() - Math.abs(value));
+                        } else {
+                            today.setMonth(today.getMonth() + value);
+                        }
+                        break;
+                    case "day":
+                        if (value < 0) {
+                            today.setDate(today.getDate() - Math.abs(value));
+                        } else {
+                            today.setDate(today.getDate() + value);
+                        }
+                        break;
                     }
                     filter.value = today;
                 }
             });
         }
 
-        if (inputProps.enablePagination){
-            inputProps.muiTablePaginationProps={
+        if (inputProps.enablePagination) {
+            inputProps.muiTablePaginationProps = {
                 rowsPerPageOptions: tableParams.muiTablePaginationProps?.rowsPerPageOptions ?? [5, 10, 20, 50, 100],
                 showFirstButton: tableParams.muiTablePaginationProps?.showFirstButton ?? true,
                 showLastButton: tableParams.muiTablePaginationProps?.showLastButton ?? true
-            }
+            };
         }
-        
-        if (tableParams.enableRowSelection){
-            inputProps.getRowId=((row) => row.userId);
-            inputProps.muiTableBodyRowProps=(({ row }) => ({
+
+        if (tableParams.enableRowSelection) {
+            inputProps.getRowId = ((row) => row.userId);
+            inputProps.muiTableBodyRowProps = (({ row }) => ({
                 onClick: () => {
-                    if (tableParams.multipleRowSelection){
+                    if (tableParams.multipleRowSelection) {
                         this.setState(prevState => ({
                             rowSelection: {
                                 ...prevState.rowSelection,
-                                [row.id]: !prevState.rowSelection[row.id],
+                                [row.id]: !prevState.rowSelection[row.id]
                             }
                         }));
                     } else {
@@ -217,101 +217,103 @@ class GwTableWidget extends React.Component {
                             rowSelection: {
                                 [row.id]: !rowSelection[row.id]
                             }
-                        })
+                        });
                     }
-                    
+
                 },
                 selected: rowSelection[row.id],
                 sx: {
-                    cursor: 'pointer',
+                    cursor: 'pointer'
                 }
             }));
-            inputProps.state={rowSelection};
+            inputProps.state = {rowSelection};
         }
-        
-        if (inputProps.enableRowActions){
-            let menuItems = tableParams.renderRowActionMenuItems;
-            inputProps.renderRowActionMenuItems= (({ row, closeMenu }) => {
-                    let itemList=menuItems.map((item,index)=>{
+
+        if (inputProps.enableRowActions) {
+            const menuItems = tableParams.renderRowActionMenuItems;
+            inputProps.renderRowActionMenuItems = (({ row, closeMenu }) => {
+                const itemList = menuItems.map((item, index)=>{
                     const IconComponent = this.getIconComponent(item.icon);
-                    return <MenuItem
-                            key={index}
-                            onClick={() => {
-                                this.props.dispatchButton({ "widgetfunction": item.widgetfunction, "row": row.original });
-                                closeMenu();
-                            } }
-                            sx={{ m: 0 }}
-                            >
-                                <ListItemIcon>
-                                    {IconComponent}
-                                </ListItemIcon>
-                                {item.text}
-                            </MenuItem>
+                    return (
+                    <MenuItem
+                        key={index}
+                        onClick={() => {
+                            this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: row.original });
+                            closeMenu();
+                        } }
+                        sx={{ m: 0 }}
+                    >
+                        <ListItemIcon>
+                            {IconComponent}
+                        </ListItemIcon>
+                        {item.text}
+                    </MenuItem>
+                    );
                 });
                 return itemList;
-            })
+            });
         }
-        
-        if (inputProps.modifyTopToolBar){
-            let customAction = tableParams.renderTopToolbarCustomActions;
-            inputProps.renderTopToolbarCustomActions=(({ table }) => {
-                let itemList=customAction.map((item,index)=>{
-                    let disableProp = {};
-                    if (item.disableOnSelect){
-                        if (item.moreThanOneDisable){
+
+        if (inputProps.modifyTopToolBar) {
+            const customAction = tableParams.renderTopToolbarCustomActions;
+            inputProps.renderTopToolbarCustomActions = (({ table }) => {
+                const itemList = customAction.map((item, index)=>{
+                    const disableProp = {};
+                    if (item.disableOnSelect) {
+                        if (item.moreThanOneDisable) {
                             disableProp.disabled = table.getSelectedRowModel().flatRows.length === 0 || table.getSelectedRowModel().flatRows.length > 1;
                         } else {
                             disableProp.disabled = table.getSelectedRowModel().flatRows.length === 0;
                         }
                     }
-                    return <Button
-                            key={index}
-                            color={item.color ?? "success"}
-                            {...disableProp}
-                            onClick={() => {
-                                    let rows;
-                                    if (item.getAllRows){
-                                        rows = table.getPrePaginationRowModel().rows;
-                                    } else {
-                                        rows = table.getSelectedRowModel().flatRows;
-                                    }
-                                    this.props.dispatchButton({ "widgetfunction": item.widgetfunction, "row": rows });
-                                } }
-                            variant="contained"
-                            >
-                                {item.text}
-                            </Button>
+                    return (<Button
+                        color={item.color ?? "success"}
+                        key={index}
+                        {...disableProp}
+                        onClick={() => {
+                            let rows;
+                            if (item.getAllRows) {
+                                rows = table.getPrePaginationRowModel().rows;
+                            } else {
+                                rows = table.getSelectedRowModel().flatRows;
+                            }
+                            this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: rows });
+                        } }
+                        variant="contained"
+                    >
+                        {item.text}
+                    </Button>);
                 });
                 return (<Box
                     sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}
                 >
-                    {itemList}   
-                </Box>)
+                    {itemList}
+                </Box>);
             });
         }
-        
-        if (inputProps.enableExporting){
+
+        if (inputProps.enableExporting) {
             const multipleRowSelection = tableParams.multipleRowSelection;
-            inputProps.renderBottomToolbarCustomActions=(({ table }) => (
+            inputProps.renderBottomToolbarCustomActions = (({ table }) => (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <Button
                         key={0}
+                        startIcon={<FileDownloadIcon />}
+                        variant="contained"
                         disabled={table.getPrePaginationRowModel().rows.length === 0}
                         //export all rows, including from the next page, (still respects filtering and sorting)
                         onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
-                        startIcon={<FileDownloadIcon />}
-                        variant="contained"
                     >
                         Export Data
                     </Button>
                     {multipleRowSelection ? (
                         <Button
-                        key={1}
-                        disabled={table.getSelectedRowModel().flatRows.length === 0}
-                        //only export selected rows
-                        onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
-                        startIcon={<FileDownloadIcon />}
-                        variant="contained"
+                            key={1}
+                            startIcon={<FileDownloadIcon />}
+                            variant="contained"
+                            disabled={table.getSelectedRowModel().flatRows.length === 0}
+                            // only export selected rows
+                            onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
                         >
                             Export Selected Rows
                         </Button>
@@ -319,27 +321,27 @@ class GwTableWidget extends React.Component {
                 </div>
             ));
         }
-        
+
         return (
             <MaterialReactTable
                 columns={cols}
                 data={data}
                 {...inputProps}
                 muiTableContainerProps={{
-                    sx: { maxHeight: '400px' }, //give the table a max height
-                  }}
+                    sx: { maxHeight: '400px' } // give the table a max height
+                }}
                 renderToolbarInternalActions={({ table }) => (
                     <Box>
-                      <IconButton
-                        onClick={() => {
-                            table.resetColumnFilters()
-                        }}
-                      >
-                        {<FilterAltOff />}
-                      </IconButton>
-                      <MRT_ToggleFiltersButton table={table} />
+                        <IconButton
+                            onClick={() => {
+                                table.resetColumnFilters();
+                            }}
+                        >
+                            {<FilterAltOff />}
+                        </IconButton>
+                        <MRT_ToggleFiltersButton table={table} />
                     </Box>
-                  )}
+                )}
             />
         );
     }

@@ -18,22 +18,22 @@ import 'qwc2-giswater/plugins/style/MapWatermark.css';
  */
 class MapWatermark extends React.Component {
     static propTypes = {
-        mobile: PropTypes.bool,
+        bottom: PropTypes.string,
         /** The logo file format. */
         logoFormat: PropTypes.string,
         /** The logo image URL if a different source than the default assets/img/logo.<ext> and assets/img/logo-mobile.<ext> is desired. */
         logoSrc: PropTypes.string,
         /** The hyperlink to open when the logo is clicked. */
         logoUrl: PropTypes.string,
-        width: PropTypes.string,
-        bottom: PropTypes.string,
+        mobile: PropTypes.bool,
         opacity: PropTypes.string,
+        width: PropTypes.string
     };
     static defaultProps = {
         logoFormat: "svg",
         width: "100px",
         bottom: "3em",
-        opacity: "60%",
+        opacity: "60%"
     };
     render() {
         let logo;
@@ -47,8 +47,8 @@ class MapWatermark extends React.Component {
         const style = {
             width: this.props.width,
             bottom: this.props.bottom,
-            opacity: this.props.opacity,
-        }
+            opacity: this.props.opacity
+        };
 
         let logoEl = (<img className="logo" src={this.props.logoSrc || logo} />);
         if (this.props.logoUrl) {
@@ -63,7 +63,7 @@ class MapWatermark extends React.Component {
 }
 
 const selector = (state) => ({
-    mobile: state.browser.mobile,
+    mobile: state.browser.mobile
 });
 
 export default connect(selector, {})(MapWatermark);

@@ -43,10 +43,13 @@ const measureLabelStyleFactory = () => new ol.style.Text({
 class GwProfileTool extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
+        changeMeasurementState: PropTypes.func,
         changeSelectionState: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
+        firstNodeCoordinates: PropTypes.object,
+        firstNodeId: PropTypes.object,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
@@ -55,32 +58,29 @@ class GwProfileTool extends React.Component {
         layers: PropTypes.array,
         map: PropTypes.object,
         mapObj: PropTypes.object,
-        removeLayer: PropTypes.func,
-        removeMarker: PropTypes.func,
-        selection: PropTypes.object,
-        firstNodeId: PropTypes.object,
-        secondNodeId: PropTypes.object,
-        firstNodeCoordinates: PropTypes.object,
-        secondNodeCoordinates: PropTypes.object,
-        changeMeasurementState: PropTypes.func,
-        processStarted: PropTypes.func,
-        processFinished: PropTypes.func,
         measurement: PropTypes.object,
         options: PropTypes.object,
-        projection: PropTypes.string
-    }
+        processFinished: PropTypes.func,
+        processStarted: PropTypes.func,
+        projection: PropTypes.string,
+        removeLayer: PropTypes.func,
+        removeMarker: PropTypes.func,
+        secondNodeCoordinates: PropTypes.object,
+        secondNodeId: PropTypes.object,
+        selection: PropTypes.object
+    };
 
     static defaultOpts = {
         geodesic: true
-    }
+    };
 
     static defaultProps = {
         replaceImageUrls: true,
         initialWidth: 240,
         initialHeight: 320,
         initialX: 0,
-        initialY: 0,
-    }
+        initialY: 0
+    };
 
     state = {
         mode: 'nodefromcoordinates',
@@ -90,8 +90,8 @@ class GwProfileTool extends React.Component {
         firstNodeCoordinates: null,
         secondNodeCoordinates: null,
         prevPoint: null
-    }
-    
+    };
+
     constructor(props) {
         super(props);
         this.pickPositionCallbackTimeout = null;
@@ -110,7 +110,7 @@ class GwProfileTool extends React.Component {
         }
         if (this.props.currentTask === "GwProfileTool" || this.props.currentIdentifyTool === "GwProfileTool") {
             this.identifyPoint(prevProps);
-            if (this.state.firstNodeId !== null && this.state.secondNodeId !== null && (prevState.secondNodeId === null || isNaN(prevState.secondNodeId)) && !isNaN(this.state.secondNodeId)){
+            if (this.state.firstNodeId !== null && this.state.secondNodeId !== null && (prevState.secondNodeId === null || isNaN(prevState.secondNodeId)) && !isNaN(this.state.secondNodeId)) {
                 // When both nodes selected request node information and draw the graph
                 this.makeRequestData();
             }
@@ -123,17 +123,17 @@ class GwProfileTool extends React.Component {
      * @param {*} profiling Has to draw profile graphic
      */
     updateMeasurementResults = (feature, profiling = false) => {
-        let coo = [];
-        let length = [];
-        let allNodeCoordinates = [];
+        const coo = [];
+        const length = [];
+        const allNodeCoordinates = [];
         let allNodeLength = [];
         this.segmentMarkers = [];
 
         const queryableLayers = this.getQueryableLayers();
         const layer = queryableLayers[0];
 
-        if (profiling){
-            let data = feature['body']['data'];
+        if (profiling) {
+            const data = feature.body.data;
 
             // Get all coordinates of each node
             for (let i = 0; i < data.node.length; i++) {
@@ -148,22 +148,22 @@ class GwProfileTool extends React.Component {
             // Get the order that follow the coordinates in each arc, this allows to do curves with markers on the map
             for (let i = 0; i < data.arc.length; i++) {
                 length.push(data.arc[i].length);
-                for (let j = 0; j < data.line.features.length; j++){
-                    if (data.arc[i].arc_id === data.line.features[j].properties.arc_id){
+                for (let j = 0; j < data.line.features.length; j++) {
+                    if (data.arc[i].arc_id === data.line.features[j].properties.arc_id) {
                         const geom_arc = data.line.features[j].geometry.coordinates;
-                        if (coo[i][0] !== geom_arc[0][0] || coo[i][1] !== geom_arc[0][1]){
-                            let reversed_Array = [];
-                            for (let z = geom_arc.length - 1; z >= 0; z--){
+                        if (coo[i][0] !== geom_arc[0][0] || coo[i][1] !== geom_arc[0][1]) {
+                            const reversed_Array = [];
+                            for (let z = geom_arc.length - 1; z >= 0; z--) {
                                 reversed_Array.push(geom_arc[z]);
                             }
-                            data.line.features[j].geometry.coordinates = reversed_Array;   
+                            data.line.features[j].geometry.coordinates = reversed_Array;
                         }
-                        if (i === data.line.features.length - 1){
-                            for (let y = 0; y < data.line.features[j].geometry.coordinates.length; y++){
+                        if (i === data.line.features.length - 1) {
+                            for (let y = 0; y < data.line.features[j].geometry.coordinates.length; y++) {
                                 allNodeCoordinates.push(data.line.features[j].geometry.coordinates[y]);
                             }
                         } else {
-                            for (let y = 0; y < data.line.features[j].geometry.coordinates.length - 1; y++){
+                            for (let y = 0; y < data.line.features[j].geometry.coordinates.length - 1; y++) {
                                 allNodeCoordinates.push(data.line.features[j].geometry.coordinates[y]);
                             }
                         }
@@ -174,7 +174,7 @@ class GwProfileTool extends React.Component {
             // Get the length of arc curves
             allNodeLength = this.calculateDistances(allNodeCoordinates);
             // Generates all points and assigns the style used for the length
-            for (let i = 0; i < coo.length - 1; ++i){
+            for (let i = 0; i < coo.length - 1; ++i) {
                 const point = new ol.Feature({
                     geometry: new ol.geom.Point(coo[i])
                 });
@@ -187,7 +187,7 @@ class GwProfileTool extends React.Component {
             for (let i = 0; i < this.segmentMarkers.length; ++i) {
                 this.updateSegmentMarker(this.segmentMarkers[i], coo[i], coo[i + 1], length[i]);
             }
-            this.props.measurement.geomType = 'LineString'
+            this.props.measurement.geomType = 'LineString';
 
             // Sends all variables to be used by GwHeightProfile
             this.props.changeMeasurementState({
@@ -200,15 +200,15 @@ class GwProfileTool extends React.Component {
                 feature: feature,
                 // PROBANDO
                 theme: layer.title,
-                initNode: feature['body']['data']['node'][0]['node_id'],
-                endNode: feature['body']['data']['node'][feature['body']['data']['node'].length - 1]['node_id'],
+                initNode: feature.body.data.node[0].node_id,
+                endNode: feature.body.data.node[feature.body.data.node.length - 1].node_id,
                 epsg: this.crsStrToInt(this.props.mapObj.projection)
             });
         } else {
-            this.props.measurement.geomType = ''
+            this.props.measurement.geomType = '';
         }
         // Sends all variables to be used by GwHeightProfile
-        if (feature === null){
+        if (feature === null) {
             this.props.changeMeasurementState({
                 geomType: this.props.measurement.geomType,
                 profiling: profiling,
@@ -234,13 +234,13 @@ class GwProfileTool extends React.Component {
                 feature: feature,
                 // PROBANDO
                 theme: layer.title,
-                initNode: feature['body']['data']['node'][0]['node_id'],
-                endNode: feature['body']['data']['node'][feature['body']['data']['node'].length - 1]['node_id'],
+                initNode: feature.body.data.node[0].node_id,
+                endNode: feature.body.data.node[feature.body.data.node.length - 1].node_id,
                 epsg: this.crsStrToInt(this.props.mapObj.projection)
             });
         }
-        
-    }
+
+    };
 
     /**
      * Adds on the map the length of an arc
@@ -258,7 +258,7 @@ class GwProfileTool extends React.Component {
         marker.getStyle().getText().setText(text);
         marker.getStyle().getText().setRotation(angle);
         marker.setGeometry(new ol.geom.Point([0.5 * (p1[0] + p2[0]), 0.5 * (p1[1] + p2[1])]));
-    }
+    };
 
     /**
      * Reprojects given coordinates
@@ -269,7 +269,7 @@ class GwProfileTool extends React.Component {
         return coordinates.map((coordinate) => {
             return CoordinatesUtils.reproject(coordinate, this.props.projection, 'EPSG:4326');
         });
-    }
+    };
 
     /**
      * Generates an array of the length between two coordinates
@@ -291,14 +291,14 @@ class GwProfileTool extends React.Component {
             }
         }
         return lengths;
-    }
+    };
 
     /**
      * @returns Options for the Profile Tool
      */
     getOptions = () => {
         return {...GwProfileTool.defaultOpts, ...this.props.options};
-    }
+    };
 
     /**
      * Removes added layers with features
@@ -310,17 +310,17 @@ class GwProfileTool extends React.Component {
         this.props.map.removeLayer(this.pointLayer);
         this.segmentMarkers = [];
         this.sketchFeature = null;
-    }
-    
+    };
+
     /**
      * Converts a map projection to int to be used as EPSG
      * @param {*} crs Map projection
      * @returns EPSG int
      */
     crsStrToInt = (crs) => {
-        const parts = crs.split(':')
-        return parseInt(parts.slice(-1))
-    }
+        const parts = crs.split(':');
+        return parseInt(parts.slice(-1));
+    };
 
     /**
      * Add markers to layer and make API requests to get each node id
@@ -329,13 +329,13 @@ class GwProfileTool extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            if (this.state.firstNodeCoordinates === null || isNaN(this.state.firstNodeId)){
+            if (this.state.firstNodeCoordinates === null || isNaN(this.state.firstNodeId)) {
                 // Get the coordinates of the first node selected
                 this.setState({ firstNodeCoordinates: clickPoint });
                 this.props.addMarker('profile1', clickPoint, '', this.props.mapObj.projection);
                 // Make a request to get the node id
                 this.makeRequestNodeId(clickPoint, 1);
-            } else if (this.state.secondNodeCoordinates === null || isNaN(this.state.secondNodeId)){
+            } else if (this.state.secondNodeCoordinates === null || isNaN(this.state.secondNodeId)) {
                 // Get the coordinates of the second node selected
                 this.setState({ secondNodeCoordinates: clickPoint });
                 this.props.addMarker('profile2', clickPoint, '', this.props.mapObj.projection);
@@ -346,7 +346,7 @@ class GwProfileTool extends React.Component {
                 this.clearResults();
             }
         }
-    }
+    };
 
     /**
      * Gets coordinates where user clicked on map
@@ -361,7 +361,7 @@ class GwProfileTool extends React.Component {
             return null;
         }
         return this.props.click.coordinate;
-    }
+    };
 
     /**
      * Gets layer o map object
@@ -373,9 +373,9 @@ class GwProfileTool extends React.Component {
         }
 
         return IdentifyUtils.getQueryLayers(this.props.layers, this.props.mapObj).filter(l => {
-            return l.type === "wms"
+            return l.type === "wms";
         });
-    }
+    };
 
 
     /**
@@ -390,28 +390,28 @@ class GwProfileTool extends React.Component {
         if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
             // Get request paramas
             const layer = queryableLayers[0];
-            const epsg = this.crsStrToInt(this.props.mapObj.projection)
-            let zoom = this.props.mapObj.scales[this.props.mapObj.zoom]
+            const epsg = this.crsStrToInt(this.props.mapObj.projection);
+            let zoom = this.props.mapObj.scales[this.props.mapObj.zoom];
             // Fix for undefined zoom values
-            if (typeof zoom === "undefined"){
+            if (typeof zoom === "undefined") {
                 zoom = 1000;
             }
             const params = {
-                "theme": layer.title,
-                "epsg": epsg,
-                "coords": String(clickPoint),
-                "zoom": zoom,
-                "layers": layer.queryLayers.join(',')
-            }
+                theme: layer.title,
+                epsg: epsg,
+                coords: String(clickPoint),
+                zoom: zoom,
+                layers: layer.queryLayers.join(',')
+            };
             // Send request
             axios.get(requestUrl + "nodefromcoordinates", { params: params }).then(response => {
                 result = parseInt(response.data.body.feature.id[0]);
-                console.log("Node Id -> ", result)
+                console.log("Node Id -> ", result);
 
-                if (node === 1){
+                if (node === 1) {
                     this.setState({ firstNodeId: result });
                     this.highlightResult(response.data);
-                } else if (node === 2){
+                } else if (node === 2) {
                     this.setState({ secondNodeId: result});
                     this.highlightResult(response.data);
                 }
@@ -423,31 +423,31 @@ class GwProfileTool extends React.Component {
         }
         // Set "Waiting for request..." message
         this.setState({ identifyResult: {} });
-    }
+    };
 
     highlightResult = (result) => {
         // console.log('result :>> ', result);
         if (isEmpty(result) || isEmpty(result.body.feature.geometry)) {
-            //this.props.removeLayer("profilehighlight")
+            // this.props.removeLayer("profilehighlight")
         } else {
             const layer = {
                 id: "profilehighlight",
                 role: LayerRole.SELECTION
             };
-            const crs = this.props.mapObj.projection
-            const geometry = VectorLayerUtils.wktToGeoJSON(result.body.feature.geometry.st_astext, crs, crs)
+            const crs = this.props.mapObj.projection;
+            const geometry = VectorLayerUtils.wktToGeoJSON(result.body.feature.geometry.st_astext, crs, crs);
             const feature = {
                 id: result.body.feature.id,
                 geometry: geometry.geometry
-            }
-            if (this.state.prevPoint !== null){
+            };
+            if (this.state.prevPoint !== null) {
                 this.props.addLayerFeatures(layer, [this.state.prevPoint, feature], false);
             } else {
                 this.setState({ prevPoint: feature });
                 this.props.addLayerFeatures(layer, [feature], false);
             }
         }
-    }
+    };
 
     /**
      * Request for profile tool given 2 nodes
@@ -460,13 +460,13 @@ class GwProfileTool extends React.Component {
         if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
             // Get request paramas
             const layer = queryableLayers[0];
-            const epsg = this.crsStrToInt(this.props.mapObj.projection)
+            const epsg = this.crsStrToInt(this.props.mapObj.projection);
             const params = {
-                "theme": layer.title,
-                "epsg": epsg,
-                "initNode": this.state.firstNodeId,
-                "endNode": this.state.secondNodeId
-            }
+                theme: layer.title,
+                epsg: epsg,
+                initNode: this.state.firstNodeId,
+                endNode: this.state.secondNodeId
+            };
             // Send request
             this.props.processStarted("profile_calc_msg", "Calculating Profile...");
             // this.props.processStarted("profile_calc_msg", "Calculating Profile (1/2)...");
@@ -476,9 +476,9 @@ class GwProfileTool extends React.Component {
                 this.addProfileLayers(result);
                 this.updateMeasurementResults(result, true);
                 this.props.processFinished("profile_calc_msg", true, "Success!");
-                //this.props.removeLayer("profilehighlight")
+                // this.props.removeLayer("profilehighlight")
                 console.log("result -> ", result);
-                //let arcs = result['body']['data']['arc']
+                // let arcs = result['body']['data']['arc']
                 this.setState({ identifyResult: result });
             }).catch((e) => {
                 console.error(e);
@@ -487,7 +487,7 @@ class GwProfileTool extends React.Component {
         }
         // Set "Waiting for request..." message
         this.setState({ identifyResult: {} });
-    }
+    };
 
     /**
      * Adds all necessary layers to display the features on the map
@@ -502,8 +502,8 @@ class GwProfileTool extends React.Component {
         this.props.map.addLayer(this.measureLayer);
 
         // Lines layer
-        let line = result.body.data.line;
-        let linesStyle = {
+        const line = result.body.data.line;
+        const linesStyle = {
             strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
             strokeWidth: 6,
             strokeDash: [1],
@@ -511,12 +511,12 @@ class GwProfileTool extends React.Component {
             textFill: "blue",
             textStroke: "white",
             textFont: '20pt sans-serif'
-        }
+        };
         this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_lines.geojson", line, 'default', linesStyle);
 
         // Points layer
-        let point = result.body.data.point;
-        let pointsStyle = {
+        const point = result.body.data.point;
+        const pointsStyle = {
             strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
             strokeWidth: 2,
             strokeDash: [4],
@@ -524,9 +524,9 @@ class GwProfileTool extends React.Component {
             textFill: "blue",
             textStroke: "white",
             textFont: '20pt sans-serif'
-        }
+        };
         this.addGeoJSONLayer("flowtrace_" + this.state.mode + "_points.geojson", point, 'default', pointsStyle);
-    }
+    };
 
     /**
      * Add layer features given a GeoJSON object
@@ -535,10 +535,10 @@ class GwProfileTool extends React.Component {
      * @param {*} styleName Name of the style
      * @param {*} styleOptions Style to drwa the features on the map
      */
-    addGeoJSONLayer =   (filename, data, styleName = undefined, styleOptions = undefined) => {  
+    addGeoJSONLayer = (filename, data, styleName = undefined, styleOptions = undefined) => {
         if (!isEmpty(data.features)) {
             let defaultCrs = "EPSG:25831";
-            let defaultStyleName = 'default'
+            let defaultStyleName = 'default';
             let defaultStyleOptions = {
                 strokeColor: [255, 0, 0, 1],
                 strokeWidth: 4,
@@ -547,7 +547,7 @@ class GwProfileTool extends React.Component {
                 textFill: "blue",
                 textStroke: "white",
                 textFont: '20pt sans-serif'
-            }
+            };
             if (styleName) {
                 defaultStyleName = styleName;
             }
@@ -592,7 +592,7 @@ class GwProfileTool extends React.Component {
                 zoomToExtent: false
             }, [], true);
         }
-    }
+    };
 
     /**
      * Change state of mode to trace
@@ -600,7 +600,7 @@ class GwProfileTool extends React.Component {
      */
     onShow = (mode) => {
         this.setState({ mode: mode || 'trace' });
-    }
+    };
 
     /**
      * Remove all create llayers
@@ -616,24 +616,24 @@ class GwProfileTool extends React.Component {
         this.props.map.removeLayer(this.pointLayer);
         this.setState({ firstNodeId: null, secondNodeId: null, firstNodeCoordinates: null, secondNodeCoordinates: null, identifyResult: null, prevPoint: null });
         this.updateMeasurementResults(null, false);
-    }
+    };
 
     render() {
         let bodyText = null;
-        if (!this.state.firstNodeId || !this.state.secondNodeId){
+        if (!this.state.firstNodeId || !this.state.secondNodeId) {
             bodyText = LocaleUtils.tr("infotool.clickhelpPoint");
         }
-        if (isNaN(this.state.firstNodeId) || isNaN(this.state.secondNodeId)){
+        if (isNaN(this.state.firstNodeId) || isNaN(this.state.secondNodeId)) {
             // TODO: Translations
             bodyText = "No se ha encontrado un nodo en esta posición...";
         }
 
         if (this.state.firstNodeId && this.state.secondNodeId) {
             // TODO: Translations
-            bodyText = "Displaying the profile"
+            bodyText = "Displaying the profile";
         }
 
-        if (bodyText){
+        if (bodyText) {
             return (
                 <TaskBar key="GwProfileToolTaskBar" onHide={this.clearResults} onShow={this.onShow} task="GwProfileTool">
                     {() => ({
@@ -644,7 +644,6 @@ class GwProfileTool extends React.Component {
         }
     }
 }
-
 
 const selector = (state) => ({
     click: state.map.click || { modifiers: {} },

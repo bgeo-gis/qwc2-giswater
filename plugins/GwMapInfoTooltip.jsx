@@ -37,13 +37,13 @@ class GwMapInfoTooltip extends React.Component {
         elevationPrecision: PropTypes.number,
         enabled: PropTypes.bool,
         includeWGS84: PropTypes.bool,
-        map: PropTypes.object,
-        setCurrentTask: PropTypes.func,
-        theme: PropTypes.object,
         layers: PropTypes.array,
-        refreshLayer: PropTypes.func,
-        processStarted: PropTypes.func,
+        map: PropTypes.object,
         processFinished: PropTypes.func,
+        processStarted: PropTypes.func,
+        refreshLayer: PropTypes.func,
+        setCurrentTask: PropTypes.func,
+        theme: PropTypes.object
     };
     static defaultProps = {
         cooPrecision: 0,
@@ -84,21 +84,21 @@ class GwMapInfoTooltip extends React.Component {
                 }
                 const gwInfoService = (GwUtils.getServiceUrl("info") || "");
                 if (gwInfoService) {
-                    const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map)
+                    const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map);
                     const queryLayers = queryableLayers.reduce((acc, layer) => {
-                        return acc.concat(layer.queryLayers)
-                    }, [])
+                        return acc.concat(layer.queryLayers);
+                    }, []);
 
                     const epsg = parseInt(this.props.map.projection.split(':').slice(-1));
-                    const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom)
+                    const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
                     const params = {
-                        "theme": this.props.theme.title,
-                        "epsg": epsg,
-                        "xcoord": newPoint.coordinate[0],
-                        "ycoord": newPoint.coordinate[1],
-                        "zoomRatio": zoomRatio,
-                        "layers": queryLayers.join(',')
-                    }
+                        theme: this.props.theme.title,
+                        epsg: epsg,
+                        xcoord: newPoint.coordinate[0],
+                        ycoord: newPoint.coordinate[1],
+                        zoomRatio: zoomRatio,
+                        layers: queryLayers.join(',')
+                    };
                     axios.get(gwInfoService + 'getlayersfromcoordinates', {params: params}).then(response => {
                         this.setState({gwInfoResponse: response.data});
                     }).catch(() => {});
@@ -111,25 +111,24 @@ class GwMapInfoTooltip extends React.Component {
         const id = data.id;
         const tableName = data.tableName;
         const value = data.value;
-        const fields = {"closed": value}
+        const fields = {closed: value};
 
         const request_url = GwUtils.getServiceUrl("util");
         if (!isEmpty(request_url)) {
             const params = {
-                "theme": this.props.theme.title,
-                "id": id,
-                "tableName": tableName,
-                "fields": JSON.stringify(fields)
+                theme: this.props.theme.title,
+                id: id,
+                tableName: tableName,
+                fields: JSON.stringify(fields)
             };
 
             axios.put(request_url + "setfields", { ...params }).then((response) => {
                 const result = response.data;
                 // refresh map
-                console.log("Theme", this.props.theme)
+                console.log("Theme", this.props.theme);
                 if (this.props.theme.tiled) {
-                    this.refreshTiles()
-                }
-                else {
+                    this.refreshTiles();
+                } else {
                     this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 }
                 // close
@@ -138,7 +137,7 @@ class GwMapInfoTooltip extends React.Component {
                 console.log(e);
             });
         }
-    }
+    };
     refreshTiles = () => {
         const request_url = ConfigUtils.getConfigProp("tilingServiceUrl");
         if (isEmpty(request_url)) {
@@ -146,23 +145,23 @@ class GwMapInfoTooltip extends React.Component {
         }
 
         const params = {
-            "theme": this.props.theme.title
-        }
-        
-        const processNotificationId = `tiling_msg-${+new Date()}`
+            theme: this.props.theme.title
+        };
 
-        this.props.processStarted(processNotificationId, "Updating tiles")
+        const processNotificationId = `tiling_msg-${+new Date()}`;
+
+        this.props.processStarted(processNotificationId, "Updating tiles");
         // Send request
         axios.get(request_url + "update", { params: params }).then(response => {
-            this.props.processFinished(processNotificationId, true, "Update successful")
-            const result = response.data
-            console.log("tiling updated:", result)
+            this.props.processFinished(processNotificationId, true, "Update successful");
+            const result = response.data;
+            console.log("tiling updated:", result);
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }).catch((e) => {
             console.log(e);
-            this.props.processFinished(processNotificationId, false, "Update failed")
+            this.props.processFinished(processNotificationId, false, "Update failed");
         });
-    }
+    };
     clear = () => {
         this.setState({coordinate: null, height: null, extraInfo: null, gwInfoResponse: null});
     };
@@ -246,7 +245,7 @@ class GwMapInfoTooltip extends React.Component {
                     <td>
                         <button className="button" onClick={() => this.toggleValveState(gwInfoResponse.body.data.valve)}>{gwInfoResponse.body.data.valve.text}</button>
                     </td>
-                )
+                );
             }
             infoButtons = (
                 <table className="mapinfotooltip-body-gwinfo">
@@ -256,7 +255,7 @@ class GwMapInfoTooltip extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-            )
+            );
         }
         return (
             <div className="mapinfotooltip" style={style}>
@@ -298,5 +297,5 @@ export default connect(selector, {
     setCurrentTask: setCurrentTask,
     refreshLayer: refreshLayer,
     processStarted: processStarted,
-    processFinished: processFinished,
+    processFinished: processFinished
 })(GwMapInfoTooltip);
