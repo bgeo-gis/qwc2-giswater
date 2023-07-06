@@ -317,7 +317,7 @@ class GwDateSelector extends React.Component {
         }
 
         datesDocker = (
-            <div id="DatesDocker">
+            <div id="DatesDocker" key="GwDateSelectorDocker">
                 {dockerBody}
             </div>
         );
