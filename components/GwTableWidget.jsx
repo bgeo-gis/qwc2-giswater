@@ -29,7 +29,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FilterAltOff from '@mui/icons-material/FilterAltOff';
-import { ExportToCsv } from 'export-to-csv'; // or use your library of choice here
+import { ExportToCsv } from 'export-to-csv-fix-source-map'; // or use your library of choice here
 
 import * as icons from '@mui/icons-material';
 
