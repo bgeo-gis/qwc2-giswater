@@ -181,7 +181,7 @@ class GwToolbox extends React.Component {
                 delete cleanedWidgetVals[widget.name];
 
                 Object.entries(newToolWidgetValues).map(([widget_name, props]) => {
-                    if (props.parentId || "" === widget.name) {
+                    if (props.parentId === widget.name) {
                         delete cleanedWidgetVals[widget_name];
                     }
                 });
