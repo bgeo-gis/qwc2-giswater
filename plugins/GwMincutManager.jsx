@@ -167,6 +167,11 @@ class GwMincutManager extends React.Component {
             };
             axios.get(request_url + "getlist", { params: params }).then((response) => {
                 const result = response.data;
+                if (!result?.body?.data?.mincutLayer) {
+                    result.body.form.table.renderTopToolbarCustomActions = result.body.form.table.renderTopToolbarCustomActions.filter((item) => {
+                        return item.widgetfunction.functionName !== "selector";
+                    });
+                }
                 this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidget.columnname]: result} }));
             }).catch((e) => {
                 console.log(e);
