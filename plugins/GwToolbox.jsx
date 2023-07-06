@@ -12,25 +12,21 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
-import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import GwUtils from '../utils/GwUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
-import { LayerRole, refreshLayer, addLayerFeatures, removeLayer } from 'qwc2/actions/layers';
+import { refreshLayer, addLayerFeatures, removeLayer } from 'qwc2/actions/layers';
 import InputContainer from 'qwc2/components/InputContainer';
 import Icon from 'qwc2/components/Icon';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import { ThirtyFpsOutlined, WidgetsRounded } from '@mui/icons-material';
 import 'qwc2-giswater/plugins/style/GwToolbox.css';
 import 'qwc2/components/style/IdentifyViewer.css';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-// import './style/IdentifyViewer.css';
-
 class GwToolbox extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         currentTask: PropTypes.string,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -42,7 +38,8 @@ class GwToolbox extends React.Component {
         removeLayer: PropTypes.func,
         theme: PropTypes.object,
         toolboxInitialWidth: PropTypes.number,
-        toolboxResult: PropTypes.object
+        toolboxResult: PropTypes.object,
+        zoomToExtent: PropTypes.func
     };
     static defaultProps = {
         initialWidth: 480,
@@ -67,16 +64,16 @@ class GwToolbox extends React.Component {
         pendingRequests: false,
         toolboxFilter: ""
     };
-    getProcess(process_id, parentVals, callback, errorCallback) {
-        const request_url = GwUtils.getServiceUrl("toolbox");
-        if (!isEmpty(request_url)) {
+    getProcess(processId, parentVals, callback, errorCallback) {
+        const requestUrl = GwUtils.getServiceUrl("toolbox");
+        if (!isEmpty(requestUrl)) {
             const params = {
                 theme: this.props.theme.title,
-                id: process_id,
+                id: processId,
                 parentVals: parentVals
             };
 
-            axios.post(request_url + "getprocess", { ...params }).then(callback || (() => {})).catch((e) => {
+            axios.post(requestUrl + "getprocess", { ...params }).then(callback || (() => {})).catch((e) => {
                 console.warn(e);
                 if (errorCallback) {
                     errorCallback(e);
@@ -84,15 +81,15 @@ class GwToolbox extends React.Component {
             });
         }
     }
-    getReport(report_id, callback, errorCallback) {
-        const request_url = GwUtils.getServiceUrl("toolbox");
-        if (!isEmpty(request_url)) {
+    getReport(reportId, callback, errorCallback) {
+        const requestUrl = GwUtils.getServiceUrl("toolbox");
+        if (!isEmpty(requestUrl)) {
             const params = {
                 theme: this.props.theme.title,
-                id: report_id
+                id: reportId
             };
 
-            axios.post(request_url + "getreport", { ...params }).then(callback || (() => {})).catch((e) => {
+            axios.post(requestUrl + "getreport", { ...params }).then(callback || (() => {})).catch((e) => {
                 console.warn(e);
                 if (errorCallback) {
                     errorCallback(e);
@@ -139,8 +136,8 @@ class GwToolbox extends React.Component {
     onShow = () => {
         let pendingRequests = false;
 
-        const request_url = GwUtils.getServiceUrl("toolbox");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("toolbox");
+        if (!isEmpty(requestUrl)) {
             // Get request paramas
             const params = {
                 theme: this.props.theme.title,
@@ -155,13 +152,13 @@ class GwToolbox extends React.Component {
         this.setState({ toolboxResult: {}, pendingRequests: pendingRequests });
     };
     getToolbox = (params) => {
-        const request_url = GwUtils.getServiceUrl("toolbox");
-        if (isEmpty(request_url)) {
-            return false;
+        const requestUrl = GwUtils.getServiceUrl("toolbox");
+        if (isEmpty(requestUrl)) {
+            return;
         }
 
         // Send request
-        axios.get(request_url + "gettoolbox", { params: params }).then(response => {
+        axios.get(requestUrl + "gettoolbox", { params: params }).then(response => {
             const result = response.data;
             console.log("gettoolbox result:", result);
             this.setState({ toolboxResult: result, pendingRequests: false });
@@ -170,7 +167,7 @@ class GwToolbox extends React.Component {
             this.setState({ pendingRequests: false });
         });
     };
-    toolOnFieldUpdated = (widget, value, action) => {
+    toolOnFieldUpdated = (widget, value) => {
         // console.log(widget, value, this.state.toolWidgetValues)
         if (this.state.toolWidgetValues[widget.name] && widget.property.isParent === "true") {
             const newToolWidgetValues = { ...this.state.toolWidgetValues, [widget.name]: { value: value } };
@@ -180,9 +177,9 @@ class GwToolbox extends React.Component {
                 const cleanedWidgetVals = {...newToolWidgetValues};
                 delete cleanedWidgetVals[widget.name];
 
-                Object.entries(newToolWidgetValues).map(([widget_name, props]) => {
+                Object.entries(newToolWidgetValues).map(([widgetName, props]) => {
                     if (props.parentId === widget.name) {
-                        delete cleanedWidgetVals[widget_name];
+                        delete cleanedWidgetVals[widgetName];
                     }
                 });
 
@@ -190,7 +187,7 @@ class GwToolbox extends React.Component {
                 this.setState({ toolWidgetValues: cleanedWidgetVals, toolResult: result, toolType: "process" });
             });
         } else {
-            this.setState((prevState, props) => ({
+            this.setState((prevState) => ({
                 toolWidgetValues: {
                     ...prevState.toolWidgetValues,
                     [widget.name]: { value: value, parentId: widget.property.parentId || null }
@@ -198,6 +195,7 @@ class GwToolbox extends React.Component {
             }));
         }
     };
+    // eslint-disable-next-line
     onToolButton = (action, widget) => {
         console.log("Tool Clicked", action);
         switch (action.functionName) {
@@ -205,13 +203,17 @@ class GwToolbox extends React.Component {
             this.clearToolManager();
             break;
 
-        case "run":
-            if (this.state.toolType !== "processes" && this.state.toolResult === null) {return;}
+        case "run": {
+            if (this.state.toolType !== "processes" && this.state.toolResult === null) {
+                return;
+            }
 
             const data = this.state.toolResult.body.data;
 
-            const request_url = GwUtils.getServiceUrl("toolbox");
-            if (isEmpty(request_url)) {return;}
+            const requestUrl = GwUtils.getServiceUrl("toolbox");
+            if (isEmpty(requestUrl)) {
+                return;
+            }
 
 
             const inputs = data.fields?.reduce((acc, val) => {
@@ -232,16 +234,16 @@ class GwToolbox extends React.Component {
             this.props.processStarted("process_msg", `Executing "${data.alias}"`);
 
             // Send request
-            axios.post(request_url + "execute_process", {...params}).then(response => {
+            axios.post(requestUrl + "execute_process", {...params}).then(response => {
                 const result = response.data;
                 console.log("process result:", result);
 
                 this.props.processFinished("process_msg", result.status === "Accepted", result.message.text);
 
-                let log_text = "";
+                let logText = "";
                 const log = result.body?.data?.info?.values;
                 if (log) {
-                    log_text = log
+                    logText = log
                         .sort((a, b) => a.id - b.id) // sort by id
                         .map(value => value.message)
                         .join("\n");
@@ -252,10 +254,10 @@ class GwToolbox extends React.Component {
                 this.props.removeLayer("temp_polygons.geojson");
 
                 // Points
-                let all_features = [];
+                let allFeatures = [];
                 const point = result.body.data.point;
                 if (point && !isEmpty(point?.features)) {
-                    const points_style = {
+                    const pointsStyle = {
                         strokeColor: [235, 74, 117, 1],
                         strokeWidth: 2,
                         strokeDash: [4],
@@ -264,9 +266,9 @@ class GwToolbox extends React.Component {
                         textStroke: "white",
                         textFont: '20pt sans-serif'
                     };
-                    const features = GwUtils.getGeoJSONFeatures(point, 'default', points_style);
+                    const features = GwUtils.getGeoJSONFeatures(point, 'default', pointsStyle);
                     if (!isEmpty(features)) {
-                        all_features = all_features.concat(features);
+                        allFeatures = allFeatures.concat(features);
                         this.props.addLayerFeatures({
                             id: "temp_points.geojson",
                             name: "temp_points.geojson",
@@ -278,7 +280,7 @@ class GwToolbox extends React.Component {
 
                 const line = result.body.data.line;
                 if (line && !isEmpty(line?.features)) {
-                    const lines_style = {
+                    const linesStyle = {
                         strokeColor: [235, 74, 117, 1],
                         strokeWidth: 6,
                         strokeDash: [1],
@@ -287,10 +289,10 @@ class GwToolbox extends React.Component {
                         textStroke: "white",
                         textFont: '20pt sans-serif'
                     };
-                    const features = GwUtils.getGeoJSONFeatures(line, 'default', lines_style);
+                    const features = GwUtils.getGeoJSONFeatures(line, 'default', linesStyle);
                     // console.log("Tool Lines Features", features)
                     if (!isEmpty(features)) {
-                        all_features = all_features.concat(features);
+                        allFeatures = allFeatures.concat(features);
                         this.props.addLayerFeatures({
                             id: "temp_lines.geojson",
                             name: "temp_lines.geojson",
@@ -299,25 +301,25 @@ class GwToolbox extends React.Component {
                         }, features, true);
                     }
                 }
-                // console.log(all_features)
-                if (!isEmpty(all_features)) {
-                    const bbox = VectorLayerUtils.computeFeaturesBBox(all_features);
+                // console.log(allFeatures)
+                if (!isEmpty(allFeatures)) {
+                    const bbox = VectorLayerUtils.computeFeaturesBBox(allFeatures);
                     // console.log(bbox)
                     this.props.zoomToExtent(bbox.bounds, bbox.crs);
                 }
 
-                // if (!isEmpty(all_features)) {
+                // if (!isEmpty(allFeatures)) {
                 //     this.props.addLayerFeatures({
                 //         id: "temp_all.geojson",
                 //         name: "temp_all.geojson",
                 //         title: "Temporal Al",
                 //         zoomToExtent: true
-                //     }, all_features, true);
+                //     }, allFeatures, true);
                 // }
 
-                this.setState((prevState, props) => ({
+                this.setState((prevState) => ({
                     executionResult: result,
-                    toolWidgetValues: { ...prevState.toolWidgetValues, txt_infolog: { value: log_text } },
+                    toolWidgetValues: { ...prevState.toolWidgetValues, txt_infolog: { value: logText } },
                     toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
                 }));
                 // this.setState({ toolboxResult: result, pendingRequests: false });
@@ -327,6 +329,9 @@ class GwToolbox extends React.Component {
                 // this.setState({ pendingRequests: false });
             });
             break;
+        }
+        default:
+            console.warn(`Button with action ${action} is not handled`);
         }
     };
     filterUpdate(value) {
@@ -339,26 +344,26 @@ class GwToolbox extends React.Component {
 
         this.getToolbox(params);
     }
-    toggleTabExpanded(type, tab_name, default_val = false) {
-        const path = `${type}.${tab_name}`;
-        const newstate = this.state.expandedTabs[path] !== undefined ? !this.state.expandedTabs[path] : !default_val;
+    toggleTabExpanded(type, tabName, defaultVal = false) {
+        const path = `${type}.${tabName}`;
+        const newstate = this.state.expandedTabs[path] !== undefined ? !this.state.expandedTabs[path] : !defaultVal;
 
-        this.setState((prevState, props) => ({ expandedTabs: {...prevState.expandedTabs, [path]: newstate} }));
+        this.setState((prevState) => ({ expandedTabs: {...prevState.expandedTabs, [path]: newstate} }));
     }
     onToolTabChanged = (tab, widget) => {
         // console.log("Tool Tab:", tab, widget)
-        this.setState((prevState, props) => ({ toolActiveTabs: { ...prevState.toolActiveTabs, [widget.name]: tab.name } }));
+        this.setState((prevState) => ({ toolActiveTabs: { ...prevState.toolActiveTabs, [widget.name]: tab.name } }));
     };
-    getExpandedTabClass(type, tab_name, default_val = false) {
-        const path = `${type}.${tab_name}`;
-        const expanded = this.state.expandedTabs[path] !== undefined ? this.state.expandedTabs[path] : default_val;
+    getExpandedTabClass(type, tabName, defaultVal = false) {
+        const path = `${type}.${tabName}`;
+        const expanded = this.state.expandedTabs[path] !== undefined ? this.state.expandedTabs[path] : defaultVal;
         return (expanded || !isEmpty(this.state.toolboxFilter)) ? "identify-layer-expandable identify-layer-expanded" : "identify-layer-expandable";
     }
-    renderTab(type, tab_name, tools) {
+    renderTab(type, tabName, tools) {
         return (
-            <div className={this.getExpandedTabClass(type, tab_name)} key={`${type}-${tab_name}`}>
+            <div className={this.getExpandedTabClass(type, tabName)} key={`${type}-${tabName}`}>
                 <div className="identify-result-entry">
-                    <span className="clickable" onClick={() => this.toggleTabExpanded(type, tab_name)}><b>{tab_name}</b></span>
+                    <span className="clickable" onClick={() => this.toggleTabExpanded(type, tabName)}><b>{tabName}</b></span>
                 </div>
                 <div className="identify-layer-entries toolbox-tool-list">
                     {tools.map(tool => this.renderTool(type, tool))}
@@ -410,7 +415,7 @@ class GwToolbox extends React.Component {
                                 <div className="toolbox-type" key={type}>
                                     <span><b>{type.toUpperCase()}</b></span>
                                     <div className="toolbox-tabs-container">
-                                        {Object.entries(tabs.fields).map(([tab_name, tools]) => this.renderTab(type, tab_name, tools))}
+                                        {Object.entries(tabs.fields).map(([tabName, tools]) => this.renderTab(type, tabName, tools))}
                                     </div>
                                 </div>
                             ))}

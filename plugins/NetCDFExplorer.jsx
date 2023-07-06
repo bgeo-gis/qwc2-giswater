@@ -26,6 +26,7 @@ class NetCDFExplorer extends React.Component {
     static propTypes = {
         active: PropTypes.bool,
         addLayer: PropTypes.func,
+        changeLayerProperty: PropTypes.func,
         dataset: PropTypes.string,
         removeLayer: PropTypes.func,
         setCurrentTask: PropTypes.func,

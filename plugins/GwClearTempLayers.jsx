@@ -35,7 +35,6 @@ class GwClearTempLayersButton extends React.Component {
     }
 }
 
-export default connect((state) => ({
-}), {
+export default connect(() => ({}), {
     removeLayer: removeLayer
 })(GwClearTempLayersButton);

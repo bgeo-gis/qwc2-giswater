@@ -27,11 +27,13 @@ import GwUtils from '../utils/GwUtils';
 
 class GwVisit extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
         changeSelectionState: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
+        dispatchButton: PropTypes.func,
         dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -40,10 +42,13 @@ class GwVisit extends React.Component {
         initiallyDocked: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
+        processFinished: PropTypes.func,
+        processStarted: PropTypes.func,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        visitResult: PropTypes.object
     };
     static defaultProps = {
         replaceImageUrls: true,
@@ -64,7 +69,6 @@ class GwVisit extends React.Component {
         coords: [null, null],
         identifyResult: null,
         prevIdentifyResult: null,
-        pendingRequests: false,
         theme: null,
         currentTab: {},
         feature_id: null,
@@ -82,7 +86,7 @@ class GwVisit extends React.Component {
             this.state.visitResult = props.visitResult;
         }
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwVisit") {
             this.clearResults();
         }
@@ -92,43 +96,49 @@ class GwVisit extends React.Component {
     }
     crsStrToInt = (crs) => {
         const parts = crs.split(':');
-        return parseInt(parts.slice(-1));
+        return parseInt(parts.slice(-1), 10);
     };
     dispatchButton = (action, widget) => {
-        const request_url = GwUtils.getServiceUrl("visit");
+        const requestUrl = GwUtils.getServiceUrl("visit");
         switch (action.functionName) {
         case 'upload_file':
-            const files = this.state.files;
-            if (action.file instanceof FileList) {
-                for (let i = 0; i < action.file.length; i++) {
-                    files.push(action.file[i]);
+            this.setState((state) => {
+                const files = state.files;
+                if (action.file instanceof FileList) {
+                    for (let i = 0; i < action.file.length; i++) {
+                        files.push(action.file[i]);
+                    }
+                } else {
+                    files.push(action.file);
                 }
-            } else {
-                files.push(action.file);
-            }
-            this.setState({ files: files });
+                return {files: files};
+            });
             break;
-        case 'set_visit':
-            // console.log(this.state.widgetValues);
-            const ignore_widgets = ['txt_visit_id'];
+        case 'set_visit': {
+            const ignoreWidgets = ['txt_visit_id'];
             console.log("WIDGETS: ", this.state.widgetValues);
+            // eslint-disable-next-line
             const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
-                let v = value.columnname === 'mincut_state' ? state : value.value;
-                if (ignore_widgets.includes(value.columnname)) v = null;
+                // TODO: Did the commented line ever work?
+                // let v = value.columnname === 'mincut_state' ? state : value.value;
+                let v = value.value;
+                if (ignoreWidgets.includes(value.columnname)) {
+                    v = null;
+                }
                 if (!(v === null || v === undefined || v === "")) {
                     acc[value.columnname] = v;
                     console.log(acc[value.columnname], " : ", v);
                 }
                 return acc;
             }, {});
-            if (!isEmpty(request_url)) {
+            if (!isEmpty(requestUrl)) {
                 this.props.processStarted("visit_msg", "Aceptar visita");
 
                 const widgets = this.state.visitResult?.body?.data?.fields;
                 let tableWidget = null;
-                widgets.forEach(widget => {
-                    if (widget.widgettype === "tableview") {
-                        tableWidget = widget;
+                widgets.forEach(w => {
+                    if (w.widgettype === "tableview") {
+                        tableWidget = w;
                     }
                 });
 
@@ -146,7 +156,7 @@ class GwVisit extends React.Component {
                 formData.append("visitId", visitId || null);
                 formData.append("fields", JSON.stringify(fields));
                 console.log("FIELDS: ", fields);
-                axios.post(request_url + 'setvisit', formData, {
+                axios.post(requestUrl + 'setvisit', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 }).then((response) => {
                     const result = response.data;
@@ -161,25 +171,27 @@ class GwVisit extends React.Component {
                 });
             }
             break;
+        }
         case 'set_previous_form_back':
             this.clearResults();
             break;
-        case 'get_visit':
+        case 'get_visit': {
             const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
                 // TODO: If there are some wms external layers this would select more than one layer
                 return l.type === "wms";
             });
-            if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+            if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
                 if (queryableLayers.length > 1) {
                     console.warn("There are multiple giswater queryable layers");
                 }
                 const layer = queryableLayers[0];
                 const visitType = this.state.mode === 'Incidencia' ? 2 : 1;
-                const ignore_widgets = ['txt_visit_id'];
+                const ignoreWidgets = ['txt_visit_id'];
                 console.log("WIDGETS: ", this.state.widgetValues);
+                // eslint-disable-next-line
                 const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
                     let v = value.columnname === 'class_id' ? widget : value.value;
-                    if (ignore_widgets.includes(value.columnname)) v = null;
+                    if (ignoreWidgets.includes(value.columnname)) v = null;
                     if (!(v === null || v === undefined || v === "")) {
                         acc[value.columnname] = v;
                         console.log(acc[value.columnname], " : ", v);
@@ -198,7 +210,7 @@ class GwVisit extends React.Component {
                     fields: fields
                 };
 
-                axios.put(request_url + "getvisit", { ...params }).then(response => {
+                axios.put(requestUrl + "getvisit", { ...params }).then(response => {
                     const result = response.data;
                     this.setState({ visitResult: result, pendingRequests: false, widgetValues: {} });
                 }).catch((e) => {
@@ -207,6 +219,7 @@ class GwVisit extends React.Component {
                 });
             }
             break;
+        }
         default:
             console.warn(`Action \`${action.functionName}\` cannot be handled.`);
             break;
@@ -231,9 +244,9 @@ class GwVisit extends React.Component {
         this.getList(tab, widget);
         this.setState({ currentTab: { tab: tab, widget: widget } });
     };
-    getList = (tab, widget) => {
+    getList = (tab) => {
         try {
-            const request_url = GwUtils.getServiceUrl("util");
+            const requestUrl = GwUtils.getServiceUrl("util");
             let tableWidget = null;
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
                 if (widget.class === "QTableView") {
@@ -241,8 +254,8 @@ class GwVisit extends React.Component {
                 }
             });
 
-            if (isEmpty(tableWidget) || isEmpty(request_url)) {
-                return null;
+            if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
+                return;
             }
 
             const visitId = this.state.visitResult?.body?.feature?.visitId;
@@ -260,7 +273,7 @@ class GwVisit extends React.Component {
                 // "filterSign": action.params.tabName
             };
             console.log("TEST getList, params:", params);
-            axios.get(request_url + "getlist", { params: params }).then((response) => {
+            axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
                 console.log("getlist done:", result);
                 this.setState((state) => ({ tableValues: { ...state.tableValues, [tableWidget.name]: result }}));
@@ -271,7 +284,6 @@ class GwVisit extends React.Component {
         } catch (error) {
             console.error(error);
         }
-
     };
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
@@ -284,8 +296,8 @@ class GwVisit extends React.Component {
                 return l.type === "wms";
             });
 
-            const request_url = GwUtils.getServiceUrl("visit");
-            if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+            const requestUrl = GwUtils.getServiceUrl("visit");
+            if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
                 if (queryableLayers.length > 1) {
                     console.warn("There are multiple giswater queryable layers");
                 }
@@ -305,7 +317,7 @@ class GwVisit extends React.Component {
                 };
 
                 pendingRequests = true;
-                axios.get(request_url + "getvisit", { params: params }).then(response => {
+                axios.get(requestUrl + "getvisit", { params: params }).then(response => {
                     const result = response.data;
                     this.setState({ visitResult: result, coords: clickPoint, pendingRequests: false });
                     this.highlightResult(result);

@@ -62,8 +62,8 @@ class GwSearchBox extends React.Component {
     }
 
     getSearch = () => {
-        const request_url = GwUtils.getServiceUrl("search");
-        if (!isEmpty(request_url) && !isEmpty(this.state.searchText)) {
+        const requestUrl = GwUtils.getServiceUrl("search");
+        if (!isEmpty(requestUrl) && !isEmpty(this.state.searchText)) {
             // TO DO isTiled:True/False
             const filterText = this.state.searchText;
             const filterSearch = '"searchText": { "filterSign":"", "value": "' + filterText + '" } ';
@@ -72,7 +72,7 @@ class GwSearchBox extends React.Component {
                 theme: this.props.theme.title,
                 filterFields: filterSearch
             };
-            axios.get(request_url + "getsearch", { params: params }).then(response => {
+            axios.get(requestUrl + "getsearch", { params: params }).then(response => {
                 const result = response.data;
                 this.setState({ searchResults: result });
             }).catch((e) => {
@@ -81,16 +81,16 @@ class GwSearchBox extends React.Component {
         }
     };
 
-    setSearch = (display_name, section, filterKey, filterValue, execFunc, tableName, searchAdd) => {
-        this.setState({ searchText: display_name });
-        const request_url = GwUtils.getServiceUrl("search");
-        if (!isEmpty(request_url)) {
-            const extras = '"value": "' + display_name + '", "section": "' + section + '", "filterKey": "' + filterKey + '","filterValue": "' + filterValue + '", "execFunc": "' + execFunc + '", "tableName": "' + tableName + '", "searchAdd": "' + searchAdd + '"';
+    setSearch = (displayName, section, filterKey, filterValue, execFunc, tableName, searchAdd) => {
+        this.setState({ searchText: displayName });
+        const requestUrl = GwUtils.getServiceUrl("search");
+        if (!isEmpty(requestUrl)) {
+            const extras = '"value": "' + displayName + '", "section": "' + section + '", "filterKey": "' + filterKey + '","filterValue": "' + filterValue + '", "execFunc": "' + execFunc + '", "tableName": "' + tableName + '", "searchAdd": "' + searchAdd + '"';
             const params = {
                 theme: this.props.theme.title,
                 extras: extras
             };
-            axios.get(request_url + "setsearch", { params: params }).then(response => {
+            axios.get(requestUrl + "setsearch", { params: params }).then(response => {
                 const result = response.data;
                 this.panToResult(result.data.geometry);
                 this.highlightResult(result);
@@ -99,8 +99,8 @@ class GwSearchBox extends React.Component {
                 if (execFunc) {
                     this.identifyFromId(filterValue, tableName);
                 }
-                if (section == "basic_search_v2_address" && !searchAdd) {
-                    this.searchTextChanged(null, display_name + ", ");
+                if (section === "basic_search_v2_address" && !searchAdd) {
+                    this.searchTextChanged(null, displayName + ", ");
                 }
                 this.clearResults();
             }).catch((e) => {
@@ -109,14 +109,14 @@ class GwSearchBox extends React.Component {
         }
     };
     identifyFromId = (execParam, tableName) => {
-        const request_url = GwUtils.getServiceUrl("info");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("info");
+        if (!isEmpty(requestUrl)) {
             const params = {
                 theme: this.props.theme.title,
                 id: execParam,
                 tableName: tableName
             };
-            axios.get(request_url + "fromid", { params: params }).then((response) => {
+            axios.get(requestUrl + "fromid", { params: params }).then((response) => {
                 const result = response.data;
                 this.setState({ identifyResult: result });
             }).catch((e) => {

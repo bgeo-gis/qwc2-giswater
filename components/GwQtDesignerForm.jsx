@@ -5,7 +5,6 @@
  * or (at your option) any later version
  */
 
-import axios from 'axios';
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -15,7 +14,6 @@ import isEmpty from 'lodash.isempty';
 import Spinner from 'qwc2/components/Spinner';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MiscUtils from 'qwc2/utils/MiscUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
 import 'qwc2/components/style/QtDesignerForm.css';
@@ -67,7 +65,7 @@ class GwQtDesignerForm extends React.Component {
     componentDidMount() {
         this.componentDidUpdate({});
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         // Query form
         if (this.props.form_xml !== prevProps.form_xml) {
             console.log("Form  updated");
@@ -220,7 +218,7 @@ class GwQtDesignerForm extends React.Component {
         return rows;
     };
     tabChanged = (tab, widget) => {
-        this.setState((prevState, props) => ({ activetabs: { ...prevState.activetabs, [widget.name]: tab.name } }));
+        this.setState((prevState) => ({ activetabs: { ...prevState.activetabs, [widget.name]: tab.name } }));
         this.props.onTabChanged(tab, widget);
     };
     renderWidget = (widget, updateField, nametransform = (name) => name) => {
@@ -228,7 +226,7 @@ class GwQtDesignerForm extends React.Component {
         if (prop.visible === "false") {
             return null;
         }
-        const attr = widget.attribute || {};
+        // const attr = widget.attribute || {};
         const inputConstraints = {};
         inputConstraints.readOnly = this.props.readOnly || this.props.disabledWidgets.includes(widget.name) || prop.readOnly === "true" || prop.enabled === "false";
         // inputConstraints.readOnly = false;
@@ -281,15 +279,15 @@ class GwQtDesignerForm extends React.Component {
                 <div className="qtableview">
                     <table className="qtableview">
                         <tbody>
-                            {value.map((value, i) => (
+                            {value.map((v, i) => (
                                 <tr className="qtableview-row" key={i}>
                                     <td className="qtableview">
                                         <ul>
-                                            {Object.keys(value).map((field, j) => {
-                                                if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value[field])) {
-                                                    return (<a href={value[field]} key={j} rel="noreferrer" target="_blank"><img src={value[field]} /></a>);
+                                            {Object.keys(v).map((field, j) => {
+                                                if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(v[field])) {
+                                                    return (<a href={v[field]} key={j} rel="noreferrer" target="_blank"><img src={v[field]} /></a>);
                                                 } else {
-                                                    return (<li key={j}><b>{field}</b>: {String(value[field])}</li>);
+                                                    return (<li key={j}><b>{field}</b>: {String(v[field])}</li>);
                                                 }
                                             })}
                                         </ul>
@@ -309,7 +307,7 @@ class GwQtDesignerForm extends React.Component {
             return (
                 <div className="qt-designer-form-container">
                     <div className="qt-designer-form-frame">
-                        {this.renderLayout(widget.layout, feature, dataset, updateField, nametransform)}
+                        {this.renderLayout(widget.layout, updateField, nametransform)}
                     </div>
                 </div>
             );
@@ -606,18 +604,18 @@ class GwQtDesignerForm extends React.Component {
     filterActiveTabs = (formJson, oldActiveTabs) => {
         const tabs = [];
         GwUtils.forEachWidgetInForm(formJson, widget => {
-            if (widget.class == "QTabWidget") {
+            if (widget.class === "QTabWidget") {
                 tabs.push(widget);
             }
         });
 
         const activetabsArr = Object.entries(oldActiveTabs);
         const newTabsArr = activetabsArr.filter(([widget, activetab]) => {
-            const tabWidget = tabs.find(tabWidget => tabWidget.name == widget);
+            const tabWidget = tabs.find(tab => tab.name === widget);
             // if the tab widget exists
             if (tabWidget) {
                 // if the tab widget has the active tab
-                if (tabWidget.widget.find(tab => tab.name == activetab)) {
+                if (tabWidget.widget.find(tab => tab.name === activetab)) {
                     return true;
                 }
             }

@@ -31,6 +31,8 @@ class GwDateSelector extends React.Component {
         initialY: PropTypes.number,
         layers: PropTypes.array,
         map: PropTypes.object,
+        processFinished: PropTypes.func,
+        processStarted: PropTypes.func,
         refreshLayer: PropTypes.func,
         setCurrentTask: PropTypes.func,
         theme: PropTypes.object
@@ -48,16 +50,11 @@ class GwDateSelector extends React.Component {
         pendingRequests: false,
         filters: {}
     };
-
-    crsStrToInt = (crs) => {
-        const parts = crs.split(':');
-        return parseInt(parts.slice(-1));
-    };
     filterLayers = (result) => {
         if (isEmpty(result) || result.schema === null) {
             this.props.processStarted("dateselector_msg", "DateSelector Error!");
             this.props.processFinished("dateselector_msg", false, "Couldn't find schema, please check service config.");
-            return null;
+            return;
         }
         const layerFilters = ["filterdate"];  // TODO: get this from config?
         const queryableLayers = this.getQueryableLayers();
@@ -71,8 +68,7 @@ class GwDateSelector extends React.Component {
 
             // Apply filter, zoom to extent & refresh map
             console.log("queryable layers =", queryableLayers);
-            const layer = queryableLayers[0];
-            layer.params.FILTER = filter;
+            queryableLayers[0].params.FILTER = filter;
             // Refresh map
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }
@@ -85,7 +81,7 @@ class GwDateSelector extends React.Component {
         console.log("layerFilters ->", layerFilters);
         console.log("layerColumns ->", layerColumns);
         let filterStr = "";
-        for (const lyr in layerColumns) {
+        for (const lyr of layerColumns) {
             const cols = layerColumns[lyr];  // Get columns for layer
             const fields = layerFilters;  // Get columns to filter
             let fieldsFilterStr = "";
@@ -109,8 +105,8 @@ class GwDateSelector extends React.Component {
     componentDidMount() {
         this.getDates();
     }
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.theme != this.props.theme) {
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
             this.getDates();
         }
 
@@ -168,11 +164,11 @@ class GwDateSelector extends React.Component {
     getDialog = () => {
         let pendingRequests = false;
 
-        const request_url = GwUtils.getServiceUrl("dateselector");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("dateselector");
+        if (!isEmpty(requestUrl)) {
             // Send request
             pendingRequests = true;
-            axios.get(request_url + "dialog", { params: {} }).then(response => {
+            axios.get(requestUrl + "dialog", { params: {} }).then(response => {
                 const result = response.data;
                 this.setState({ dateSelectorResult: result, pendingRequests: false });
                 // this.filterLayers(result);
@@ -187,18 +183,17 @@ class GwDateSelector extends React.Component {
     getDates = (updateState = true) => {
         const queryableLayers = this.getQueryableLayers();
 
-        const request_url = GwUtils.getServiceUrl("dateselector");
-        if (!isEmpty(queryableLayers) && !isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("dateselector");
+        if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
             // Get request paramas
             const layer = queryableLayers[0];
-            const epsg = this.crsStrToInt(this.props.map.projection);
             const params = {
                 theme: layer.title,
                 layers: String(layer.queryLayers)
             };
 
             // Send request
-            axios.get(request_url + "dates", { params: params }).then(response => {
+            axios.get(requestUrl + "dates", { params: params }).then(response => {
                 const result = response.data;
                 const dateFrom = result.body.data?.date_from;
                 const dateTo = result.body.data?.date_to;
@@ -213,13 +208,13 @@ class GwDateSelector extends React.Component {
         if (updateState) this.setState({ getDatesResult: {}, dateSelectorResult: null });
     };
     setDates = (params) => {
-        const request_url = GwUtils.getServiceUrl("dateselector");
-        if (isEmpty(request_url)) {
-            return false;
+        const requestUrl = GwUtils.getServiceUrl("dateselector");
+        if (isEmpty(requestUrl)) {
+            return;
         }
 
         // Send request
-        axios.put(request_url + "dates", { ...params }).then(response => {
+        axios.put(requestUrl + "dates", { ...params }).then(response => {
             const result = response.data;
             this.setState({ dateSelectorResult: result, getDatesResult: result, pendingRequests: false });
             this.filterLayers(result);
@@ -229,12 +224,12 @@ class GwDateSelector extends React.Component {
             this.setState({ pendingRequests: false });
         });
     };
-    updateField = (widget, ev, action) => {
-        this.setState({ filters: { ...this.state.filters, [widget.name]: { value: ev } } });
+    updateField = (widget, ev) => {
+        this.setState((state) => ({ filters: { ...state.filters, [widget.name]: { value: ev } } }));
     };
     dispatchButton = (action) => {
         switch (action.functionName) {
-        case "accept":
+        case "accept": {
             const queryableLayers = this.getQueryableLayers();
             if (!isEmpty(queryableLayers)) {
                 // Get request paramas
@@ -243,7 +238,7 @@ class GwDateSelector extends React.Component {
                 const dateFrom = this.state.filters.date_from.value;
                 const dateTo = this.state.filters.date_to.value;
                 const params = {
-                    theme: layer.title,
+                    theme: this.props.theme.title,
                     dateFrom: dateFrom,
                     dateTo: dateTo,
                     layers: String(layer.queryLayers)
@@ -253,6 +248,7 @@ class GwDateSelector extends React.Component {
                 this.setDates(params);
             }
             break;
+        }
         case "closeDlg":
             this.onClose();
             break;

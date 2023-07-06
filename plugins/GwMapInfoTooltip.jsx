@@ -89,7 +89,7 @@ class GwMapInfoTooltip extends React.Component {
                         return acc.concat(layer.queryLayers);
                     }, []);
 
-                    const epsg = parseInt(this.props.map.projection.split(':').slice(-1));
+                    const epsg = parseInt(this.props.map.projection.split(':').slice(-1), 10);
                     const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
                     const params = {
                         theme: this.props.theme.title,
@@ -113,8 +113,8 @@ class GwMapInfoTooltip extends React.Component {
         const value = data.value;
         const fields = {closed: value};
 
-        const request_url = GwUtils.getServiceUrl("util");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("util");
+        if (!isEmpty(requestUrl)) {
             const params = {
                 theme: this.props.theme.title,
                 id: id,
@@ -122,8 +122,7 @@ class GwMapInfoTooltip extends React.Component {
                 fields: JSON.stringify(fields)
             };
 
-            axios.put(request_url + "setfields", { ...params }).then((response) => {
-                const result = response.data;
+            axios.put(requestUrl + "setfields", { ...params }).then(() => {
                 // refresh map
                 console.log("Theme", this.props.theme);
                 if (this.props.theme.tiled) {
@@ -139,9 +138,9 @@ class GwMapInfoTooltip extends React.Component {
         }
     };
     refreshTiles = () => {
-        const request_url = ConfigUtils.getConfigProp("tilingServiceUrl");
-        if (isEmpty(request_url)) {
-            return false;
+        const requestUrl = ConfigUtils.getConfigProp("tilingServiceUrl");
+        if (isEmpty(requestUrl)) {
+            return;
         }
 
         const params = {
@@ -149,10 +148,9 @@ class GwMapInfoTooltip extends React.Component {
         };
 
         const processNotificationId = `tiling_msg-${+new Date()}`;
-
         this.props.processStarted(processNotificationId, "Updating tiles");
         // Send request
-        axios.get(request_url + "update", { params: params }).then(response => {
+        axios.get(requestUrl + "update", { params: params }).then(response => {
             this.props.processFinished(processNotificationId, true, "Update successful");
             const result = response.data;
             console.log("tiling updated:", result);

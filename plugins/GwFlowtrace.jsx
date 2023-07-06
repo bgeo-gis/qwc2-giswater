@@ -19,6 +19,7 @@ import MapUtils from 'qwc2/utils/MapUtils';
 
 class GwFlowtrace extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
@@ -37,14 +38,14 @@ class GwFlowtrace extends React.Component {
     constructor(props) {
         super(props);
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (this.props.currentTask === "GwFlowtrace" || this.props.currentIdentifyTool === "GwFlowtrace") {
             this.identifyPoint(prevProps);
         }
     }
     crsStrToInt = (crs) => {
         const parts = crs.split(':');
-        return parseInt(parts.slice(-1));
+        return parseInt(parts.slice(-1), 10);
     };
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
@@ -65,9 +66,9 @@ class GwFlowtrace extends React.Component {
     };
 
     makeRequest(clickPoint) {
-        const request_url = GwUtils.getServiceUrl("flowtrace");
+        const requestUrl = GwUtils.getServiceUrl("flowtrace");
 
-        if (!isEmpty(request_url)) {
+        if (!isEmpty(requestUrl)) {
             const mode = this.state.mode === "trace" ? "upstream" : "downstream";
             this.setState({ bodyText: `Calculating ${mode} flowtrace...` });
             this.props.processStarted("flowtrace_msg", `Calculating ${mode} flowtrace...`);
@@ -82,7 +83,7 @@ class GwFlowtrace extends React.Component {
                 zoom: scale
             };
             // Send request
-            axios.get(request_url + mode, { params: params }).then(response => {
+            axios.get(requestUrl + mode, { params: params }).then(response => {
                 const result = response.data;
                 console.log("flowtrace", mode, "result", result);
                 this.addFlowtraceLayers(result);
@@ -101,8 +102,8 @@ class GwFlowtrace extends React.Component {
         this.props.removeLayer("temp_polygons.geojson");
 
         // Lines
-        const line = result.body.data.line;
-        const lines_style = {
+        const lines = result.body.data.line;
+        const linesStyle = {
             strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
             strokeWidth: 6,
             strokeDash: [1],
@@ -111,19 +112,19 @@ class GwFlowtrace extends React.Component {
             textStroke: "white",
             textFont: '20pt sans-serif'
         };
-        const line_features = GwUtils.getGeoJSONFeatures(line, "default", lines_style);
-        if (!isEmpty(line_features)) {
+        const lineFeatures = GwUtils.getGeoJSONFeatures(lines, "default", linesStyle);
+        if (!isEmpty(lineFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_lines.geojson",
                 name: "temp_lines.geojson",
                 title: "Temporal Lines",
                 zoomToExtent: true
-            }, line_features, true);
+            }, lineFeatures, true);
         }
 
         // Points
-        const point = result.body.data.point;
-        const points_style = {
+        const points = result.body.data.point;
+        const pointsStyle = {
             strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
             strokeWidth: 2,
             strokeDash: [4],
@@ -132,17 +133,17 @@ class GwFlowtrace extends React.Component {
             textStroke: "white",
             textFont: '20pt sans-serif'
         };
-        const point_features = GwUtils.getGeoJSONFeatures(point, "default", points_style);
-        if (!isEmpty(point_features)) {
+        const pointFeatures = GwUtils.getGeoJSONFeatures(points, "default", pointsStyle);
+        if (!isEmpty(pointFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_points.geojson",
                 name: "temp_points.geojson",
                 title: "Temporal Points",
                 zoomToExtent: true
-            }, point_features, true);
+            }, pointFeatures, true);
         }
 
-        if (!isEmpty(line_features) || !isEmpty(point_features)) {
+        if (!isEmpty(lineFeatures) || !isEmpty(pointFeatures)) {
             this.setState({ bodyText: "Drawing flowtrace (you can click again)" });
             this.props.processFinished("flowtrace_msg", true, "Flowtrace calculated!");
         } else {
@@ -184,7 +185,6 @@ export default connect(selector, {
     addMarker: addMarker,
     removeMarker: removeMarker,
     removeLayer: removeLayer,
-    addLayerFeatures: addLayerFeatures,
     processFinished: processFinished,
     processStarted: processStarted
 })(GwFlowtrace);

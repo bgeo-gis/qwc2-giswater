@@ -12,8 +12,6 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
-import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import GwUtils from '../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { LayerRole, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
@@ -25,6 +23,7 @@ class GwSelector extends React.Component {
     static propTypes = {
         changeLayerProperty: PropTypes.func,
         currentTask: PropTypes.string,
+        dispatchButton: PropTypes.func,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
@@ -54,11 +53,11 @@ class GwSelector extends React.Component {
 
     crsStrToInt = (crs) => {
         const parts = crs.split(':');
-        return parseInt(parts.slice(-1));
+        return parseInt(parts.slice(-1), 10);
     };
     handleResult = (result) => {
         if (!result || result.schema === null) {
-            return false;
+            return;
         }
 
         this.setLayersVisibility(result);
@@ -93,8 +92,8 @@ class GwSelector extends React.Component {
             this.props.zoomToExtent(extent, this.props.map.projection);
         }
     };
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.theme != this.props.theme) {
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
             this.makeRequest(true);
         }
     }
@@ -110,16 +109,16 @@ class GwSelector extends React.Component {
         }
         this.setState({ selectorResult: null, pendingRequests: false });
     };
-    getSelectors = (params, hide_form = false) => {
-        const request_url = GwUtils.getServiceUrl("selector");
-        if (isEmpty(request_url)) {
-            return false;
+    getSelectors = (params, hideForm = false) => {
+        const requestUrl = GwUtils.getServiceUrl("selector");
+        if (isEmpty(requestUrl)) {
+            return;
         }
 
         // Send request
-        axios.get(request_url + "get", { params: params }).then(response => {
+        axios.get(requestUrl + "get", { params: params }).then(response => {
             const result = response.data;
-            if (!hide_form) {
+            if (!hideForm) {
                 this.setState({ selectorResult: result, pendingRequests: false });
             }
             this.handleResult(result);
@@ -129,13 +128,13 @@ class GwSelector extends React.Component {
         });
     };
     setSelectors = (params) => {
-        const request_url = GwUtils.getServiceUrl("selector");
-        if (isEmpty(request_url)) {
-            return false;
+        const requestUrl = GwUtils.getServiceUrl("selector");
+        if (isEmpty(requestUrl)) {
+            return;
         }
 
         // Send request
-        axios.post(request_url + "set", { ...params }).then(response => {
+        axios.post(requestUrl + "set", { ...params }).then(response => {
             const result = response.data;
             this.setState({ selectorResult: result, pendingRequests: false });
             this.handleResult(result);
@@ -152,7 +151,7 @@ class GwSelector extends React.Component {
         const id = action.params.id;
         const isAlone = false;
         const disableParent = false; // TODO?: get if shift is pressed (depending on)
-        const value = action.params.value == 'False';
+        const value = action.params.value === 'False';
         const addSchema = "NULL"; // TODO?: allow addSchema
         const params = {
             theme: this.props.theme.title,
@@ -170,18 +169,17 @@ class GwSelector extends React.Component {
         this.setSelectors(params);
     };
     dispatchButton = (action) => {
-        const pendingRequests = false;
         switch (action.name) {
         default:
             console.warn(`Action \`${action.name}\` cannot be handled.`);
             break;
         }
     };
-    makeRequest(hide_form = false) {
+    makeRequest(hideForm = false) {
         let pendingRequests = false;
 
-        const request_url = GwUtils.getServiceUrl("selector");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("selector");
+        if (!isEmpty(requestUrl)) {
             // Get request paramas
             const epsg = this.crsStrToInt(this.props.map.projection);
             const params = {
@@ -193,11 +191,11 @@ class GwSelector extends React.Component {
 
             // Send request
             pendingRequests = true;
-            this.getSelectors(params, hide_form);
+            this.getSelectors(params, hideForm);
         }
         // Set "Waiting for request..." message
         // this.filteredSelectors = true;
-        if (!hide_form) {
+        if (!hideForm) {
             this.setState({ selectorResult: {}, pendingRequests: pendingRequests });
         }
     }

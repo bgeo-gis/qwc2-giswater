@@ -85,7 +85,7 @@ class GwHeightProfile extends React.Component {
         this.setState({width: window.innerWidth});
     };
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (this.props.measurement.coordinates !== prevProps.measurement.coordinates) {
             if (this.props.measurement.profiling === true && this.props.measurement.geomType === "LineString" && !isEmpty(this.props.measurement.coordinates) ) {
                 // Generate profile
@@ -121,11 +121,11 @@ class GwHeightProfile extends React.Component {
 
     getDialog = () => {
         let pendingRequests = false;
-        const request_url = GwUtils.getServiceUrl("profile");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("profile");
+        if (!isEmpty(requestUrl)) {
             // Send request
             pendingRequests = true;
-            axios.get(request_url + "getdialog", { params: {} }).then(response => {
+            axios.get(requestUrl + "getdialog", { params: {} }).then(response => {
                 const result = response.data;
                 console.log("profileToolResult");
                 console.log(result);
@@ -318,12 +318,14 @@ class GwHeightProfile extends React.Component {
                     showPoint: true,
                     showLine: false
                 },
-                labelFunc: (x, y) => {
+                // eslint-disable-next-line
+                labelFunc: (x) => {
                     for (const label of this.terrainLabels) {
                         if (x === label.total_distance) {
                             return label.code.toString();
                         }
                     }
+                    return null;
                 }
             },
             nodesCross: {
@@ -361,8 +363,8 @@ class GwHeightProfile extends React.Component {
             };
         }
 
-        const max_height_supported = 13;
-        if (maxHeight - minHeight < max_height_supported) {
+        const maxHeightSupported = 13;
+        if (maxHeight - minHeight < maxHeightSupported) {
             minHeight = minHeight - 12;
 
             // Create all arrays with coordinates to draw guitar
@@ -446,7 +448,7 @@ class GwHeightProfile extends React.Component {
                         showLine: false,
                         showPoint: true
                     },
-                    labelFunc: (x, y) => {
+                    labelFunc: (x) => {
                         for (let i = 0; i < arcs.length; i++) {
                             const firstNodeX = nodes[i].total_distance;
                             const secondNodeX = nodes[i + 1].total_distance;
@@ -455,6 +457,7 @@ class GwHeightProfile extends React.Component {
                                 return text.catalog + " " + text.dimensions.toString();
                             }
                         }
+                        return null;
                     }
                 },
                 topElevGuitarLabels: {
@@ -464,12 +467,13 @@ class GwHeightProfile extends React.Component {
                         showLine: false,
                         showPoint: true
                     },
-                    labelFunc: (x, y) => {
+                    labelFunc: (x) => {
                         for (const label of this.terrainLabels) {
                             if (x === label.total_distance) {
                                 return label.top_elev.toString();
                             }
                         }
+                        return null;
                     }
                 },
                 yMaxGuitarLabels: {
@@ -479,12 +483,13 @@ class GwHeightProfile extends React.Component {
                         showLine: false,
                         showPoint: true
                     },
-                    labelFunc: (x, y) => {
+                    labelFunc: (x) => {
                         for (const label of this.terrainLabels) {
                             if (x === label.total_distance) {
                                 return label.ymax.toString();
                             }
                         }
+                        return null;
                     }
                 },
                 elevGuitarLabels: {
@@ -494,18 +499,19 @@ class GwHeightProfile extends React.Component {
                         showLine: false,
                         showPoint: true
                     },
-                    labelFunc: (x, y) => {
+                    labelFunc: (x) => {
                         for (const label of this.terrainLabels) {
                             if (x === label.total_distance) {
                                 return label.elev.toString();
                             }
                         }
+                        return null;
                     }
                 }
             };
         }
 
-        const data = {
+        const fullData = {
             series: Object.entries(series).map(([name, data]) => {
                 return {
                     name: name,
@@ -540,6 +546,7 @@ class GwHeightProfile extends React.Component {
             },
             plugins: [
                 // Add titles to the axisY and axisX
+                // eslint-disable-next-line
                 ChartistAxisTitle({
                     axisX: {
                         axisTitle: distanceStr + " [m]",
@@ -554,6 +561,7 @@ class GwHeightProfile extends React.Component {
                         flipTitle: true
                     }
                 }),
+                // eslint-disable-next-line
                 CtPointLabels({
                     textAnchor: 'middle',
                     // labelOffset: {
@@ -572,6 +580,7 @@ class GwHeightProfile extends React.Component {
                         return "";
                     }
                 }),
+                // eslint-disable-next-line
                 Zoom({
                     onZoom: function(chart, reset) { resetZoom = reset; },
                     noClipY: true,
@@ -601,7 +610,6 @@ class GwHeightProfile extends React.Component {
                     ev.element._node.addEventListener("mousemove", ev2 => {
                         const rect = ev.element._node.getBoundingClientRect();
                         const idx = Math.min(this.props.samples - 1, Math.round((ev2.clientX - rect.left) / rect.width * this.props.samples));
-                        const x = idx / this.props.samples * totLength;
                         // Marker over the line
                         // Use ev.value.x instead of x to get coordinates of ev that will match with node x
                         this.updateMarker(ev.value.x);
@@ -621,7 +629,7 @@ class GwHeightProfile extends React.Component {
 
         profileTool = (
             <div id="GwHeightProfile">
-                <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" />
+                <ChartistComponent data={fullData} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" />
                 <span className="height-profile-tooltip" ref={el => { this.tooltip = el; }} />
                 <span className="height-profile-marker" ref={el => { this.marker = el; }} />
                 <div className='height-profile-buttons'>
@@ -676,9 +684,8 @@ class GwHeightProfile extends React.Component {
 
             }
             datesWindow = (
-                <ResizeableWindow dockable={false} icon="giswater" id="GwDateSelector" initialHeight={this.props.initialHeight}
-                    initialWidth={this.props.initialWidth} key="GwDateSelectorWindow" onClose={this.onToolClose}
-                    onShow={this.onShow} title="GW Profile Tool"
+                <ResizeableWindow dockable={false} icon="giswater" id="GwDateSelector" key="GwDateSelectorWindow"
+                    onClose={this.onToolClose} onShow={this.onShow} title="GW Profile Tool"
                 >
                     {body}
                 </ResizeableWindow>
@@ -697,8 +704,8 @@ class GwHeightProfile extends React.Component {
         return [profileTool];
     }
 
-    updateField = (widget, ev, action) => {
-        this.setState({ widget_values: {...this.state.widget_values, [widget.name]: ev} });
+    updateField = (widget, ev) => {
+        this.setState((state) => ({ widget_values: {...state.widget_values, [widget.name]: ev} }));
     };
 
     dispatchButton = (action) => {
@@ -724,13 +731,13 @@ class GwHeightProfile extends React.Component {
         // this.props.setCurrentTask(null);
     };
 
-    getProfileSvg = (vnode_dist, title, date) => {
+    getProfileSvg = (vnodeDist, title, date) => {
         const requestUrl = GwUtils.getServiceUrl("profile");
         const result = this.props.measurement.feature;
         this.props.processStarted("profile_msg", "Generando Perfil");
         if (!isEmpty(result)) {
-            if (vnode_dist === undefined) {
-                vnode_dist = 1;
+            if (vnodeDist === undefined) {
+                vnodeDist = 1;
             }
             if (title === undefined) {
                 title = "";
@@ -740,7 +747,7 @@ class GwHeightProfile extends React.Component {
             }
             const params = {
                 // "result": result,
-                vnode_dist: vnode_dist,
+                vnodeDist: vnodeDist,
                 title: title,
                 date: date,
                 initNode: this.props.measurement.initNode,

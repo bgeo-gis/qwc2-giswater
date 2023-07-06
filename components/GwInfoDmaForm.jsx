@@ -5,20 +5,11 @@
  * or (at your option) any later version
  */
 
-import axios from 'axios';
 import React from 'react';
-import { useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Chartist from 'chartist';
 import ChartistComponent from 'react-chartist';
-import ChartistAxisTitle from 'chartist-plugin-axistitle';
-import xml2js from 'xml2js';
-import isEmpty from 'lodash.isempty';
-import Spinner from 'qwc2/components/Spinner';
-import LocaleUtils from 'qwc2/utils/LocaleUtils';
-import MiscUtils from 'qwc2/utils/MiscUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 import 'qwc2-giswater/components/style/GwInfoDmaForm.css';
 
@@ -35,22 +26,22 @@ class GwInfoDmaForm extends React.Component {
 
         // Período e intérvalo
         const period = info.period;
-        const period_dates = info.period_dates;
+        const periodDates = info.period_dates;
 
         // Datos de la red
-        const meters_in = info.meters_in; //
-        const meters_out = info.meters_out; //
-        const n_connec = info.n_connec; // numero acometidas
-        const n_hydro = info.n_hydro; // numero abonados
-        const arc_length = info.arc_length; // longitud red
-        const link_length = info.link_length; // longitud acometidas
+        const metersIn = info.meters_in; //
+        const metersOut = info.meters_out; //
+        const nConnec = info.n_connec; // numero acometidas
+        const nHydro = info.n_hydro; // numero abonados
+        const arcLength = info.arc_length; // longitud red
+        const linkLength = info.link_length; // longitud acometidas
 
         // Pie Chart
         // Datos
         const total = info.total; // total inyectado
         const flow = "2.55"; // TODO: FALTA!!!
-        const dma_rw_eff = (info.dma_rw_eff * 100)?.toFixed(2); // rendimiento
-        const dma_nrw_eff = (info.dma_nrw_eff * 100)?.toFixed(2); // dma agua no controlada
+        const dmaRwEff = (info.dma_rw_eff * 100)?.toFixed(2); // rendimiento
+        const dmaNrwEff = (info.dma_nrw_eff * 100)?.toFixed(2); // dma agua no controlada
 
         // Gràfico
         const nrw = info?.nrw; // VANC
@@ -58,16 +49,16 @@ class GwInfoDmaForm extends React.Component {
 
         // Otros indicadores
         // dma agua no controlada
-        const expl_nrw_eff = (info.expl_nrw_eff * 100)?.toFixed(2); // expl agua no controlada
-        const dma_ili = info.dma_ili?.toFixed(2); // dma indice perdidas
-        const expl_ili = info.expl_ili?.toFixed(2); // expl indice perdidas
-        const dma_m4day = info.dma_m4day?.toFixed(2); // dma m3kmdia
-        const expl_m4day = info.expl_m4day?.toFixed(2); // expl m3kmdia
-        const dma_nightvol = info.dma_nightvol; // dma min nocturno
-        const expl_nightvol = info.expl_nightvol; // expl min nocturno
+        const explNrwEff = (info.expl_nrw_eff * 100)?.toFixed(2); // expl agua no controlada
+        const dmaIli = info.dma_ili?.toFixed(2); // dma indice perdidas
+        const explIli = info.expl_ili?.toFixed(2); // expl indice perdidas
+        const dmaM4day = info.dma_m4day?.toFixed(2); // dma m3kmdia
+        const explM4day = info.expl_m4day?.toFixed(2); // expl m3kmdia
+        const dmaNightvol = info.dma_nightvol; // dma min nocturno
+        const explNightvol = info.expl_nightvol; // expl min nocturno
 
         const data = this.props.jsonData?.info?.values?.chart;
-        const { data_piechart, options_piechart, data_chart, listeners, options_chart } = this.getChartData(data, dma, exploitation, nrw, auth);
+        const { dataPiechart, optionsPiechart, dataChart, listeners, optionsChart } = this.getChartData(data, dma, exploitation, nrw, auth);
 
         const periodBody = (
             <div className="periodBody">
@@ -79,7 +70,7 @@ class GwInfoDmaForm extends React.Component {
                         </tr>
                         <tr>
                             <th>Intérvalo:</th>
-                            <td>{period_dates}</td>
+                            <td>{periodDates}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -96,23 +87,23 @@ class GwInfoDmaForm extends React.Component {
                     <tbody>
                         <tr>
                             <td>Códigos sectoriales</td>
-                            <td>{meters_in}, {meters_out}</td>
+                            <td>{metersIn}, {metersOut}</td>
                         </tr>
                         <tr>
                             <td>Número acometidas</td>
-                            <td>{n_connec}</td>
+                            <td>{nConnec}</td>
                         </tr>
                         <tr>
                             <td>Número abonados</td>
-                            <td>{n_hydro}</td>
+                            <td>{nHydro}</td>
                         </tr>
                         <tr>
                             <td>Longitud red</td>
-                            <td>{arc_length}</td>
+                            <td>{arcLength}</td>
                         </tr>
                         <tr>
                             <td>Longitud acometidas</td>
-                            <td>{link_length}</td>
+                            <td>{linkLength}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -126,19 +117,19 @@ class GwInfoDmaForm extends React.Component {
                         <li>Caudal: {flow} lps</li>
                         <li>Total abonados: {auth} m3</li>
                         <li>Total VANC: {nrw} m3</li>
-                        <li>Rendimiento: {dma_rw_eff}%</li>
-                        <li>VANC: {dma_nrw_eff}%</li>
+                        <li>Rendimiento: {dmaRwEff}%</li>
+                        <li>VANC: {dmaNrwEff}%</li>
                     </ul>
                 </div>
                 <div id="GwDmaPieChart">
-                    <ChartistComponent data={data_piechart} options={options_piechart} ref={el => { this.plot = el; }} type="Pie" />
+                    <ChartistComponent data={dataPiechart} options={optionsPiechart} ref={el => { this.plot = el; }} type="Pie" />
                 </div>
             </div>
         );
         const barChartBody = (
             <div>
                 <div id="GwDmaGraph">
-                    <ChartistComponent data={data_chart} listener={listeners} options={options_chart} ref={el => { this.plot = el; }} type="Line" />
+                    <ChartistComponent data={dataChart} listener={listeners} options={optionsChart} ref={el => { this.plot = el; }} type="Line" />
                 </div>
                 <div className="graphDmaLegend">
                     <p className="graphLineDma">{dma}</p>
@@ -160,23 +151,23 @@ class GwInfoDmaForm extends React.Component {
                     <tbody>
                         <tr>
                             <td>Agua no controlada</td>
-                            <td>{dma_nrw_eff}%</td>
-                            <td>{expl_nrw_eff}%</td>
+                            <td>{dmaNrwEff}%</td>
+                            <td>{explNrwEff}%</td>
                         </tr>
                         <tr>
                             <td>Indice de pérdidas</td>
-                            <td>{dma_ili}</td>
-                            <td>{expl_ili}</td>
+                            <td>{dmaIli}</td>
+                            <td>{explIli}</td>
                         </tr>
                         <tr>
                             <td>m3kmdia</td>
-                            <td>{dma_m4day}</td>
-                            <td>{expl_m4day}</td>
+                            <td>{dmaM4day}</td>
+                            <td>{explM4day}</td>
                         </tr>
                         <tr>
                             <td>Mínimo nocturno</td>
-                            <td>{dma_nightvol}</td>
-                            <td>{expl_nightvol}</td>
+                            <td>{dmaNightvol}</td>
+                            <td>{explNightvol}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -196,40 +187,39 @@ class GwInfoDmaForm extends React.Component {
     }
 
     getChartData(data, dma, exploitation, nrw, auth) {
-        let dma_line = null;
-        let expl_line = null;
+        let dmaLine = null;
+        let explLine = null;
 
         if (data !== null && typeof data !== 'undefined') {
-            const extractData = (data, propertyName) => {
-                return data[propertyName].map(item => {
-                    const key = Object.keys(item)[0];
+            const extractData = (d, propertyName) => {
+                return d[propertyName].map(item => {
                     const value = Object.values(item)[0];
                     const x = Date.parse(Object.keys(value)[0]);
                     const y = Object.values(value)[0];
                     return { x, y };
                 });
             };
-            dma_line = extractData(data, dma);
-            expl_line = extractData(data, exploitation);
+            dmaLine = extractData(data, dma);
+            explLine = extractData(data, exploitation);
 
         }
 
-        const data_chart = {
+        const dataChart = {
             series: [
                 {
                     name: 'line1',
-                    data: dma_line,
+                    data: dmaLine,
                     className: 'ct-terrain-line'
                 },
                 {
                     name: 'line2',
-                    data: expl_line,
+                    data: explLine,
                     className: 'ct-terrain-line2'
                 }
             ]
         };
 
-        const options_chart = {
+        const optionsChart = {
             width: '100%',
             height: 200,
             chartPadding: { left: 5, bottom: 1, top: 0 },
@@ -264,23 +254,23 @@ class GwInfoDmaForm extends React.Component {
         };
 
         const listeners = {
-            resize: ev => {
+            resize: () => {
                 this.update();
             }
         };
 
         // Pie Chart
-        const data_piechart = {
+        const dataPiechart = {
             labels: ['VANC (' + nrw + ')', 'Total abonados (' + auth + ')'],
             series: [nrw, auth]
         };
 
-        const options_piechart = {
+        const optionsPiechart = {
             labelInterpolationFnc: function(value) {
                 return value;
             }
         };
-        return { data_piechart, options_piechart, data_chart, listeners, options_chart };
+        return { dataPiechart, optionsPiechart, dataChart, listeners, optionsChart };
     }
 }
 

@@ -42,6 +42,7 @@ const measureLabelStyleFactory = () => new ol.style.Text({
 
 class GwProfileTool extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
         changeMeasurementState: PropTypes.func,
         changeSelectionState: PropTypes.func,
@@ -150,13 +151,13 @@ class GwProfileTool extends React.Component {
                 length.push(data.arc[i].length);
                 for (let j = 0; j < data.line.features.length; j++) {
                     if (data.arc[i].arc_id === data.line.features[j].properties.arc_id) {
-                        const geom_arc = data.line.features[j].geometry.coordinates;
-                        if (coo[i][0] !== geom_arc[0][0] || coo[i][1] !== geom_arc[0][1]) {
-                            const reversed_Array = [];
-                            for (let z = geom_arc.length - 1; z >= 0; z--) {
-                                reversed_Array.push(geom_arc[z]);
+                        const geomArc = data.line.features[j].geometry.coordinates;
+                        if (coo[i][0] !== geomArc[0][0] || coo[i][1] !== geomArc[0][1]) {
+                            const reversedArray = [];
+                            for (let z = geomArc.length - 1; z >= 0; z--) {
+                                reversedArray.push(geomArc[z]);
                             }
-                            data.line.features[j].geometry.coordinates = reversed_Array;
+                            data.line.features[j].geometry.coordinates = reversedArray;
                         }
                         if (i === data.line.features.length - 1) {
                             for (let y = 0; y < data.line.features[j].geometry.coordinates.length; y++) {
@@ -319,7 +320,7 @@ class GwProfileTool extends React.Component {
      */
     crsStrToInt = (crs) => {
         const parts = crs.split(':');
-        return parseInt(parts.slice(-1));
+        return parseInt(parts.slice(-1), 10);
     };
 
     /**
@@ -405,7 +406,7 @@ class GwProfileTool extends React.Component {
             };
             // Send request
             axios.get(requestUrl + "nodefromcoordinates", { params: params }).then(response => {
-                result = parseInt(response.data.body.feature.id[0]);
+                result = parseInt(response.data.body.feature.id[0], 10);
                 console.log("Node Id -> ", result);
 
                 if (node === 1) {
@@ -641,6 +642,8 @@ class GwProfileTool extends React.Component {
                     })}
                 </TaskBar>
             );
+        } else {
+            return null;
         }
     }
 }

@@ -8,15 +8,16 @@
 import isEmpty from 'lodash.isempty';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
+import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
 import ol from 'openlayers';
 
 const GwUtils = {
     getServiceUrl(service) {
-        const request_url = ConfigUtils.getConfigProp("giswaterServiceUrl");
-        if (isEmpty(request_url)) {
+        const requestUrl = ConfigUtils.getConfigProp("giswaterServiceUrl");
+        if (isEmpty(requestUrl)) {
             return "";
         }
-        return request_url + service + "/";
+        return requestUrl + service + "/";
     },
     findLayer(layer, name, path = []) {
         if (layer.name === name) {

@@ -25,15 +25,15 @@ class GwLoadPlugin extends React.Component {
         pendingRequests: false
     };
 
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.theme != this.props.theme) {
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
             this.makeRequest();
         }
     }
 
     makeRequest() {
-        const request_url = GwUtils.getServiceUrl("util");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("util");
+        if (!isEmpty(requestUrl)) {
             // Get request paramas
             const epsg = this.crsStrToInt(this.props.map.projection);
             const params = {
@@ -42,7 +42,7 @@ class GwLoadPlugin extends React.Component {
             };
 
             // Send request
-            axios.post(request_url + "setinitproject", { ...params }).then(response => {
+            axios.post(requestUrl + "setinitproject", { ...params }).then(response => {
                 const result = response.data;
                 console.log("LOADED PLUGIN: ", result);
                 this.setState({pendingRequests: false });
@@ -56,7 +56,7 @@ class GwLoadPlugin extends React.Component {
 
     crsStrToInt = (crs) => {
         const parts = crs.split(':');
-        return parseInt(parts.slice(-1));
+        return parseInt(parts.slice(-1), 10);
     };
 
     render() {

@@ -19,7 +19,6 @@ import Spinner from 'qwc2/components/Spinner';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
-import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import { panTo } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
@@ -29,12 +28,15 @@ import GwUtils from '../utils/GwUtils';
 
 class GwMincut extends React.Component {
     static propTypes = {
+        action: PropTypes.string,
+        addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
         changeLayerProperty: PropTypes.func,
         changeSelectionState: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
+        currentTheme: PropTypes.object,
         dispatchButton: PropTypes.func,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -45,6 +47,9 @@ class GwMincut extends React.Component {
         map: PropTypes.object,
         mincutId: PropTypes.number,
         mincutResult: PropTypes.object,
+        panTo: PropTypes.func,
+        processFinished: PropTypes.func,
+        processStarted: PropTypes.func,
         refreshLayer: PropTypes.func,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
@@ -75,7 +80,7 @@ class GwMincut extends React.Component {
         activetabs: {},
         ogClickPoint: null
     };
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwMincut") {
             this.onToolClose();
         }
@@ -86,7 +91,7 @@ class GwMincut extends React.Component {
     // #region UTILS
     crsStrToInt = (crs) => {
         const parts = crs.split(':');
-        return parseInt(parts.slice(-1));
+        return parseInt(parts.slice(-1), 10);
     };
     highlightResult = (result) => {
         if (isEmpty(result)) {
@@ -156,9 +161,9 @@ class GwMincut extends React.Component {
             this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
         }
     };
-    getList = (tab, widget) => {
+    getList = (tab) => {
         try {
-            const request_url = GwUtils.getServiceUrl("util");
+            const requestUrl = GwUtils.getServiceUrl("util");
             let tableWidget = null;
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
                 if (widget.class === "QTableView") {
@@ -166,8 +171,8 @@ class GwMincut extends React.Component {
                 }
             });
 
-            if (isEmpty(tableWidget) || isEmpty(request_url)) {
-                return null;
+            if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
+                return;
             }
             console.log("table widget:", tableWidget);
 
@@ -184,7 +189,7 @@ class GwMincut extends React.Component {
                 // "filterSign": action.params.tabName
             };
             console.log("TEST getList, params:", params);
-            axios.get(request_url + "getlist", { params: params }).then((response) => {
+            axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
                 console.log("getlist done:", result);
                 this.setState((state) => ({ widgetValues: { ...state.widgetValues, [tableWidget.name]: result } }));
@@ -213,76 +218,76 @@ class GwMincut extends React.Component {
 
         // Arc
         const arc = result.body.data.arc;
-        const arc_style = {
+        const arcStyle = {
             strokeColor: [255, 206, 128, 1],
             strokeWidth: 6
         };
-        const arc_features = GwUtils.getGeoJSONFeatures(arc, "default", arc_style);
+        const arcFeatures = GwUtils.getGeoJSONFeatures(arc, "default", arcStyle);
 
-        const line_features = [].concat(arc_features);
-        if (!isEmpty(line_features)) {
+        const lineFeatures = [].concat(arcFeatures);
+        if (!isEmpty(lineFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_lines.geojson",
                 name: "temp_lines.geojson",
                 title: "Temporal Lines",
                 zoomToExtent: true
-            }, line_features, true);
+            }, lineFeatures, true);
         }
 
         // Init
-        const init_point = result.body.data.init;
-        const init_point_style = {
+        const initPoint = result.body.data.init;
+        const initPointStyle = {
             strokeColor: [0, 24, 124, 1],
             strokeWidth: 1,
             circleRadius: 4,
             fillColor: [45, 84, 255, 1]
         };
-        const init_point_features = GwUtils.getGeoJSONFeatures(init_point, "default", init_point_style);
+        const initpointFeatures = GwUtils.getGeoJSONFeatures(initPoint, "default", initPointStyle);
         // Node
         const node = result.body.data.node;
-        const node_style = {
+        const nodeStyle = {
             strokeColor: [160, 134, 17, 1],
             strokeWidth: 1,
             circleRadius: 3,
             fillColor: [241, 209, 66, 1]
         };
-        const node_features = GwUtils.getGeoJSONFeatures(node, "default", node_style);
+        const nodeFeatures = GwUtils.getGeoJSONFeatures(node, "default", nodeStyle);
         // Connec
         const connec = result.body.data.connec;
-        const connec_style = {
+        const connecStyle = {
             strokeColor: [102, 46, 25, 1],
             strokeWidth: 1,
             circleRadius: 3,
             fillColor: [176, 123, 103, 1]
         };
-        const connec_features = GwUtils.getGeoJSONFeatures(connec, "default", connec_style);
+        const connecFeatures = GwUtils.getGeoJSONFeatures(connec, "default", connecStyle);
         // Valve proposed
-        const valve_proposed = result.body.data.valveClose;
-        const valve_proposed_style = {
+        const valveProposed = result.body.data.valveClose;
+        const valveProposedStyle = {
             strokeColor: [134, 13, 13, 1],
             strokeWidth: 1,
             circleRadius: 6,
             fillColor: [237, 55, 58, 1]
         };
-        const valve_proposed_features = GwUtils.getGeoJSONFeatures(valve_proposed, "default", valve_proposed_style);
+        const valveProposedFeatures = GwUtils.getGeoJSONFeatures(valveProposed, "default", valveProposedStyle);
         // Valve not proposed
-        const valve_not_proposed = result.body.data.valveNot;
-        const valve_not_proposed_style = {
+        const valveNotProposed = result.body.data.valveNot;
+        const valveNotProposedStyle = {
             strokeColor: [6, 94, 0, 1],
             strokeWidth: 1,
             circleRadius: 6,
             fillColor: [51, 160, 44, 1]
         };
-        const valve_not_proposed_features = GwUtils.getGeoJSONFeatures(valve_not_proposed, "default", valve_not_proposed_style);
+        const valveNotProposedFeatures = GwUtils.getGeoJSONFeatures(valveNotProposed, "default", valveNotProposedStyle);
 
-        const point_features = [].concat(node_features, connec_features, init_point_features, valve_proposed_features, valve_not_proposed_features);
-        if (!isEmpty(point_features)) {
+        const pointFeatures = [].concat(nodeFeatures, connecFeatures, initpointFeatures, valveProposedFeatures, valveNotProposedFeatures);
+        if (!isEmpty(pointFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_points.geojson",
                 name: "temp_points.geojson",
                 title: "Temporal Points",
                 zoomToExtent: true
-            }, point_features, true);
+            }, pointFeatures, true);
         }
     };
     removeTempLayers = () => {
@@ -314,7 +319,7 @@ class GwMincut extends React.Component {
     };
     // #endregion
     // #region DIALOG
-    updateField = (widget, value, action) => {
+    updateField = (widget, value) => {
         // Get filterSign
         let filterSign = "=";
         if (widget.property.widgetcontrols !== "null") {
@@ -395,7 +400,7 @@ class GwMincut extends React.Component {
         }
     };
     showTab = (tab) => {
-        this.setState({ activetabs: {...this.state.activetabs, tabWidget: tab} });
+        this.setState((state) => ({ activetabs: {...state.activetabs, tabWidget: tab} }));
     };
     onShow = (mode) => {
         const actionMap = {
@@ -440,8 +445,8 @@ class GwMincut extends React.Component {
         let pendingRequests = false;
         if (action === 'mincutValveUnaccess') updateState = false;
         clickPoint = clickPoint || [null, null];
-        const request_url = GwUtils.getServiceUrl("mincut");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("mincut");
+        if (!isEmpty(requestUrl)) {
             const mincutId = this.state.mincutId || this.props.mincutId;
             const epsg = this.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
@@ -456,7 +461,7 @@ class GwMincut extends React.Component {
             };
 
             pendingRequests = true;
-            axios.get(request_url + "setmincut", { params: params }).then(response => {
+            axios.get(requestUrl + "setmincut", { params: params }).then(response => {
                 const result = response.data;
                 this.manageLayers(result);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
@@ -474,10 +479,9 @@ class GwMincut extends React.Component {
     };
     changeValveStatus = (clickPoint) => {
         this.props.removeLayer("mincutselection");
-        let pendingRequests = false;
 
-        const request_url = GwUtils.getServiceUrl("mincut");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("mincut");
+        if (!isEmpty(requestUrl)) {
             const mincutId = this.state.mincutId;
             const epsg = this.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
@@ -490,8 +494,7 @@ class GwMincut extends React.Component {
                 mincutId: mincutId
             };
 
-            pendingRequests = true;
-            axios.get(request_url + "changevalvestatus", { params: params }).then(response => {
+            axios.get(requestUrl + "changevalvestatus", { params: params }).then(response => {
                 const result = response.data;
                 this.manageLayers(result);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
@@ -504,17 +507,18 @@ class GwMincut extends React.Component {
     };
     acceptMincut = (state = this.state.mincutState, closeDlg = true) => {
         console.log(this.state.widgetValues);
-        const ignore_widgets = ['chk_use_planified', 'txt_infolog'];
+        const ignoreWidgets = ['chk_use_planified', 'txt_infolog'];
+        // eslint-disable-next-line
         const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
             let v = value.columnname === 'mincut_state' ? state : value.value;
-            if (ignore_widgets.includes(value.columnname)) v = null;
+            if (ignoreWidgets.includes(value.columnname)) v = null;
             if (!(v === null || v === undefined)) {
                 acc[value.columnname] = v;
             }
             return acc;
         }, {});
-        const request_url = GwUtils.getServiceUrl("mincut");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("mincut");
+        if (!isEmpty(requestUrl)) {
             const clickPoint = this.state.ogClickPoint || [null, null];
             const epsg = this.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
@@ -531,7 +535,7 @@ class GwMincut extends React.Component {
             };
 
             this.props.processStarted("mincut_msg", "Aceptar mincut");
-            axios.post(request_url + "accept", { ...params }).then((response) => {
+            axios.post(requestUrl + "accept", { ...params }).then((response) => {
                 const result = response.data;
                 let newState = {};
                 const log = result.body?.data?.info?.values;
@@ -558,16 +562,15 @@ class GwMincut extends React.Component {
         }
     };
     cancelMincut = () => {
-        const request_url = GwUtils.getServiceUrl("mincut");
-        if (!isEmpty(request_url)) {
+        const requestUrl = GwUtils.getServiceUrl("mincut");
+        if (!isEmpty(requestUrl)) {
             const params = {
                 theme: this.props.currentTheme.title,
                 mincutId: this.state.mincutId
             };
 
             this.props.processStarted("mincut_msg", "Cancelar mincut");
-            axios.get(request_url + "cancel", { params: params }).then((response) => {
-                const result = response.data;
+            axios.get(requestUrl + "cancel", { params: params }).then(() => {
                 // show message
                 this.props.processFinished("mincut_msg", true, "Mincut cancelado correctamente.");
                 // refresh map
