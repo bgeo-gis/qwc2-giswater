@@ -87,7 +87,7 @@ class GwHeightProfile extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (this.props.measurement.coordinates !== prevProps.measurement.coordinates) {
-            if (this.props.measurement.profiling === true && this.props.measurement.geomType === "LineString" && !isEmpty(this.props.measurement.coordinates) ) {
+            if (this.props.measurement.profiling === true && this.props.measurement.geomType === "GwProfile" && !isEmpty(this.props.measurement.coordinates) ) {
                 // Generate profile
                 this.queryElevations(this.props.measurement.coordinates, this.props.measurement.length, this.props.projection);
             } else if (!isEmpty(this.state.data)) {

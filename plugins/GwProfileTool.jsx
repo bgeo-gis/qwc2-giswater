@@ -188,7 +188,7 @@ class GwProfileTool extends React.Component {
             for (let i = 0; i < this.segmentMarkers.length; ++i) {
                 this.updateSegmentMarker(this.segmentMarkers[i], coo[i], coo[i + 1], length[i]);
             }
-            this.props.measurement.geomType = 'LineString';
+            this.props.measurement.geomType = 'GwProfile';
 
             // Sends all variables to be used by GwHeightProfile
             this.props.changeMeasurementState({
