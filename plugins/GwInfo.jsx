@@ -78,7 +78,6 @@ class GwInfo extends React.Component {
         prevIdentifyResult: null,
         pendingRequests: false,
         currentTab: {},
-        feature_id: null,
         showGraph: false,
         graphJson: null,
         showVisit: false,
@@ -158,7 +157,7 @@ class GwInfo extends React.Component {
         }
         case "accept": {
             console.log("widgetValues :>>", this.state.widgetValues);
-            const data = {id: this.state.feature_id, tableName: "v_edit_arc", fields: this.state.widgetValues};
+            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.widgetValues};
             this.setFields(data);
             break;
         }
@@ -276,7 +275,7 @@ class GwInfo extends React.Component {
                 console.log("theme -> ", this.props.theme.title);
                 const params = {
                     theme: this.props.theme.title,
-                    node_id: this.state.feature_id
+                    node_id: this.state.identifyResult.body.feature.id
                 };
 
                 // pendingRequests = true
@@ -303,7 +302,7 @@ class GwInfo extends React.Component {
                 theme: this.props.theme.title,
                 visit_id: 10,
                 featureType: "node",
-                id: this.state.feature_id
+                id: this.state.identifyResult.body.feature.id
             };
 
             axios.get(requestUrl + "get", { params: params }).then(response => {
@@ -342,7 +341,7 @@ class GwInfo extends React.Component {
                     console.log("identifypointid -> ", result.body.data.info.values.info.dma);
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
                 }).catch((e) => {
-                    console.log(e);
+                    console.error(e);
                     this.setState({ pendingRequests: false });
                 });
             }
@@ -385,7 +384,7 @@ class GwInfo extends React.Component {
                 pendingRequests = true;
                 axios.get(requestUrl + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
-                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false, feature_id: result.body.feature.id });
+                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
