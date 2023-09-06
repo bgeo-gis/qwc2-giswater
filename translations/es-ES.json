@@ -1,6 +1,9 @@
 {
   "locale": "es-ES",
   "messages": {
+    "dateselector": {
+      "schemaNotFound": ""
+    },
     "editing": {
       "select": "Seleccionar"
     },
@@ -10,8 +13,7 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distancia",
-      "height": "Altura",
-      "loading": "Cálculo del perfil de altura..."
+      "height": "Altura"
     },
     "identify": {
       "noresults": "Sin información disponible sobre el punto seleccionado",
@@ -50,7 +52,7 @@
         "GwInfoPoint": "Giswater Info",
         "GwInfoDma": "Info DMA",
         "GwInfoScada": "Info Scada",
-        "GwProfileTool": "Perfil longitudinal",
+        "GwProfilePicker": "Perfil longitudinal",
         "GwSelector": "Selector",
         "GwFlowtracetrace": "Aguas arriba",
         "GwFlowtraceexit": "Aguas abajo",

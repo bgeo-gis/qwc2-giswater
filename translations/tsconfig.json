@@ -21,7 +21,7 @@
     "appmenu.items.GwInfoPoint",
     "appmenu.items.GwInfoDma",
     "appmenu.items.GwInfoScada",
-    "appmenu.items.GwProfileTool",
+    "appmenu.items.GwProfilePicker",
     "appmenu.items.GwSelector",
     "appmenu.items.GwFlowtracetrace",
     "appmenu.items.GwFlowtraceexit",
@@ -38,12 +38,12 @@
     "colorschemes.transparent"
   ],
   "strings": [
+    "dateselector.schemaNotFound",
     "editing.select",
     "fileselector.files",
     "heightprofile.asl",
     "heightprofile.distance",
     "heightprofile.height",
-    "heightprofile.loading",
     "identify.noresults",
     "identify.querying",
     "infotool.clickhelpPoint",

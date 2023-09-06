@@ -1,6 +1,9 @@
 {
   "locale": "ro-RO",
   "messages": {
+    "dateselector": {
+      "schemaNotFound": ""
+    },
     "editing": {
       "select": ""
     },
@@ -10,8 +13,7 @@
     "heightprofile": {
       "asl": "",
       "distance": "",
-      "height": "",
-      "loading": ""
+      "height": ""
     },
     "identify": {
       "noresults": "",
@@ -50,7 +52,7 @@
         "GwInfoPoint": "",
         "GwInfoDma": "",
         "GwInfoScada": "",
-        "GwProfileTool": "",
+        "GwProfilePicker": "",
         "GwSelector": "",
         "GwFlowtracetrace": "",
         "GwFlowtraceexit": "",

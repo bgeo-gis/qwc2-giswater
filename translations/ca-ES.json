@@ -1,6 +1,9 @@
 {
   "locale": "ca-ES",
   "messages": {
+    "dateselector": {
+      "schemaNotFound": ""
+    },
     "editing": {
       "select": "Seleccionar"
     },
@@ -10,8 +13,7 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distància",
-      "height": "Alçada",
-      "loading": "Càlculant el perfil..."
+      "height": "Alçada"
     },
     "identify": {
       "noresults": "Sense informació disponible sobre el punt seleccionat",
@@ -50,7 +52,7 @@
         "GwInfoPoint": "Giswater Info",
         "GwInfoDma": "Info DMA",
         "GwInfoScada": "Info Scada",
-        "GwProfileTool": "Perfil longitudinal",
+        "GwProfilePicker": "Perfil longitudinal",
         "GwSelector": "Selector",
         "GwFlowtracetrace": "Aigües a munt",
         "GwFlowtraceexit": "Aigües a vall",
