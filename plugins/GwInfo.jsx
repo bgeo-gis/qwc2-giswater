@@ -28,9 +28,11 @@ import Chartist from 'chartist';
 import ChartistComponent from 'react-chartist';
 import ChartistAxisTitle from 'chartist-plugin-axistitle';
 import Icon from 'qwc2/components/Icon';
-import Zoom from 'qwc2-giswater/libs/bower_components/chartist-plugin-zoom/dist/chartist-plugin-zoom';
+import ChartistZoom from 'chartist-plugin-zoom';
 
 import './style/GwInfoGraphs.css';
+
+import { setIdentifyResult } from '../actions/info';
 
 let resetZoom = null;
 
@@ -59,7 +61,8 @@ class GwInfo extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        setIdentifyResult: PropTypes.func
     };
     static defaultProps = {
         replaceImageUrls: true,
@@ -113,18 +116,14 @@ class GwInfo extends React.Component {
         }
         // Manage highlight and marker from result
         if (this.props.identifyResult && this.props.identifyResult !== prevProps.identifyResult) {
-            this.highlightResult(this.state.identifyResult);
-            this.addMarkerToResult(this.state.identifyResult);
+            this.highlightResult(this.state.identifyResult || this.props.identifyResult);
+            this.addMarkerToResult(this.state.identifyResult || this.props.identifyResult);
         }
         // Check if list need to update (current tab or filters changed)
         if (!isEmpty(this.state.currentTab) && ((prevState.currentTab !== this.state.currentTab) || (prevState.filters !== this.state.filters))) {
             this.getList(this.state.currentTab.tab, this.state.currentTab.widget);
         }
     }
-    crsStrToInt = (crs) => {
-        const parts = crs.split(':');
-        return parseInt(parts.slice(-1), 10);
-    };
     dispatchButton = (action, widget) => {
         let pendingRequests = false;
         switch (action.functionName) {
@@ -325,7 +324,7 @@ class GwInfo extends React.Component {
 
             const requestUrl = GwUtils.getServiceUrl("info");
             if (!isEmpty(requestUrl)) {
-                const epsg = this.crsStrToInt(this.props.map.projection);
+                const epsg = GwUtils.crsStrToInt(this.props.map.projection);
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
                 const params = {
                     theme: this.props.theme.title,
@@ -370,7 +369,7 @@ class GwInfo extends React.Component {
                     return acc.concat(layer.queryLayers);
                 }, []);
 
-                const epsg = this.crsStrToInt(this.props.map.projection);
+                const epsg = GwUtils.crsStrToInt(this.props.map.projection);
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
                 const params = {
                     theme: this.props.theme.title,
@@ -452,6 +451,7 @@ class GwInfo extends React.Component {
     clearResults = () => {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
+        this.props.setIdentifyResult(null);
         this.setState({ identifyResult: null, pendingRequests: false, widgetValues: {}, filters: {}, showGraph: false, graphJson: null });
         if (this.props.onClose) {
             this.props.onClose();
@@ -471,9 +471,10 @@ class GwInfo extends React.Component {
         let graphWindow = null;
         let visitWindow = null;
         let noIdentifyResult = false;
-        if (this.state.pendingRequests === true || this.state.identifyResult  !== null) {
+        let identifyResult = this.state.identifyResult || this.props.identifyResult;
+        if (this.state.pendingRequests === true || identifyResult  !== null) {
             let body = null;
-            if (isEmpty(this.state.identifyResult) || !this.state.identifyResult.form_xml) {
+            if (isEmpty(identifyResult) || !identifyResult.form_xml) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
                 } else {
@@ -481,7 +482,7 @@ class GwInfo extends React.Component {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
                 }
             } else {
-                const result = this.state.identifyResult;
+                const result = identifyResult;
                 const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null;
                 if (result.schema === null) {
                     body = null;
@@ -615,7 +616,7 @@ class GwInfo extends React.Component {
 
                         // Do zoom on x axis
                         // eslint-disable-next-line
-                        Zoom({
+                        ChartistZoom({
                             onZoom: function(chart, reset) { resetZoom = reset; },
                             noClipY: true,
                             autoZoomY: {high: true, low: true}
@@ -670,7 +671,8 @@ const selector = (state) => ({
     layers: state.layers.flat,
     map: state.map,
     selection: state.selection,
-    theme: state.theme.current
+    theme: state.theme.current,
+    identifyResult: state.info.identifyResult
 });
 
 export default connect(selector, {
@@ -681,5 +683,6 @@ export default connect(selector, {
     removeLayer: removeLayer,
     refreshLayer: refreshLayer,
     processFinished: processFinished,
-    processStarted: processStarted
+    processStarted: processStarted,
+    setIdentifyResult: setIdentifyResult
 })(GwInfo);
