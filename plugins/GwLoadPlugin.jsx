@@ -25,7 +25,11 @@ class GwLoadPlugin extends React.Component {
         pendingRequests: false
     };
 
-    componentDidUpdate(prevProps) {
+    constructor(props) {
+        super(props);
+    }
+
+    componentDidUpdate(prevProps, prevState) {
         if (prevProps.theme !== this.props.theme) {
             this.makeRequest();
         }
@@ -35,7 +39,7 @@ class GwLoadPlugin extends React.Component {
         const requestUrl = GwUtils.getServiceUrl("util");
         if (!isEmpty(requestUrl)) {
             // Get request paramas
-            const epsg = this.crsStrToInt(this.props.map.projection);
+            const epsg = GwUtils.crsStrToInt(this.props.map.projection);
             const params = {
                 theme: this.props.theme.title,
                 epsg: epsg
@@ -53,11 +57,6 @@ class GwLoadPlugin extends React.Component {
         }
 
     }
-
-    crsStrToInt = (crs) => {
-        const parts = crs.split(':');
-        return parseInt(parts.slice(-1), 10);
-    };
 
     render() {
         return null;
