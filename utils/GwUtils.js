@@ -11,6 +11,14 @@ import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
 import ol from 'openlayers';
 
+import url from 'url';
+import axios from 'axios';
+import {LayerRole} from 'qwc2/actions/layers';
+import LayerUtils from 'qwc2/utils/LayerUtils';
+
+
+import {UrlParams} from 'qwc2/utils/PermaLinkUtils';
+
 const GwUtils = {
     getServiceUrl(service) {
         const requestUrl = ConfigUtils.getConfigProp("giswaterServiceUrl");
@@ -58,7 +66,7 @@ const GwUtils = {
             }
         });
     },
-    getGeoJSONFeatures(data, styleName = null, styleOptions = null) {
+    getGeoJSONFeatures(styleName = null, data, styleOptions = null, ) {
         if (isEmpty(data.features)) {
             return [];
         }
@@ -94,12 +102,22 @@ const GwUtils = {
             if (feature.geometry && feature.geometry.coordinates) {
                 feature.geometry.coordinates = feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d);
             }
-
+            // [[5,6], pointstyle2], [[5,6], pointstyle2]
+            const featureId = feature.properties.feature_id;
+            let featureMatch = false;
+            let newStyle = null;
+            for (let i = 3; i < arguments.length; i++) {
+                if (arguments[i][0].includes(featureId)){
+                    featureMatch = true;
+                    newStyle = arguments[i][1];
+                    break;
+                }
+            }
             return {
                 ...feature,
                 crs: crs,
                 styleName: styleName,
-                styleOptions: styleOptions
+                styleOptions: featureMatch ? newStyle : styleOptions
             };
         });
         return features;
@@ -134,6 +152,37 @@ const GwUtils = {
             break;
         }
         return center;
+    },
+    crsStrToInt(crs) {
+        const parts = crs.split(':');
+        return parseInt(parts.slice(-1), 10);
+    },
+    generatePermaLink(state, coordinates, callback, user = false) {
+        const fullUrl = UrlParams.getFullUrl();
+        if (!ConfigUtils.getConfigProp("permalinkServiceUrl")) {
+            callback(fullUrl);
+            return;
+        }
+        const permalinkState = {};
+        if (ConfigUtils.getConfigProp("storeAllLayersInPermalink")) {
+            permalinkState.layers = state.layers.flat.filter(layer => layer.role !== LayerRole.BACKGROUND);
+        } else {
+            // Only store redlining layers
+            const exploded = LayerUtils.explodeLayers(state.layers.flat.filter(layer => layer.role !== LayerRole.BACKGROUND));
+            const redliningLayers = exploded.map((entry, idx) => ({...entry, pos: idx}))
+                .filter(entry => entry.layer.role === LayerRole.USERLAYER && entry.layer.type === 'vector')
+                .map(entry => ({...entry.layer, pos: entry.pos}));
+            permalinkState.layers = redliningLayers;
+        }
+        const url = new URL(fullUrl);
+        url.searchParams.set('c', coordinates);
+        const updatedUrl = url.toString();
+        permalinkState.url = updatedUrl;
+        const route = user ? "userpermalink" : "createpermalink";
+        console.log("state -> ", permalinkState);
+        axios.post(ConfigUtils.getConfigProp("permalinkServiceUrl").replace(/\/$/, '') + "/" + route, permalinkState)
+            .then(response => callback(response.data.permalink || fullUrl))
+            .catch(() => callback(fullUrl));
     }
 };
 
