@@ -29,24 +29,63 @@ class GwFlowtrace extends React.Component {
         processStarted: PropTypes.func,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        standardLinesStyle: PropTypes.object,
+        standardPointsStyle: PropTypes.object,
+        initPointStyle: PropTypes.object
+    };
+    static defaultProps = {
+        standardLinesStyle: {
+           strokeColor: {
+                trace: [235, 167, 48, 1],
+                exit: [235, 74, 117, 1]
+            },
+            strokeWidth: 6,
+            strokeDash: [1],
+            fillColor: [255, 255, 255, 0.33],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: "20pt sans-serif"
+        },
+        standardPointsStyle: {
+            strokeColor: {
+              "trace": [235, 167, 48, 1],
+              "exit": [235, 74, 117, 1]
+            },
+            strokeWidth: 2,
+            strokeDash: [4],
+            fillColor: [191, 156, 40, 0.33],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: "20pt sans-serif"
+        },
+        initPointStyle: {
+            strokeColor: {
+              trace: [0, 51, 255, 1],
+              exit: [0, 51, 255, 1]
+            },
+            strokeWidth: 2,
+            strokeDash: [4],
+            fillColor: [0, 51, 255, 0.33],
+            textFill: "blue",
+            textStroke: "white",
+            textFont: "20pt sans-serif"
+        }
     };
     state = {
         mode: 'trace',
         bodyText: null
     };
+    /*
     constructor(props) {
         super(props);
     }
+    */
     componentDidUpdate(prevProps) {
         if (this.props.currentTask === "GwFlowtrace" || this.props.currentIdentifyTool === "GwFlowtrace") {
             this.identifyPoint(prevProps);
         }
     }
-    crsStrToInt = (crs) => {
-        const parts = crs.split(':');
-        return parseInt(parts.slice(-1), 10);
-    };
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
@@ -74,7 +113,7 @@ class GwFlowtrace extends React.Component {
             this.props.processStarted("flowtrace_msg", `Calculating ${mode} flowtrace...`);
 
             // Get request paramas
-            const epsg = this.crsStrToInt(this.props.map.projection);
+            const epsg = GwUtils.crsStrToInt(this.props.map.projection);
             const scale = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
             const params = {
                 theme: this.props.theme.title,
@@ -86,7 +125,7 @@ class GwFlowtrace extends React.Component {
             axios.get(requestUrl + mode, { params: params }).then(response => {
                 const result = response.data;
                 console.log("flowtrace", mode, "result", result);
-                this.addFlowtraceLayers(result);
+                this.addFlowtraceLayers(result, result.body.data.initPoint.toString());
             }).catch((e) => {
                 console.error(e);
                 this.setState({ bodyText: "Could not execute the flowtrace" });
@@ -96,23 +135,19 @@ class GwFlowtrace extends React.Component {
             this.setState({ bodyText: "The flowtrace url is not configured" });
         }
     }
-    addFlowtraceLayers = (result) => {
+    addFlowtraceLayers = (result, nodeId) => {
         this.props.removeLayer("temp_points.geojson");
         this.props.removeLayer("temp_lines.geojson");
         this.props.removeLayer("temp_polygons.geojson");
 
         // Lines
         const lines = result.body.data.line;
-        const linesStyle = {
-            strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
-            strokeWidth: 6,
-            strokeDash: [1],
-            fillColor: [255, 255, 255, 0.33],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
+        const standardLinesConfig = this.props.standardLinesStyle;
+        const standardLinesStyle = {
+            ...standardLinesConfig,
+            strokeColor: this.state.mode === "trace" ? standardLinesConfig.strokeColor.trace : standardLinesConfig.strokeColor.exit
         };
-        const lineFeatures = GwUtils.getGeoJSONFeatures(lines, "default", linesStyle);
+        const lineFeatures = GwUtils.getGeoJSONFeatures("default", lines, standardLinesStyle);
         if (!isEmpty(lineFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_lines.geojson",
@@ -124,16 +159,18 @@ class GwFlowtrace extends React.Component {
 
         // Points
         const points = result.body.data.point;
-        const pointsStyle = {
-            strokeColor: this.state.mode === "trace" ? [235, 167, 48, 1] : [235, 74, 117, 1],
-            strokeWidth: 2,
-            strokeDash: [4],
-            fillColor: [191, 156, 40, 0.33],
-            textFill: "blue",
-            textStroke: "white",
-            textFont: '20pt sans-serif'
+        const standardPointsConfig = this.props.standardPointsStyle;
+        const initPointConfig =this.props.initPointStyle;
+        const standardPointsStyle = {
+            ...standardPointsConfig,
+            strokeColor: this.state.mode === "trace" ? standardPointsConfig.strokeColor.trace : standardPointsConfig.strokeColor.exit
         };
-        const pointFeatures = GwUtils.getGeoJSONFeatures(points, "default", pointsStyle);
+        const initPointStyle = {
+            ...initPointConfig,
+            strokeColor: this.state.mode === "trace" ? initPointConfig.strokeColor.trace : initPointConfig.strokeColor.exit
+        };
+        const initPointArray = [[nodeId], initPointStyle];
+        const pointFeatures = GwUtils.getGeoJSONFeatures("default", points, standardPointsStyle, initPointArray);
         if (!isEmpty(pointFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_points.geojson",
