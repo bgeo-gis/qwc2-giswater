@@ -32,6 +32,7 @@ class GwQtDesignerForm extends React.Component {
         files: PropTypes.array,
         form_xml: PropTypes.string,
         getInitialValues: PropTypes.bool,
+        hiddenWidgets: PropTypes.array,
         locale: PropTypes.string,
         onTabChanged: PropTypes.func,
         readOnly: PropTypes.bool,
@@ -46,6 +47,7 @@ class GwQtDesignerForm extends React.Component {
         autoResetTab: true,
         widgetValues: {},
         disabledWidgets: [],
+        hiddenWidgets: [],
         getInitialValues: true,
         replaceimageUrls: false,
         files: [],
@@ -229,6 +231,8 @@ class GwQtDesignerForm extends React.Component {
         // const attr = widget.attribute || {};
         const inputConstraints = {};
         inputConstraints.readOnly = this.props.readOnly || this.props.disabledWidgets.includes(widget.name) || prop.readOnly === "true" || prop.enabled === "false";
+        let tmp_name = (widget.name).replace("_label", "");
+        inputConstraints.hidden = this.props.hiddenWidgets.includes(tmp_name);
         // inputConstraints.readOnly = false;
         inputConstraints.required = !inputConstraints.readOnly && (prop.required === "true");
         inputConstraints.placeholder = prop.placeholderText || "";
@@ -299,7 +303,7 @@ class GwQtDesignerForm extends React.Component {
                 </div>
             );
         } else if (widget.class === "QLabel") {
-            return (<div style={fontStyle}>{prop.text}</div>);
+            return (<div hidden={inputConstraints.hidden} style={fontStyle}>{prop.text}</div>);
         } else if (widget.class === "Line") {
             const linetype = (widget.property || {}).orientation === "Qt::Vertical" ? "vline" : "hline";
             return (<div className={"qt-designer-form-" + linetype} />);
@@ -365,14 +369,14 @@ class GwQtDesignerForm extends React.Component {
             );
         } else if (widget.class === "QComboBox") {
             let items = widget.item;
-            if (!Array.isArray(widget.item)) {
+            if (!Array.isArray(widget.item) && items !== undefined) {
                 items = [widget.item];
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
             return (
-                <select disabled={inputConstraints.readOnly} name={elname} onChange={ev => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value}>
+                <select hidden={inputConstraints.hidden} disabled={inputConstraints.readOnly} name={elname} onChange={ev => updateField(widget, ev.target.value, false, inputConstraints.placeholder)} {...inputConstraints} style={fontStyle} value={value}>
                     {!haveEmpty ? (
-                        <option disabled={inputConstraints.required} value="">
+                        <option hidden={inputConstraints.hidden} disabled={inputConstraints.required} value="">
                             {inputConstraints.placeholder || LocaleUtils.tr("editing.select")}
                         </option>
                     ) : null}
@@ -460,7 +464,7 @@ class GwQtDesignerForm extends React.Component {
         } else if (widget.class === "QComboBox") {
             // console.log(widget)
             let items = widget.item;
-            if (!Array.isArray(widget.item)) {
+            if (!Array.isArray(widget.item) && items !== undefined) {
                 items = [widget.item];
             }
 
