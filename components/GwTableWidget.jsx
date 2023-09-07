@@ -61,19 +61,26 @@ class GwTableWidget extends React.Component {
         return IconComponent ? React.createElement(IconComponent) : null;
     };
 
+    removeSelectedRow = () => {
+        this.setState({
+            rowSelection: {}
+        });
+    }
+
     render() {
         const data = this.props.values;
         const cols = [];
         const headers = this.props.form.headers || [];
         const tableParams = this.props.form.table || {};
         if (!isEmpty(headers)) {
-            Object.keys(data[0]).map(key => {
-                const header = headers.find(h => h.accessorKey === key);
-
+            
+            for (let i = 0; i< headers.length; i++){
+                const header = headers[i];
                 if (header !== undefined && header.filterVariant !== undefined) {
                     if (header.filterVariant === 'datetime') {
                         header.accessorFn = ((row) => {
                             const date = new Date(new Date(row[header.accessorKey]).toDateString()); // TODO: What?
+                            //const date = new Date(Date.UTC(row[header.accessorKey]));
                             return date;
                         });
                         header.Cell = ({ cell }) => {
@@ -115,8 +122,8 @@ class GwTableWidget extends React.Component {
                 if (header !== undefined) {
                     cols.push(header);
                 }
-
-            });
+            }
+            
         }
         const { rowSelection } = this.state;
         const csvOptions = {
@@ -131,13 +138,17 @@ class GwTableWidget extends React.Component {
 
         const csvExporter = new ExportToCsv(csvOptions);
 
+        
         const handleExportRows = (rows) => {
-            csvExporter.generateCsv(rows.map((row) => row.original));
+            // Change null values for empty, when export in csv no null values appear
+            csvExporter.generateCsv(rows.map((row) => {
+                const noNullValuesRow = {};
+                Object.entries(row.original).forEach(([key, value]) => {
+                    noNullValuesRow[key] = value === null ? "" : value;
+                });
+                return noNullValuesRow;
+            }));
         };
-
-        // const handleExportData = () => {
-        //     csvExporter.generateCsv(data);
-        // };
 
         const inputProps = {
             enableGlobalFilter: tableParams.enableGlobalFilter ?? false,
@@ -147,7 +158,6 @@ class GwTableWidget extends React.Component {
             enablePinning: tableParams.enablePinning ?? true,
             enableColumnOrdering: tableParams.enableColumnOrdering ?? true,
             enableColumnFilterModes: tableParams.enableColumnFilterModes ?? true,
-            // enableFullScreenToggle: tableParams.enableFullScreenToggle ?? false,
             enablePagination: tableParams.enablePagination ?? true,
             enableExporting: tableParams.enableExporting ?? true,
             enableRowActions: tableParams.enableRowActions ?? false,
@@ -241,7 +251,7 @@ class GwTableWidget extends React.Component {
                         <MenuItem
                             key={index}
                             onClick={() => {
-                                this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: row.original });
+                                this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: row.original});
                                 closeMenu();
                             } }
                             sx={{ m: 0 }}
@@ -280,7 +290,7 @@ class GwTableWidget extends React.Component {
                             } else {
                                 rows = table.getSelectedRowModel().flatRows;
                             }
-                            this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: rows });
+                            this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: rows, removeSelectedRow: this.removeSelectedRow  });
                         } }
                         variant="contained"
                     >
@@ -303,7 +313,8 @@ class GwTableWidget extends React.Component {
                         disabled={table.getPrePaginationRowModel().rows.length === 0}
                         key={0}
                         // export all rows, including from the next page, (still respects filtering and sorting)
-                        onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
+                        //onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
+                        onClick={() => {handleExportRows(table.getSortedRowModel().rows)}}
                         startIcon={<FileDownloadIcon />}
                         variant="contained"
                     >
@@ -325,6 +336,7 @@ class GwTableWidget extends React.Component {
             ));
         }
 
+        
         return (
             <MaterialReactTable
                 columns={cols}
