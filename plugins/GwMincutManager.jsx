@@ -26,6 +26,9 @@ import GwUtils from '../utils/GwUtils';
 import GwMincut from './GwMincut';
 import GwSelector from './GwSelector';
 
+import {setActiveMincut} from '../actions/mincut';
+import {setActiveSelector} from '../actions/selector';
+
 class GwMincutManager extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
@@ -49,7 +52,9 @@ class GwMincutManager extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        setCurrentTask: PropTypes.func
+        setCurrentTask: PropTypes.func,
+        setActiveMincut: PropTypes.func,
+        setActiveSelector: PropTypes.func
     };
     static defaultProps = {
         initialWidth: 800,
@@ -57,7 +62,7 @@ class GwMincutManager extends React.Component {
         initialX: 0,
         initialY: 0,
         initiallyDocked: false,
-        keepManagerOpen: false
+        keepManagerOpen: true
     };
     state = {
         action: 'mincutNetwork',
@@ -164,13 +169,9 @@ class GwMincutManager extends React.Component {
                 tableName: tableWidget.linkedobject,
                 filterFields: {}
             };
+            
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                if (!result?.body?.data?.mincutLayer) {
-                    result.body.form.table.renderTopToolbarCustomActions = result.body.form.table.renderTopToolbarCustomActions.filter((item) => {
-                        return item.widgetfunction.functionName !== "selector";
-                    });
-                }
                 this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidget.columnname]: result} }));
             }).catch((e) => {
                 console.log(e);
@@ -212,6 +213,7 @@ class GwMincutManager extends React.Component {
             action.row.map((row) => {
                 this.deleteMincut(row.original.id);
             });
+            action.removeSelectedRow();
             this.setState( { filters: {mincutId: action.row[0].original.id, action: "delete"} } );
             break;
         }
@@ -234,12 +236,12 @@ class GwMincutManager extends React.Component {
         if (rows.length === 0) {
             console.log("No rows");
         } else {
-            const ids = rows.map((row) => row.original.id);
+            const ids = (rows.map((row) => row.original.id)).join(",");
             try {
                 const requestUrl = GwUtils.getServiceUrl("selector");
                 if (!isEmpty(requestUrl)) {
                     // Get request paramas
-                    const epsg = this.crsStrToInt(this.props.map.projection);
+                    const epsg = GwUtils.crsStrToInt(this.props.map.projection);
                     const params = {
                         theme: this.props.currentTheme.title,
                         epsg: epsg,
@@ -247,12 +249,13 @@ class GwMincutManager extends React.Component {
                         selectorType: "selector_mincut",
                         // "layers": String(layer.queryLayers),
                         // "loadProject": false,
-                        ids: ids.join(",")
+                        ids: ids
                     };
                     // Send request
                     axios.get(requestUrl + "get", { params: params }).then(response => {
                         const result = response.data;
-                        this.setState({ selectorResult: result, pendingRequests: false });
+                        this.props.setActiveSelector(result, ids, this.props.keepManagerOpen);
+                        //this.setState({ selectorResult: result, pendingRequests: false });
                         // this.filterLayers(result);
                     }).catch((e) => {
                         console.log(e);
@@ -276,11 +279,6 @@ class GwMincutManager extends React.Component {
         });
     };
 
-    crsStrToInt = (crs) => {
-        const parts = crs.split(':');
-        return parseInt(parts.slice(-1), 10);
-    };
-
     openMincut = (mincutId) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("mincut");
@@ -291,7 +289,8 @@ class GwMincutManager extends React.Component {
             };
             axios.get(requestUrl + "open", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState( { mincutResult: result, mincutId: mincutId } );
+                this.props.setActiveMincut(result, mincutId, this.props.keepManagerOpen);
+                //this.setState( { mincutResult: result, mincutId: mincutId } );
             }).catch((e) => {
                 console.log(e);
             });
@@ -379,7 +378,7 @@ class GwMincutManager extends React.Component {
             );
 
         }
-
+        /*
         if (this.state.mincutResult) {
             bodyMincut = (
                 <GwMincut dispatchButton={this.dispatchButton} key="MincutFromManager" mincutId={this.state.mincutId} mincutResult={this.state.mincutResult}/>
@@ -396,7 +395,7 @@ class GwMincutManager extends React.Component {
         }
         if (bodySelector) {
             return [resultWindow, bodySelector];
-        }
+        }*/
         return [resultWindow];
     }
 }
@@ -421,5 +420,7 @@ export default connect(selector, {
     refreshLayer: refreshLayer,
     processFinished: processFinished,
     processStarted: processStarted,
-    setCurrentTask: setCurrentTask
+    setCurrentTask: setCurrentTask,
+    setActiveMincut: setActiveMincut,
+    setActiveSelector: setActiveSelector
 })(GwMincutManager);

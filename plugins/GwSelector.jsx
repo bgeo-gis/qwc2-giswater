@@ -14,13 +14,17 @@ import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import GwUtils from '../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
-import { LayerRole, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
+import { LayerRole, refreshLayer, removeLayer, addLayerFeatures, changeLayerProperty } from 'qwc2/actions/layers';
 import 'qwc2-giswater/plugins/style/GwSelector.css';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 
+import {setActiveSelector} from '../actions/selector';
+import { setCurrentTask } from 'qwc2/actions/task';
+
 class GwSelector extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         changeLayerProperty: PropTypes.func,
         currentTask: PropTypes.string,
         dispatchButton: PropTypes.func,
@@ -32,9 +36,13 @@ class GwSelector extends React.Component {
         layers: PropTypes.array,
         map: PropTypes.object,
         refreshLayer: PropTypes.func,
+        removeLayer: PropTypes.func,
         selectorResult: PropTypes.object,
+        mincutIds: PropTypes.string,
         theme: PropTypes.object,
-        zoomToExtent: PropTypes.func
+        zoomToExtent: PropTypes.func,
+        setCurrentTask: PropTypes.func,
+        setActiveSelector: PropTypes.func
     };
     static defaultProps = {
         initialWidth: 480,
@@ -50,11 +58,6 @@ class GwSelector extends React.Component {
         selectorResult: null,
         pendingRequests: false
     };
-
-    crsStrToInt = (crs) => {
-        const parts = crs.split(':');
-        return parseInt(parts.slice(-1), 10);
-    };
     handleResult = (result) => {
         if (!result || result.schema === null) {
             return;
@@ -65,7 +68,6 @@ class GwSelector extends React.Component {
         // Zoom to extent & refresh map
         this.panToResult(result);
         // Refresh map
-        this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
     };
     setLayersVisibility(result) {
         if (result.body?.data?.layersVisibility) {
@@ -96,6 +98,9 @@ class GwSelector extends React.Component {
         if (prevProps.theme !== this.props.theme) {
             this.makeRequest(true);
         }
+        if (this.props.selectorResult && this.props.selectorResult !== prevProps.selectorResult){
+            this.setState({selectorResult: null})
+        }
     }
     componentDidMount() {
     }
@@ -104,9 +109,12 @@ class GwSelector extends React.Component {
         this.makeRequest();
     };
     onToolClose = () => {
+        /*
         if (this.props.dispatchButton) {
             this.props.dispatchButton({ widgetfunction: { functionName: "selectorClose" } });
-        }
+        }*/
+        this.props.setActiveSelector(null);
+        //this.props.setCurrentTask(null);
         this.setState({ selectorResult: null, pendingRequests: false });
     };
     getSelectors = (params, hideForm = false) => {
@@ -137,15 +145,112 @@ class GwSelector extends React.Component {
         axios.post(requestUrl + "set", { ...params }).then(response => {
             const result = response.data;
             this.setState({ selectorResult: result, pendingRequests: false });
-            this.handleResult(result);
+            this.manageLayers(result);
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+            console.log("REEE");
+
         }).catch((e) => {
             console.log(e);
             this.setState({ pendingRequests: false });
         });
     };
+    manageLayers = (result) => {
+        if (result?.body?.data?.tiled) {
+            this.addMincutLayers(result);
+        } else {
+            this.handleResult(result);
+        }
+    };
+    addMincutLayers = (result) => {
+        if (!result?.body?.data?.mincutArc) {
+            return;
+        }
+
+        this.removeTempLayers();
+
+        // Arc
+        const arc = result.body.data.mincutArc;
+        const arcStyle = {
+            strokeColor: [255, 206, 128, 1],
+            strokeWidth: 6
+        };
+        const arcFeatures = GwUtils.getGeoJSONFeatures("default", arc, arcStyle);
+
+        const lineFeatures = [].concat(arcFeatures);
+        if (!isEmpty(lineFeatures)) {
+            this.props.addLayerFeatures({
+                id: "temp_lines.geojson",
+                name: "temp_lines.geojson",
+                title: "Temporal Lines",
+                zoomToExtent: true
+            }, lineFeatures, true);
+        }
+
+        // Init
+        const initPoint = result.body.data.mincutInit;
+        const initPointStyle = {
+            strokeColor: [0, 24, 124, 1],
+            strokeWidth: 1,
+            circleRadius: 4,
+            fillColor: [45, 84, 255, 1]
+        };
+        const initpointFeatures = GwUtils.getGeoJSONFeatures("default", initPoint, initPointStyle);
+        // Node
+        const node = result.body.data.mincutNode;
+        const nodeStyle = {
+            strokeColor: [160, 134, 17, 1],
+            strokeWidth: 1,
+            circleRadius: 3,
+            fillColor: [241, 209, 66, 1]
+        };
+        const nodeFeatures = GwUtils.getGeoJSONFeatures("default", node, nodeStyle);
+        // Connec
+        const connec = result.body.data.mincutConnec;
+        const connecStyle = {
+            strokeColor: [102, 46, 25, 1],
+            strokeWidth: 1,
+            circleRadius: 3,
+            fillColor: [176, 123, 103, 1]
+        };
+        const connecFeatures = GwUtils.getGeoJSONFeatures("default", connec, connecStyle);
+        // Valve proposed
+        const valveProposed = result.body.data.mincutProposedValve;
+        const valveProposedStyle = {
+            strokeColor: [134, 13, 13, 1],
+            strokeWidth: 1,
+            circleRadius: 6,
+            fillColor: [237, 55, 58, 1]
+        };
+        const valveProposedFeatures = GwUtils.getGeoJSONFeatures("default", valveProposed, valveProposedStyle);
+        // Valve not proposed
+        const valveNotProposed = result.body.data.mincutNotProposedValve;
+        const valveNotProposedStyle = {
+            strokeColor: [6, 94, 0, 1],
+            strokeWidth: 1,
+            circleRadius: 6,
+            fillColor: [51, 160, 44, 1]
+        };
+        const valveNotProposedFeatures = GwUtils.getGeoJSONFeatures("default", valveNotProposed, valveNotProposedStyle);
+        
+        const pointFeatures = [].concat(nodeFeatures, connecFeatures, initpointFeatures, valveProposedFeatures, valveNotProposedFeatures);
+        if (!isEmpty(pointFeatures)) {
+            this.props.addLayerFeatures({
+                id: "temp_points.geojson",
+                name: "temp_points.geojson",
+                title: "Temporal Points",
+                zoomToExtent: true
+            }, pointFeatures, true);
+        }
+        this.panToResult(result);
+    };
+    removeTempLayers = () => {
+        this.props.removeLayer("temp_points.geojson");
+        this.props.removeLayer("temp_lines.geojson");
+        this.props.removeLayer("temp_polygons.geojson");
+    };
     updateField = (widgetName, ev, action) => {
         // Get request paramas
-        const epsg = this.crsStrToInt(this.props.map.projection);
+        const epsg = GwUtils.crsStrToInt(this.props.map.projection);
         const selectorType = action.params.selectorType;
         const tabName = action.params.tabName;
         const id = action.params.id;
@@ -162,7 +267,8 @@ class GwSelector extends React.Component {
             isAlone: isAlone,
             disableParent: disableParent,
             value: value,
-            addSchema: addSchema
+            addSchema: addSchema,
+            ids: this.props.mincutIds
         };
 
         // Call setselectors
@@ -181,7 +287,7 @@ class GwSelector extends React.Component {
         const requestUrl = GwUtils.getServiceUrl("selector");
         if (!isEmpty(requestUrl)) {
             // Get request paramas
-            const epsg = this.crsStrToInt(this.props.map.projection);
+            const epsg = GwUtils.crsStrToInt(this.props.map.projection);
             const params = {
                 theme: this.props.theme.title,
                 epsg: epsg,
@@ -213,6 +319,7 @@ class GwSelector extends React.Component {
             } else if (!result.form_xml) {
                 body = (<div className="selector-body" role="body"><span className="selector-body-message">{result.message}</span></div>);
             } else {
+                console.log("render");
                 body = (
                     <div className="selector-body" role="body">
                         <GwQtDesignerForm autoResetTab={false} dispatchButton={this.dispatchButton} form_xml={result.form_xml} getInitialValues={false}
@@ -247,11 +354,17 @@ const selector = (state) => ({
     currentTask: state.task.id,
     layers: state.layers.flat,
     map: state.map,
-    theme: state.theme.current
+    theme: state.theme.current,
+    selectorResult: state.selector.selectorResult,
+    mincutIds: state.selector.mincutIds
 });
 
 export default connect(selector, {
+    addLayerFeatures: addLayerFeatures,
     zoomToExtent: zoomToExtent,
     refreshLayer: refreshLayer,
-    changeLayerProperty: changeLayerProperty
+    removeLayer: removeLayer,
+    changeLayerProperty: changeLayerProperty,
+    setCurrentTask: setCurrentTask,
+    setActiveSelector: setActiveSelector
 })(GwSelector);
