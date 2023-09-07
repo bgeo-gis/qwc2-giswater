@@ -108,7 +108,6 @@ class GwMincutManager extends React.Component {
                 if (updateState) this.setState({ pendingRequests: false });
             });
         }
-        // if (updateState) this.setState({ mincutmanagerResult: {}, prevmincutmanagerResult: null, pendingRequests: pendingRequests });
     };
 
     onToolClose = () => {
