@@ -24,6 +24,8 @@ import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 import GwVisit from './GwVisit';
 
+import {setActiveVisit} from '../actions/visit';
+
 class GwVisitManager extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
@@ -48,6 +50,7 @@ class GwVisitManager extends React.Component {
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
         setCurrentTask: PropTypes.func,
+        setActiveVisit: PropTypes.func,
         visitDockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string])
     };
 
@@ -57,7 +60,7 @@ class GwVisitManager extends React.Component {
         initialX: 0,
         initialY: 0,
         initiallyDocked: false,
-        keepManagerOpen: false,
+        keepManagerOpen: true,
         visitDockable: "right"
     };
     state = {
@@ -179,6 +182,7 @@ class GwVisitManager extends React.Component {
 
     dispatchButton = (action) => {
         const functionName = action.widgetfunction.functionName;
+        console.log(action)
         switch (functionName) {
         case "open":
             this.openvisit(action.row[0].original.id, action.row[0].original.visit_type);
@@ -196,12 +200,13 @@ class GwVisitManager extends React.Component {
             action.row.forEach((row) => {
                 this.deletevisit(row.original.id);
             });
+            action.removeSelectedRow();
             this.setState( { filters: {visitId: action.row[0].original.id, action: "delete"} } );
             break;
         }
         case "visitClose":
-            this.setState({ visitResult: null });
             if (!this.props.keepManagerOpen) {
+                this.setState({ visitResult: null });
                 this.onToolClose();
             }
             break;
@@ -234,7 +239,9 @@ class GwVisitManager extends React.Component {
             };
             axios.get(requestUrl + "getvisit", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState({ visitResult: result });
+                console.log("visit result -> ", result);
+                this.props.setActiveVisit(result, this.props.keepManagerOpen);
+                //this.setState({ visitResult: result });
             }).catch((e) => {
                 console.log(e);
             });
@@ -306,7 +313,7 @@ class GwVisitManager extends React.Component {
                 </ResizeableWindow>
             );
         }
-
+        /*
         if (this.state.visitResult) {
             bodyvisit = (
                 <GwVisit dispatchButton={this.dispatchButton} dockable={this.props.visitDockable} initiallyDocked key="visitFromManager" visitResult={this.state.visitResult}/>
@@ -315,7 +322,7 @@ class GwVisitManager extends React.Component {
 
         if (bodyvisit) {
             return [resultWindow, bodyvisit];
-        }
+        }*/
         return [resultWindow];
     }
 }
@@ -340,5 +347,6 @@ export default connect(selector, {
     refreshLayer: refreshLayer,
     processFinished: processFinished,
     processStarted: processStarted,
-    setCurrentTask: setCurrentTask
+    setCurrentTask: setCurrentTask,
+    setActiveVisit: setActiveVisit
 })(GwVisitManager);

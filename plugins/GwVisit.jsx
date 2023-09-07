@@ -23,6 +23,17 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
+import { setCurrentTask } from 'qwc2/actions/task';
+
+import { setActiveVisit } from '../actions/visit';
+
+import {generatePermaLink} from 'qwc2/utils/PermaLinkUtils';
+
+import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
+
+import url from 'url';
+
+import _ from 'lodash';
 
 
 class GwVisit extends React.Component {
@@ -48,7 +59,11 @@ class GwVisit extends React.Component {
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
         theme: PropTypes.object,
-        visitResult: PropTypes.object
+        visitResult: PropTypes.object,
+        setCurrentTask: PropTypes.func,
+        setActiveVisit: PropTypes.func,
+        state: PropTypes.object,
+        keepManagerOpen: PropTypes.bool
     };
     static defaultProps = {
         replaceImageUrls: true,
@@ -78,14 +93,10 @@ class GwVisit extends React.Component {
         visitJson: null,
         visitWidgetValues: {},
         tableValues: {},
-        files: []
+        files: [],
+        hiddenWidgets: ['sendto'],
+        location: ""
     };
-    constructor(props) {
-        super(props);
-        if (props.visitResult) {
-            this.state.visitResult = props.visitResult;
-        }
-    }
     componentDidUpdate(prevProps) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwVisit") {
             this.clearResults();
@@ -94,10 +105,6 @@ class GwVisit extends React.Component {
             this.identifyPoint(prevProps);
         }
     }
-    crsStrToInt = (crs) => {
-        const parts = crs.split(':');
-        return parseInt(parts.slice(-1), 10);
-    };
     dispatchButton = (action, widget) => {
         const requestUrl = GwUtils.getServiceUrl("visit");
         switch (action.functionName) {
@@ -115,7 +122,7 @@ class GwVisit extends React.Component {
             });
             break;
         case 'set_visit': {
-            const ignoreWidgets = ['txt_visit_id'];
+            const ignoreWidgets = ['txt_visit_id','mail','sendto'];
             console.log("WIDGETS: ", this.state.widgetValues);
             // eslint-disable-next-line
             const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
@@ -134,7 +141,46 @@ class GwVisit extends React.Component {
             if (!isEmpty(requestUrl)) {
                 this.props.processStarted("visit_msg", "Aceptar visita");
 
-                const widgets = this.state.visitResult?.body?.data?.fields;
+                const widgets = this.state.visitResult?.body?.data?.fields || this.props.visitResult?.body?.data?.fields;
+
+                if (this.state.widgetValues?.mail?.value){
+                    let email = this.state.widgetValues.sendto.value;
+                    let shareUrl = ""
+                    const posCrs = this.props.state.map.projection;
+                    const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 4 : 0;
+                    let coordinates =  this.state.coords.map(x => x.toFixed(prec)).join(",");
+                    GwUtils.generatePermaLink(this.props.state, coordinates, (permalink => {
+                        shareUrl = permalink;
+                        this.setState({location: permalink});
+                        const urlParts = url.parse(shareUrl, true);
+                        urlParts.query.hc = 1;
+                        if (!urlParts.query.c) {
+                            const posCrs = urlParts.query.crs || this.props.state.map.projection;
+                            const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 20 : 0;
+                            urlParts.query.c = this.state.coords.map(x => x.toFixed(prec)).join(",");
+                            //urlParts.query.c =this.state.coords.map(x => x).join(",");
+                            const url = new URL(window.location.href);
+                            const sValue = url.searchParams.get('s');
+                            urlParts.query.s = sValue;
+                        }
+                        delete urlParts.search;
+                        shareUrl = url.format(urlParts);
+                        const params = {
+                            widgets: widgets,
+                            widgetValues: this.state.widgetValues,
+                            ignoreWidgets: ignoreWidgets,
+                            email: email,
+                            shareUrl: shareUrl
+                        };
+                        axios.post(requestUrl + "getmail", {...params}).then((response) => {
+                            const result = response.data;
+                            window.location.href = result;
+                        }).catch((e) => {
+                            console.warn(e);
+                        });   
+                    }));
+                }
+
                 let tableWidget = null;
                 widgets.forEach(w => {
                     if (w.widgettype === "tableview") {
@@ -149,10 +195,10 @@ class GwVisit extends React.Component {
                 }
                 formData.append("xcoord", this.state.coords[0]);
                 formData.append("ycoord", this.state.coords[1]);
-                formData.append("epsg", this.crsStrToInt(this.props.map.projection));
+                formData.append("epsg", GwUtils.crsStrToInt(this.props.map.projection));
                 formData.append("theme", this.props.theme.title);
                 formData.append("tableName", tableWidget.linkedobject);
-                const visitId = this.state.coords[0] ? null : this.state.visitResult?.body?.feature?.visitId;
+                const visitId = this.state.coords[0] ? null : this.state.visitResult?.body?.feature?.visitId || this.props.visitResult?.body?.feature?.visitId;
                 formData.append("visitId", visitId || null);
                 formData.append("fields", JSON.stringify(fields));
                 console.log("FIELDS: ", fields);
@@ -199,7 +245,7 @@ class GwVisit extends React.Component {
                     return acc;
                 }, {});
                 if (isEmpty(fields)) return;
-                const epsg = this.crsStrToInt(this.props.map.projection);
+                const epsg = GwUtils.crsStrToInt(this.props.map.projection);
                 const visitId = this.state.visitResult?.body?.feature?.visitId;
                 const params = {
                     theme: this.props.theme.title,
@@ -218,6 +264,14 @@ class GwVisit extends React.Component {
                     this.setState({ pendingRequests: false });
                 });
             }
+            break;
+        }
+        case 'show_mails': {
+            let hiddenWidgets = ["sendto"];
+            if (widget){
+                hiddenWidgets = [];
+            }
+            this.setState({ hiddenWidgets: hiddenWidgets });
             break;
         }
         default:
@@ -304,7 +358,7 @@ class GwVisit extends React.Component {
                 const layer = queryableLayers[0];
                 const visitType = this.state.mode === 'Incidencia' ? 2 : 1;
 
-                const epsg = this.crsStrToInt(this.props.map.projection);
+                const epsg = GwUtils.crsStrToInt(this.props.map.projection);
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
                 const params = {
                     theme: this.props.theme.title,
@@ -332,8 +386,7 @@ class GwVisit extends React.Component {
     };
 
     highlightResult = (result) => {
-        // console.log('result :>> ', result);
-        if (isEmpty(result) || !result?.feature?.geometry) {
+        if (isEmpty(result) || !result?.body?.feature?.geometry) {
             this.props.removeLayer("visitselection");
         } else {
             const layer = {
@@ -341,9 +394,9 @@ class GwVisit extends React.Component {
                 role: LayerRole.SELECTION
             };
             const crs = this.props.map.projection;
-            const geometry = VectorLayerUtils.wktToGeoJSON(result.feature.geometry, crs, crs);
+            const geometry = VectorLayerUtils.wktToGeoJSON(result.body.feature.geometry.st_astext, crs, crs);
             const feature = {
-                id: result.feature.id,
+                id: result.body.feature.visitId,
                 geometry: geometry.geometry
             };
             this.props.addLayerFeatures(layer, [feature], true);
@@ -359,6 +412,7 @@ class GwVisit extends React.Component {
         }
         return this.props.click.coordinate;
     };
+
     onShow = (mode) => {
         this.setState({ mode: mode || 'Visit' });
     };
@@ -366,7 +420,11 @@ class GwVisit extends React.Component {
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
         this.props.changeSelectionState({ geomType: undefined });
-        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {} });
+        this.props.setActiveVisit(null);
+        if (!this.props.keepManagerOpen){
+            this.props.setCurrentTask(null);
+        }
+        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     clearResults = () => {
@@ -378,21 +436,21 @@ class GwVisit extends React.Component {
         }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {} });
+        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     render() {
         let resultWindow = null;
-        if (this.state.pendingRequests === true || this.state.visitResult !== null) {
+        if (this.state.pendingRequests === true || this.state.visitResult !== null || this.props.visitResult !==null ) {
+            const result = this.state.visitResult || this.props.visitResult;
             let body = null;
-            if (isEmpty(this.state.visitResult)) {
+            if (isEmpty(result)) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
                 } else {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
                 }
             } else {
-                const result = this.state.visitResult;
                 if (result.schema === null) {
                     body = null;
                     this.props.processStarted("info_msg", "GwVisit Error!");
@@ -405,15 +463,16 @@ class GwVisit extends React.Component {
                     body = (
                         <div className="identify-body" role="body">
                             <GwQtDesignerForm dispatchButton={this.dispatchButton} files={this.state.files} form_xml={result.form_xml}
-                                getInitialValues initiallyDocked={this.props.initiallyDocked}
+                                getInitialValues initiallyDocked={this.props.initiallyDocked} hiddenWidgets={this.state.hiddenWidgets}
                                 onTabChanged={this.onTabChanged} readOnly={false} replaceImageUrls
                                 theme={this.state.theme} updateField={this.updateField} widgetValues={widgetValues}
                             />
+                             <button className="TESTTT" onClick={() => this.sendMail()}>TESTING</button>
                         </div>
                     );
                 }
             }
-            const title = this.state.visitResult.body?.data?.form?.headerText || "Visit";
+            const title = result.body?.data?.form?.headerText || "Visit";
             resultWindow = (
                 <ResizeableWindow dockable={this.props.dockable} icon="giswater"
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
@@ -442,7 +501,10 @@ const selector = (state) => ({
     layers: state.layers.flat,
     map: state.map,
     theme: state.theme.current,
-    selection: state.selection
+    selection: state.selection,
+    visitResult: state.visit.visitResult,
+    keepManagerOpen: state.visit.keepManagerOpen,
+    state
 });
 
 export default connect(selector, {
@@ -453,5 +515,7 @@ export default connect(selector, {
     removeMarker: removeMarker,
     removeLayer: removeLayer,
     processFinished: processFinished,
-    processStarted: processStarted
+    processStarted: processStarted,
+    setCurrentTask: setCurrentTask,
+    setActiveVisit: setActiveVisit
 })(GwVisit);
