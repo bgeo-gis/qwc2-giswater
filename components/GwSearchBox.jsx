@@ -23,6 +23,7 @@ import './style/SearchBox.css';
 
 import GwUtils from '../utils/GwUtils';
 import GwInfo from '../plugins/GwInfo';
+import {setIdentifyResult} from '../actions/info';
 
 class GwSearchBox extends React.Component {
     static propTypes = {
@@ -41,7 +42,8 @@ class GwSearchBox extends React.Component {
         }),
         setCurrentTask: PropTypes.func,
         theme: PropTypes.object,
-        zoomToPoint: PropTypes.func
+        zoomToPoint: PropTypes.func,
+        setIdentifyResult: PropTypes.func
     };
     static defaultProps = {
         infoDockable: "right"
@@ -118,12 +120,13 @@ class GwSearchBox extends React.Component {
             };
             axios.get(requestUrl + "fromid", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState({ identifyResult: result });
+                //this.setState({ identifyResult: result });
+                this.props.setIdentifyResult(result);
             }).catch((e) => {
                 console.log(e);
             });
         }
-        this.setState({ identifyResult: {} });
+        //this.setState({ identifyResult: {} });
     };
 
     panToResult = (geometry) => {
@@ -232,10 +235,6 @@ class GwSearchBox extends React.Component {
         });
     };
 
-    onCloseInfo = () => {
-        this.setState({ identifyResult: null });
-    };
-
     render() {
         const placeholder = LocaleUtils.tr("searchbox.placeholder");
         let resultWindow = null;
@@ -256,7 +255,7 @@ class GwSearchBox extends React.Component {
                 {this.renderSearchResults()}
             </div>
         );
-
+        /*
         if (!isEmpty(this.state.identifyResult)) {
             bodyInfo = (
                 <GwInfo dockable={this.props.infoDockable} identifyResult={this.state.identifyResult} initialHeight={800} initialWidth={480}
@@ -270,7 +269,7 @@ class GwSearchBox extends React.Component {
         if (bodyInfo) {
             return [resultWindow, bodyInfo];
         }
-
+        */
         return [resultWindow];
     }
 
@@ -343,5 +342,6 @@ export default connect(selector, {
     removeLayer: removeLayer,
     setCurrentTask: setCurrentTask,
     zoomToPoint: zoomToPoint,
-    panTo: panTo
+    panTo: panTo,
+    setIdentifyResult: setIdentifyResult
 })(GwSearchBox);
