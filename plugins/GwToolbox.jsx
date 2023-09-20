@@ -266,7 +266,7 @@ class GwToolbox extends React.Component {
                         textStroke: "white",
                         textFont: '20pt sans-serif'
                     };
-                    const features = GwUtils.getGeoJSONFeatures(point, 'default', pointsStyle);
+                    const features = GwUtils.getGeoJSONFeatures('default', point, pointsStyle);
                     if (!isEmpty(features)) {
                         allFeatures = allFeatures.concat(features);
                         this.props.addLayerFeatures({
@@ -289,7 +289,7 @@ class GwToolbox extends React.Component {
                         textStroke: "white",
                         textFont: '20pt sans-serif'
                     };
-                    const features = GwUtils.getGeoJSONFeatures(line, 'default', linesStyle);
+                    const features = GwUtils.getGeoJSONFeatures('default', line, linesStyle);
                     // console.log("Tool Lines Features", features)
                     if (!isEmpty(features)) {
                         allFeatures = allFeatures.concat(features);
@@ -301,7 +301,7 @@ class GwToolbox extends React.Component {
                         }, features, true);
                     }
                 }
-                // console.log(allFeatures)
+                console.log(allFeatures)
                 if (!isEmpty(allFeatures)) {
                     const bbox = VectorLayerUtils.computeFeaturesBBox(allFeatures);
                     // console.log(bbox)
