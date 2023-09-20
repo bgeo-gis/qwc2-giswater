@@ -1,9 +1,6 @@
 {
   "locale": "en-US",
   "messages": {
-    "dateselector": {
-      "schemaNotFound": ""
-    },
     "editing": {
       "select": "Select"
     },
