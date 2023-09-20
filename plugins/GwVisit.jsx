@@ -421,7 +421,7 @@ class GwVisit extends React.Component {
         if (!this.props.keepManagerOpen){
             this.props.setCurrentTask(null);
         }
-        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     clearResults = () => {
@@ -433,7 +433,7 @@ class GwVisit extends React.Component {
         }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     render() {
