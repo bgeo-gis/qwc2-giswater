@@ -504,14 +504,12 @@ class GwProfilePicker extends React.Component {
             // Send request
             this.props.processStarted("profile_calc_msg", "Calculating Profile...");
             // this.props.processStarted("profile_calc_msg", "Calculating Profile (1/2)...");
-            console.log("Request profileinfo");
             axios.get(requestUrl + "profileinfo", { params: params }).then(response => {
                 result = response.data;
                 this.addProfileLayers(result);
                 this.updateMeasurementResults(result);
                 this.props.processFinished("profile_calc_msg", true, "Success!");
                 // this.props.removeLayer("profilehighlight")
-                console.log("result -> ", result);
                 // let arcs = result['body']['data']['arc']
                 
                 this.setState({ identifyResult: result });
@@ -627,7 +625,6 @@ class GwProfilePicker extends React.Component {
      * Remove all create layers
      */
     clearResults = () => {
-        console.log("Clear Results");
         this.leaveTemporaryPickMode();
         this.props.removeMarker('profile1');
         this.props.removeMarker('profile2');

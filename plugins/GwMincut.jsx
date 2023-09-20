@@ -178,7 +178,6 @@ class GwMincut extends React.Component {
             if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
                 return;
             }
-            console.log("table widget:", tableWidget);
 
 
             const params = {
@@ -192,10 +191,8 @@ class GwMincut extends React.Component {
                 // "filterFields": this.state.filters
                 // "filterSign": action.params.tabName
             };
-            console.log("TEST getList, params:", params);
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                console.log("getlist done:", result);
                 this.setState((state) => ({ widgetValues: { ...state.widgetValues, [tableWidget.name]: result } }));
             }).catch((e) => {
                 console.warn(e);
@@ -434,7 +431,6 @@ class GwMincut extends React.Component {
     };
     onDlgClose = () => {
         // Manage if mincut is not new (don't delete)
-        console.log("closingMincut");
         if (this.props.mincutResult) {
             this.onToolClose();
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);

@@ -182,7 +182,6 @@ class GwVisitManager extends React.Component {
 
     dispatchButton = (action) => {
         const functionName = action.widgetfunction.functionName;
-        console.log(action)
         switch (functionName) {
         case "open":
             this.openvisit(action.row[0].original.id, action.row[0].original.visit_type);
@@ -239,7 +238,6 @@ class GwVisitManager extends React.Component {
             };
             axios.get(requestUrl + "getvisit", { params: params }).then((response) => {
                 const result = response.data;
-                console.log("visit result -> ", result);
                 this.props.setActiveVisit(result, this.props.keepManagerOpen);
                 //this.setState({ visitResult: result });
             }).catch((e) => {

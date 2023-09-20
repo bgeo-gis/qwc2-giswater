@@ -147,7 +147,6 @@ class GwSelector extends React.Component {
             this.setState({ selectorResult: result, pendingRequests: false });
             this.manageLayers(result);
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-            console.log("REEE");
 
         }).catch((e) => {
             console.log(e);
@@ -319,7 +318,6 @@ class GwSelector extends React.Component {
             } else if (!result.form_xml) {
                 body = (<div className="selector-body" role="body"><span className="selector-body-message">{result.message}</span></div>);
             } else {
-                console.log("render");
                 body = (
                     <div className="selector-body" role="body">
                         <GwQtDesignerForm autoResetTab={false} dispatchButton={this.dispatchButton} form_xml={result.form_xml} getInitialValues={false}

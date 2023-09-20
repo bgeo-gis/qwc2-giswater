@@ -169,7 +169,6 @@ class GwInfo extends React.Component {
         }
     };
     updateField = (widget, value) => {
-        console.log("widget :>> ", widget);
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
@@ -222,7 +221,6 @@ class GwInfo extends React.Component {
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                console.log("getlist done:", result);
                 this.setState((state) => ({ tableValues: {...state.tableValues, [tableWidget.name]: result} }));
             }).catch((e) => {
                 console.log(e);
@@ -271,7 +269,6 @@ class GwInfo extends React.Component {
 
             const requestUrl = GwUtils.getServiceUrl("info");
             if (!isEmpty(requestUrl)) {
-                console.log("theme -> ", this.props.theme.title);
                 const params = {
                     theme: this.props.theme.title,
                     node_id: this.state.identifyResult.body.feature.id
@@ -306,7 +303,6 @@ class GwInfo extends React.Component {
 
             axios.get(requestUrl + "get", { params: params }).then(response => {
                 const result = response.data;
-                console.log("getVisit -> ", result);
                 this.setState({ visitJson: result, showVisit: true, pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
@@ -337,7 +333,6 @@ class GwInfo extends React.Component {
                 pendingRequests = true;
                 axios.get(requestUrl + "getdma", { params: params }).then(response => {
                     const result = response.data;
-                    console.log("identifypointid -> ", result.body.data.info.values.info.dma);
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
                 }).catch((e) => {
                     console.error(e);
@@ -396,7 +391,6 @@ class GwInfo extends React.Component {
     };
 
     highlightResult = (result) => {
-        // console.log('result :>> ', result);
         if (isEmpty(result) || !result?.body?.feature?.geometry) {
             this.props.removeLayer("identifyslection");
         } else {
@@ -405,8 +399,6 @@ class GwInfo extends React.Component {
                 role: LayerRole.SELECTION
             };
             const crs = this.props.map.projection;
-            console.log("geometry -> ", result.body.feature.geometry.st_astext);
-            console.log("crs -> ", crs);
             const geometry = VectorLayerUtils.wktToGeoJSON(result.body.feature.geometry.st_astext, crs, crs);
             const feature = {
                 id: result.body.feature.id,

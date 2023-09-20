@@ -124,7 +124,6 @@ class GwMapInfoTooltip extends React.Component {
 
             axios.put(requestUrl + "setfields", { ...params }).then(() => {
                 // refresh map
-                console.log("Theme", this.props.theme);
                 if (this.props.theme.tiled) {
                     this.refreshTiles();
                 } else {
@@ -153,7 +152,6 @@ class GwMapInfoTooltip extends React.Component {
         axios.get(requestUrl + "update", { params: params }).then(response => {
             this.props.processFinished(processNotificationId, true, "Update successful");
             const result = response.data;
-            console.log("tiling updated:", result);
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }).catch((e) => {
             console.log(e);

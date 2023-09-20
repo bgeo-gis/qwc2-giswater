@@ -574,7 +574,7 @@ class GwProfileGraph extends React.Component {
                 ChartistZoom({
                     onZoom: (chart, reset) => {
                         this.setState({ zoomAxisX: chart.options.axisX.highLow });
-                        console.log("chart.options.axisX.highLow -> ", chart.options.axisX.highLow);
+                        // console.log("chart.options.axisX.highLow -> ", chart.options.axisX.highLow);
                         resetZoom = reset;
                     },
                     noClipY: true,
@@ -996,7 +996,7 @@ class GwProfileGraph extends React.Component {
             let distance = "";
 
             for (let i = 0; i < this.terrainLabels.length; i++) {
-                console.log("this.terrainLabels[i -> ", this.terrainLabels[i]);
+                // console.log("this.terrainLabels[i -> ", this.terrainLabels[i]);
                 if (this.terrainLabels[i].total_distance === x) {
                     code = this.terrainLabels[i].code.toString();
                     topElev = this.terrainLabels[i].top_elev.toString() + " m";
@@ -1091,8 +1091,8 @@ class GwProfileGraph extends React.Component {
         let realX = x;
         x = isNode ? nodeX : x;
 
-        console.log("realX -> ", realX);
-        console.log("x -> ", x);
+        // console.log("realX -> ", realX);
+        // console.log("x -> ", x);
         const isInRange = !this.state.zoomAxisX || (realX >= this.state.zoomAxisX.low && realX <= this.state.zoomAxisX.high);
         if (isInRange){
             this.updateTooltip( x, this.state.data[idx], path.getBoundingClientRect().left + k * path.getBoundingClientRect().width, isNode);

@@ -89,7 +89,6 @@ class GwFlowtrace extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            console.log("flowtrace clickPoint:", clickPoint);
 
             this.props.addMarker('flowtrace', clickPoint, '', this.props.map.projection);
 
@@ -124,7 +123,6 @@ class GwFlowtrace extends React.Component {
             // Send request
             axios.get(requestUrl + mode, { params: params }).then(response => {
                 const result = response.data;
-                console.log("flowtrace", mode, "result", result);
                 this.addFlowtraceLayers(result, result.body.data.initPoint.toString());
             }).catch((e) => {
                 console.error(e);

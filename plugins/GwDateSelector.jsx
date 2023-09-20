@@ -64,10 +64,10 @@ class GwDateSelector extends React.Component {
             const values = this.getFilterValues(result);
             // Get filter query
             const filter = this.getFilterStr(values, layerFilters, result.body.data.layerColumns);
-            console.log("filter query =", filter);
+            // console.log("filter query =", filter);
 
             // Apply filter, zoom to extent & refresh map
-            console.log("queryable layers =", queryableLayers);
+            // console.log("queryable layers =", queryableLayers);
             queryableLayers[0].params.FILTER = filter;
             // Refresh map
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
@@ -77,9 +77,9 @@ class GwDateSelector extends React.Component {
         return { from_date: result.body.data?.date_from, to_date: result.body.data?.date_to };
     };
     getFilterStr = (values, layerFilters, layerColumns) => {
-        console.log("values ->", values);
-        console.log("layerFilters ->", layerFilters);
-        console.log("layerColumns ->", layerColumns);
+        // console.log("values ->", values);
+        // console.log("layerFilters ->", layerFilters);
+        // console.log("layerColumns ->", layerColumns);
         let filterStr = "";
         for (const lyr of layerColumns) {
             const cols = layerColumns[lyr];  // Get columns for layer
@@ -152,7 +152,6 @@ class GwDateSelector extends React.Component {
     };
     getQueryableLayers = () => {
         if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
-            console.log("return", this.props.layers, this.props.map);
             return [];
         }
 
@@ -233,7 +232,7 @@ class GwDateSelector extends React.Component {
             const queryableLayers = this.getQueryableLayers();
             if (!isEmpty(queryableLayers)) {
                 // Get request paramas
-                console.log(this.state.filters);
+                // console.log(this.state.filters);
                 const layer = queryableLayers[0];
                 const dateFrom = this.state.filters.date_from.value;
                 const dateTo = this.state.filters.date_to.value;

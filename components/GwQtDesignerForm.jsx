@@ -278,7 +278,6 @@ class GwQtDesignerForm extends React.Component {
                 return null;
             }
 
-            console.log(value);
             return (
                 <div className="qtableview">
                     <table className="qtableview">
@@ -462,7 +461,6 @@ class GwQtDesignerForm extends React.Component {
             const checked = (this.props.widgetValues[widget.name]?.value ?? prop.checked);
             return checked === true || checked === "true" || checked === "True";
         } else if (widget.class === "QComboBox") {
-            // console.log(widget)
             let items = widget.item;
             if (!Array.isArray(widget.item) && items !== undefined) {
                 items = [widget.item];
@@ -549,7 +547,6 @@ class GwQtDesignerForm extends React.Component {
         });
     };
     reformatWidget = (widget, fields, externalFields, counters) => {
-        // console.log(widget.property)
         if (widget.property) {
             widget.property = MiscUtils.ensureArray(widget.property).reduce((res, prop) => {
                 return ({ ...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")] });

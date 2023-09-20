@@ -98,13 +98,11 @@ class GwToolbox extends React.Component {
         }
     }
     toolClicked(type, tool) {
-        console.log("Clicked:", type, tool);
         switch (type) {
         case "processes":
             if (this.state.toolResult?.body?.data.id !== tool.id) {
                 this.getProcess(tool.id, {}, (response) => {
                     const result = response.data;
-                    console.log("getprocess result:", result);
                     this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
                 }, (error) => {
                     this.props.processStarted("get_process", "Get process");
@@ -117,7 +115,6 @@ class GwToolbox extends React.Component {
                 this.props.processStarted("get_report", "Gettings report...");
                 this.getReport(tool.id, (response) => {
                     const result = response.data;
-                    console.log("getraport result:", result);
                     this.props.processFinished("get_report", true, "Report successful!");
                     this.setState({ toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
                 }, (error) => {
@@ -160,7 +157,6 @@ class GwToolbox extends React.Component {
         // Send request
         axios.get(requestUrl + "gettoolbox", { params: params }).then(response => {
             const result = response.data;
-            console.log("gettoolbox result:", result);
             this.setState({ toolboxResult: result, pendingRequests: false });
         }).catch((e) => {
             console.log(e);
@@ -168,7 +164,6 @@ class GwToolbox extends React.Component {
         });
     };
     toolOnFieldUpdated = (widget, value) => {
-        // console.log(widget, value, this.state.toolWidgetValues)
         if (this.state.toolWidgetValues[widget.name] && widget.property.isParent === "true") {
             const newToolWidgetValues = { ...this.state.toolWidgetValues, [widget.name]: { value: value } };
             this.getProcess(this.state.toolResult.body.data.id, newToolWidgetValues, (response) => {
@@ -183,7 +178,6 @@ class GwToolbox extends React.Component {
                     }
                 });
 
-                console.log("patata getprocess result:", result, cleanedWidgetVals);
                 this.setState({ toolWidgetValues: cleanedWidgetVals, toolResult: result, toolType: "process" });
             });
         } else {
@@ -197,7 +191,6 @@ class GwToolbox extends React.Component {
     };
     // eslint-disable-next-line
     onToolButton = (action, widget) => {
-        console.log("Tool Clicked", action);
         switch (action.functionName) {
         case "close":
             this.clearToolManager();
@@ -236,7 +229,6 @@ class GwToolbox extends React.Component {
             // Send request
             axios.post(requestUrl + "execute_process", {...params}).then(response => {
                 const result = response.data;
-                console.log("process result:", result);
 
                 this.props.processFinished("process_msg", result.status === "Accepted", result.message.text);
 
@@ -290,7 +282,6 @@ class GwToolbox extends React.Component {
                         textFont: '20pt sans-serif'
                     };
                     const features = GwUtils.getGeoJSONFeatures('default', line, linesStyle);
-                    // console.log("Tool Lines Features", features)
                     if (!isEmpty(features)) {
                         allFeatures = allFeatures.concat(features);
                         this.props.addLayerFeatures({
@@ -301,10 +292,9 @@ class GwToolbox extends React.Component {
                         }, features, true);
                     }
                 }
-                console.log(allFeatures)
+
                 if (!isEmpty(allFeatures)) {
                     const bbox = VectorLayerUtils.computeFeaturesBBox(allFeatures);
-                    // console.log(bbox)
                     this.props.zoomToExtent(bbox.bounds, bbox.crs);
                 }
 
@@ -351,7 +341,6 @@ class GwToolbox extends React.Component {
         this.setState((prevState) => ({ expandedTabs: {...prevState.expandedTabs, [path]: newstate} }));
     }
     onToolTabChanged = (tab, widget) => {
-        // console.log("Tool Tab:", tab, widget)
         this.setState((prevState) => ({ toolActiveTabs: { ...prevState.toolActiveTabs, [widget.name]: tab.name } }));
     };
     getExpandedTabClass(type, tabName, defaultVal = false) {
@@ -427,8 +416,6 @@ class GwToolbox extends React.Component {
         let toolWindow = null;
         if (this.state.toolResult !== null) {
             const tool = this.state.toolResult;
-            console.log("Tool Widget Vals", this.state.toolWidgetValues);
-            console.log("Tool", tool);
 
             toolWindow = (
                 <ResizeableWindow icon="giswater"

@@ -122,8 +122,8 @@ class GwVisit extends React.Component {
             });
             break;
         case 'set_visit': {
-            const ignoreWidgets = ['txt_visit_id','mail','sendto'];
-            console.log("WIDGETS: ", this.state.widgetValues);
+            const ignoreWidgets = ['txt_visit_id', 'tbl_files','mail','sendto'];
+            // console.log("WIDGETS: ", this.state.widgetValues);
             // eslint-disable-next-line
             const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
                 // TODO: Did the commented line ever work?
@@ -134,7 +134,7 @@ class GwVisit extends React.Component {
                 }
                 if (!(v === null || v === undefined || v === "")) {
                     acc[value.columnname] = v;
-                    console.log(acc[value.columnname], " : ", v);
+                    // console.log(acc[value.columnname], " : ", v);
                 }
                 return acc;
             }, {});
@@ -201,7 +201,6 @@ class GwVisit extends React.Component {
                 const visitId = this.state.coords[0] ? null : this.state.visitResult?.body?.feature?.visitId || this.props.visitResult?.body?.feature?.visitId;
                 formData.append("visitId", visitId || null);
                 formData.append("fields", JSON.stringify(fields));
-                console.log("FIELDS: ", fields);
                 axios.post(requestUrl + 'setvisit', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 }).then((response) => {
@@ -233,14 +232,14 @@ class GwVisit extends React.Component {
                 const layer = queryableLayers[0];
                 const visitType = this.state.mode === 'Incidencia' ? 2 : 1;
                 const ignoreWidgets = ['txt_visit_id', 'tbl_files'];
-                console.log("WIDGETS: ", this.state.widgetValues);
+                // console.log("WIDGETS: ", this.state.widgetValues);
                 // eslint-disable-next-line
                 const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
                     let v = value.columnname === 'class_id' ? widget : value.value;
                     if (ignoreWidgets.includes(value.columnname)) v = null;
                     if (!(v === null || v === undefined || v === "")) {
                         acc[value.columnname] = v;
-                        console.log(acc[value.columnname], " : ", v);
+                        // console.log(acc[value.columnname], " : ", v);
                     }
                     return acc;
                 }, {});
@@ -315,7 +314,6 @@ class GwVisit extends React.Component {
             const result = this.state.visitResult || this.props.visitResult;
             const visitId = result?.body?.feature?.visitId;
             const filters = `{"visit_id": {"columnname": "visit_id", "value": ${visitId || -1}}}`;
-            console.log("FILTERS---------", filters);
             const params = {
                 theme: this.props.theme.title,
                 tableName: tableWidget.property.linkedobject,
@@ -327,10 +325,8 @@ class GwVisit extends React.Component {
                 filterFields: filters // visit id
                 // "filterSign": action.params.tabName
             };
-            console.log("TEST getList, params:", params);
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                console.log("getlist done:", result);
                 this.setState((state) => ({ tableValues: { ...state.tableValues, [tableWidget.name]: result }}));
             }).catch((e) => {
                 console.warn(e);
