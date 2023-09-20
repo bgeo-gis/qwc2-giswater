@@ -246,7 +246,7 @@ class GwVisit extends React.Component {
                 }, {});
                 if (isEmpty(fields)) return;
                 const epsg = GwUtils.crsStrToInt(this.props.map.projection);
-                const visitId = this.state.visitResult?.body?.feature?.visitId;
+                const visitId = this.state.visitResult?.body?.feature?.visitId || this.props.visitResult?.body?.feature?.visitId;
                 const params = {
                     theme: this.props.theme.title,
                     epsg: epsg,
@@ -312,7 +312,8 @@ class GwVisit extends React.Component {
                 return;
             }
 
-            const visitId = this.state.visitResult?.body?.feature?.visitId;
+            const result = this.state.visitResult || this.props.visitResult;
+            const visitId = result?.body?.feature?.visitId;
             const filters = `{"visit_id": {"columnname": "visit_id", "value": ${visitId || -1}}}`;
             console.log("FILTERS---------", filters);
             const params = {
@@ -467,7 +468,6 @@ class GwVisit extends React.Component {
                                 onTabChanged={this.onTabChanged} readOnly={false} replaceImageUrls
                                 theme={this.state.theme} updateField={this.updateField} widgetValues={widgetValues}
                             />
-                             <button className="TESTTT" onClick={() => this.sendMail()}>TESTING</button>
                         </div>
                     );
                 }
