@@ -232,7 +232,7 @@ class GwVisit extends React.Component {
                 }
                 const layer = queryableLayers[0];
                 const visitType = this.state.mode === 'Incidencia' ? 2 : 1;
-                const ignoreWidgets = ['txt_visit_id'];
+                const ignoreWidgets = ['txt_visit_id', 'tbl_files'];
                 console.log("WIDGETS: ", this.state.widgetValues);
                 // eslint-disable-next-line
                 const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
@@ -382,7 +382,7 @@ class GwVisit extends React.Component {
                 });
             }
             this.props.addMarker('visit', clickPoint, '', this.props.map.projection);
-            this.setState({ visitResult: {}, pendingRequests: pendingRequests });
+            this.setState({ visitResult: {}, tableValues: {}, pendingRequests: pendingRequests });
         }
     };
 
@@ -425,7 +425,7 @@ class GwVisit extends React.Component {
         if (!this.props.keepManagerOpen){
             this.props.setCurrentTask(null);
         }
-        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     clearResults = () => {
@@ -437,7 +437,7 @@ class GwVisit extends React.Component {
         }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     render() {
