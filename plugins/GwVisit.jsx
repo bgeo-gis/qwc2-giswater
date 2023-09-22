@@ -342,17 +342,14 @@ class GwVisit extends React.Component {
             // Remove any search selection layer to avoid confusion
             this.props.removeLayer("searchselection");
             let pendingRequests = false;
-            const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-                // TODO: If there are some wms external layers this would select more than one layer
-                return l.type === "wms";
-            });
+            const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map);
 
             const requestUrl = GwUtils.getServiceUrl("visit");
             if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
-                if (queryableLayers.length > 1) {
-                    console.warn("There are multiple giswater queryable layers");
-                }
-                const layer = queryableLayers[0];
+                const queryLayers = queryableLayers.reduce((acc, layer) => {
+                    return acc.concat(layer.queryLayers);
+                }, []);
+
                 const visitType = this.state.mode === 'Incidencia' ? 2 : 1;
 
                 const epsg = GwUtils.crsStrToInt(this.props.map.projection);
@@ -363,7 +360,7 @@ class GwVisit extends React.Component {
                     xcoord: clickPoint[0],
                     ycoord: clickPoint[1],
                     zoomRatio: zoomRatio,
-                    layers: layer.queryLayers.join(','),
+                    layers: queryLayers.join(','),
                     visitType: visitType
                 };
 
