@@ -868,7 +868,7 @@ class GwProfileGraph extends React.Component {
 
             }
             datesWindow = (
-                <ResizeableWindow dockable={false} icon="giswater" id="GwDateSelector" key="GwDateSelectorWindow"
+                <ResizeableWindow minimizeable="true" dockable={false} icon="giswater" id="GwDateSelector" key="GwDateSelectorWindow"
                     onClose={this.onToolClose} onShow={this.onShow} title="GW Profile Tool"
                 >
                     {body}

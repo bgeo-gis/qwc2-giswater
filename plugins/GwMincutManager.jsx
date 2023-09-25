@@ -366,7 +366,7 @@ class GwMincutManager extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={600}
+                <ResizeableWindow minimizeable="true" dockable="bottom" icon="giswater" initialHeight={600}
                     initialWidth= {900} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwMincutManagerWindow"
                     onClose={this.onToolClose}

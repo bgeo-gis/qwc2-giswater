@@ -467,7 +467,7 @@ class GwVisit extends React.Component {
             }
             const title = result.body?.data?.form?.headerText || "Visit";
             resultWindow = (
-                <ResizeableWindow dockable={this.props.dockable} icon="giswater"
+                <ResizeableWindow minimizeable="true" dockable={this.props.dockable} icon="giswater"
                     initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow"
                     onClose={this.clearResults}

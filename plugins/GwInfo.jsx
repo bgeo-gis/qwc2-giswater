@@ -504,7 +504,7 @@ class GwInfo extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight}
+                <ResizeableWindow minimizeable="true" dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight}
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
                     onClose={this.clearResults}
