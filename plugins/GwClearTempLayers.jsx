@@ -21,6 +21,7 @@ class GwClearTempLayersButton extends React.Component {
         this.props.removeLayer("temp_points.geojson");
         this.props.removeLayer("temp_lines.geojson");
         this.props.removeLayer("temp_polygons.geojson");
+        this.props.removeLayer("redlining");
     }
     render() {
         return (
