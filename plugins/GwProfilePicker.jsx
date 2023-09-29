@@ -75,7 +75,8 @@ class GwProfilePicker extends React.Component {
         selection: PropTypes.object,
         standardLinesStyle: PropTypes.object,
         standardPointsStyle: PropTypes.object,
-        initPointStyle: PropTypes.object
+        initPointStyle: PropTypes.object,
+        theme: PropTypes.object
     };
 
     static defaultOpts = {
@@ -124,7 +125,8 @@ class GwProfilePicker extends React.Component {
         secondNodeId: null,
         firstNodeCoordinates: null,
         secondNodeCoordinates: null,
-        prevPoint: null
+        prevPoint: null,
+        theme: null
     };
 
     constructor(props) {
@@ -229,7 +231,7 @@ class GwProfilePicker extends React.Component {
             allNodeCoordinates: allNodeCoordinates,
             allNodeLength: allNodeLength,
             feature: feature,
-            theme: layer.title,
+            theme:  this.props.theme.title,
             initNode: feature.body.data.node[0].node_id,
             endNode: feature.body.data.node[feature.body.data.node.length - 1].node_id,
             epsg: GwUtils.crsStrToInt(this.props.mapObj.projection)
@@ -404,10 +406,7 @@ class GwProfilePicker extends React.Component {
         if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.mapObj === 'undefined' || this.props.mapObj === null)) {
             return [];
         }
-
-        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.mapObj).filter(l => {
-            return l.type === "wms";
-        });
+        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.mapObj);
     };
 
 
@@ -431,7 +430,7 @@ class GwProfilePicker extends React.Component {
                 zoom = defaultZoom;
             }
             const params = {
-                theme: layer.title,
+                theme: this.props.theme.title,
                 epsg: epsg,
                 coords: String(clickPoint),
                 zoom: zoom,
@@ -496,7 +495,7 @@ class GwProfilePicker extends React.Component {
             const layer = queryableLayers[0];
             const epsg = GwUtils.crsStrToInt(this.props.mapObj.projection);
             const params = {
-                theme: layer.title,
+                theme: this.props.theme.title,
                 epsg: epsg,
                 initNode: this.state.firstNodeId,
                 endNode: this.state.secondNodeId
@@ -673,7 +672,8 @@ const selector = (state) => ({
     mapObj: state.map,
     measurement: state.measurement,
     selection: state.selection,
-    profile: state.profile
+    profile: state.profile,
+    theme: state.theme.current,
 });
 
 export default connect(selector, {
