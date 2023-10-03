@@ -62,7 +62,9 @@ class GwSelector extends React.Component {
         if (!result || result.schema === null) {
             return;
         }
-
+        if (!this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true)) {
+            this.addMincutLayers(result);
+        }
         this.setLayersVisibility(result);
 
         // Zoom to extent & refresh map
@@ -145,7 +147,7 @@ class GwSelector extends React.Component {
         axios.post(requestUrl + "set", { ...params }).then(response => {
             const result = response.data;
             this.setState({ selectorResult: result, pendingRequests: false });
-            this.manageLayers(result);
+            this.handleResult(result)
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
 
         }).catch((e) => {
@@ -153,13 +155,17 @@ class GwSelector extends React.Component {
             this.setState({ pendingRequests: false });
         });
     };
-    manageLayers = (result) => {
-        if (result?.body?.data?.tiled) {
-            this.addMincutLayers(result);
-        } else {
-            this.handleResult(result);
+
+    setOMLayersVisibility = (layerName, visible = true) => {
+        const rootLayer = this.props.layers.find(l => l.type === "wms");
+        const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
+        if (layer) {
+           this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+           return true;
         }
+        return false;
     };
+    
     addMincutLayers = (result) => {
         if (!result?.body?.data?.mincutArc) {
             return;

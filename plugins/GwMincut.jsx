@@ -162,8 +162,10 @@ class GwMincut extends React.Component {
         const rootLayer = this.props.layers.find(l => l.type === "wms");
         const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
         if (layer) {
-            this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+           this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+           return true;
         }
+        return false;
     };
     getList = (tab) => {
         try {
@@ -203,10 +205,8 @@ class GwMincut extends React.Component {
         }
     };
     manageLayers = (result) => {
-        if (result?.body?.data?.tiled) {
+        if (!this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true)) {            
             this.addMincutLayers(result);
-        } else {
-            this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true);
         }
     };
     addMincutLayers = (result) => {
