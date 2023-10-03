@@ -464,8 +464,10 @@ class GwInfo extends React.Component {
         let visitWindow = null;
         let noIdentifyResult = false;
         let identifyResult = this.state.identifyResult || this.props.identifyResult;
+        let windowTitle = identifyResult?.body?.feature?.featureType.toUpperCase() + " : "+identifyResult?.body?.feature?.id
         if (this.state.pendingRequests === true || identifyResult  !== null) {
             let body = null;
+            console.log("IDENTIFY RESULT: ", identifyResult)
             if (isEmpty(identifyResult) || !identifyResult.form_xml) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
@@ -504,13 +506,13 @@ class GwInfo extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow minimizeable="true" dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight}
+                <ResizeableWindow minimizeable={true} dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight}
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
                     onClose={this.clearResults}
-                    scrollable={this.state.mode === "Dma" ? true : false} title="Giswater Info"
+                    scrollable={this.state.mode === "Dma" ? true : false}  title={windowTitle !== "undefined : undefined" ? windowTitle : "Info"} // Set "Info" if windowTitle is "undefined : undefined"
                 >
-                    {body}
+                    {body}                    
                 </ResizeableWindow>
             );
 
