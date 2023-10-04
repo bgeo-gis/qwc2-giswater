@@ -466,8 +466,8 @@ class GwQtDesignerForm extends React.Component {
                 items = [widget.item];
             }
 
-            const optObj = items.find(obj => obj.property.value === prop.value);
-            return (this.props.widgetValues[widget.name]?.value ?? optObj.property.value);
+            const optObj = (items || []).find(obj => obj.property.value === prop.value);
+            return (this.props.widgetValues[widget.name]?.value ?? (optObj?.property?.value || ""));
 
             // Commented out because the updateField called when it updates only uses the value, not the text
             // let option_value = null
