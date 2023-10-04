@@ -95,13 +95,13 @@ class GwSearchBox extends React.Component {
             axios.get(requestUrl + "setsearch", { params: params }).then(response => {
                 const result = response.data;
                 this.panToResult(result.data.geometry);
-                this.highlightResult(result);
+                this.highlightResult(result, section);
 
                 // Info if execFunc is present
                 if (execFunc) {
                     this.identifyFromId(filterValue, tableName);
                 }
-                if (section === "basic_search_v2_address" && !searchAdd) {
+                if (section === "basic_search_v2_tab_address" && !searchAdd) {
                     this.searchTextChanged(null, displayName + ", ");
                 }
                 this.clearResults();
@@ -140,7 +140,7 @@ class GwSearchBox extends React.Component {
         }
     };
 
-    highlightResult = (result) => {
+    highlightResult = (result, section) => {
         // console.log('result :>> ', result);
         if (isEmpty(result) || !result?.data?.geometry) {
             this.props.removeLayer("identifyslection");
@@ -158,6 +158,14 @@ class GwSearchBox extends React.Component {
             this.props.addLayerFeatures(layer, [feature], true);
         }
         this.resultProcessed = true;
+        if (section === "basic_search_v2_tab_address") {
+            if (this.highlightTimeout) {
+                clearTimeout(this.highlightTimeout);
+            }
+            this.highlightTimeout = setTimeout(() => {
+                this.props.removeLayer("identifyslection");
+            }, 6000);
+        }
     };
 
     renderSearchResults = () => {
