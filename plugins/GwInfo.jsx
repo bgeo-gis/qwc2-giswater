@@ -467,7 +467,6 @@ class GwInfo extends React.Component {
         let windowTitle = identifyResult?.body?.feature?.featureType.toUpperCase() + " : "+identifyResult?.body?.feature?.id
         if (this.state.pendingRequests === true || identifyResult  !== null) {
             let body = null;
-            console.log("IDENTIFY RESULT: ", identifyResult)
             if (isEmpty(identifyResult) || !identifyResult.form_xml) {
                 if (this.state.pendingRequests === true) {
                     body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
@@ -510,7 +509,7 @@ class GwInfo extends React.Component {
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
                     onClose={this.clearResults}
-                    scrollable={this.state.mode === "Dma" ? true : false}  title={windowTitle !== "undefined : undefined" ? windowTitle : "Info"} // Set "Info" if windowTitle is "undefined : undefined"
+                    scrollable={this.state.mode === "Dma" ? true : false}  title={windowTitle !== "undefined : undefined" ? windowTitle : "Info"}
                 >
                     {body}                    
                 </ResizeableWindow>
