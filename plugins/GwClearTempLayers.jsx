@@ -28,7 +28,6 @@ class GwClearTempLayersButton extends React.Component {
         this.props.removeLayer("temp_lines.geojson");
         this.props.removeLayer("temp_polygons.geojson");
         this.props.removeLayer("redlining");
-        console.log("CLOSETASKS: ", this.props.closeTasks);
         if (this.props.closeTasks) {
             this.props.setCurrentTask(null);
         }        
