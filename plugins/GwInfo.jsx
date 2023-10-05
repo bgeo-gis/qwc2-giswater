@@ -464,7 +464,7 @@ class GwInfo extends React.Component {
         let visitWindow = null;
         let noIdentifyResult = false;
         let identifyResult = this.state.identifyResult || this.props.identifyResult;
-        let windowTitle = identifyResult?.body?.feature?.featureType.toUpperCase() + " - "+identifyResult?.body?.feature?.id
+        let headerText = identifyResult?.body?.form?.headerText
         if (this.state.pendingRequests === true || identifyResult  !== null) {
             let body = null;
             if (isEmpty(identifyResult) || !identifyResult.form_xml) {
@@ -509,7 +509,7 @@ class GwInfo extends React.Component {
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
                     onClose={this.clearResults}
-                    scrollable={this.state.mode === "Dma" ? true : false}  title={windowTitle !== "undefined - undefined" ? windowTitle : "Info"}
+                    scrollable={this.state.mode === "Dma" ? true : false}  title={typeof headerText !== "undefined" ? headerText : "Info"}
                 >
                     {body}                    
                 </ResizeableWindow>
