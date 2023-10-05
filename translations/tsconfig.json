@@ -33,6 +33,7 @@
     "appmenu.items.GwVisitManager",
     "appmenu.items.GwToolbox",
     "appmenu.items.NetCDFExplorer",
+    "appmenu.items.GwHelp",
     "colorschemes.giswater",
     "colorschemes.white",
     "colorschemes.transparent"

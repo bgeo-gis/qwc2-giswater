@@ -60,7 +60,8 @@
         "GwDateSelector": "Selector de Data",
         "GwVisitManager": "Gestor de Visites",
         "GwToolbox": "Caixa d'eines",
-        "NetCDFExplorer": "Visualitzador de NetCDF (Beta)"
+        "NetCDFExplorer": "Visualitzador de NetCDF (Beta)",
+        "GwHelp": "Ajuda"
       }
     },
     "colorschemes": {

@@ -60,7 +60,8 @@
         "GwDateSelector": "",
         "GwVisitManager": "",
         "GwToolbox": "",
-        "NetCDFExplorer": ""
+        "NetCDFExplorer": "",
+        "GwHelp": ""
       }
     },
     "colorschemes": {
