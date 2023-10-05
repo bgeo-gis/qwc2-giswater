@@ -37,7 +37,7 @@ class GwFlowtrace extends React.Component {
     static defaultProps = {
         standardLinesStyle: {
            strokeColor: {
-                trace: [235, 167, 48, 1],
+                trace: [232, 48, 235, 1],
                 exit: [235, 74, 117, 1]
             },
             strokeWidth: 6,
@@ -49,7 +49,7 @@ class GwFlowtrace extends React.Component {
         },
         standardPointsStyle: {
             strokeColor: {
-              "trace": [235, 167, 48, 1],
+              "trace": [232, 48, 235, 1],
               "exit": [235, 74, 117, 1]
             },
             strokeWidth: 2,
