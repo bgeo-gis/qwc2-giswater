@@ -11,17 +11,27 @@ import {connect} from 'react-redux';
 import Icon from 'qwc2/components/Icon';
 import { removeLayer } from 'qwc2/actions/layers';
 import 'qwc2/plugins/style/Buttons.css';
+import { setCurrentTask } from 'qwc2/actions/task';
 
 class GwClearTempLayersButton extends React.Component {
     static propTypes = {
         position: PropTypes.number,
-        removeLayer: PropTypes.func
+        removeLayer: PropTypes.func,
+        closeTasks: PropTypes.bool,
+        setCurrentTask: PropTypes.func
     };
+    static defaultProps = {
+        closeTasks: false
+    }
     clearLayers() {
         this.props.removeLayer("temp_points.geojson");
         this.props.removeLayer("temp_lines.geojson");
         this.props.removeLayer("temp_polygons.geojson");
         this.props.removeLayer("redlining");
+        console.log("CLOSETASKS: ", this.props.closeTasks);
+        if (this.props.closeTasks) {
+            this.props.setCurrentTask(null);
+        }        
     }
     render() {
         return (
@@ -37,5 +47,6 @@ class GwClearTempLayersButton extends React.Component {
 }
 
 export default connect(() => ({}), {
-    removeLayer: removeLayer
+    removeLayer: removeLayer,
+    setCurrentTask: setCurrentTask
 })(GwClearTempLayersButton);
