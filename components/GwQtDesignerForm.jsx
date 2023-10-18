@@ -467,7 +467,7 @@ class GwQtDesignerForm extends React.Component {
             }
 
             const optObj = (items || []).find(obj => obj.property.value === prop.value);
-            return (this.props.widgetValues[widget.name]?.value ?? (optObj?.property?.value || ""));
+            return (this.props.widgetValues[widget.name]?.value ?? (optObj?.property?.value || (items || [""])[0]?.property?.value || ""));
 
             // Commented out because the updateField called when it updates only uses the value, not the text
             // let option_value = null
@@ -567,10 +567,14 @@ class GwQtDesignerForm extends React.Component {
 
         widget.name = widget.name || (":widget_" + counters.widget++);
 
+        console.log("getInitialValues :>>", this.props.getInitialValues);
         if (this.props.getInitialValues) {
             const value = this.getWidgetValue(widget);
+            console.log("value :>>", value);
             if (value !== null) {
+                console.log("updateField call :>>", widget, value);
                 this.props.updateField(widget, value, true);
+                console.log("updateField called");
             }
         }
 
