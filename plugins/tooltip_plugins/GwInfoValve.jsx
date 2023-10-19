@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
-import isEmpty from 'lodash.isempty'
+import isEmpty from 'lodash.isempty';
 import displayCrsSelector from 'qwc2/selectors/displaycrs';
 import {setCurrentTask} from 'qwc2/actions/task';
 import { LayerRole, refreshLayer, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
@@ -20,6 +20,7 @@ import { setIdentifyResult } from '../../actions/info';
 
 class GwInfoValve extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         displaycrs: PropTypes.string,
         enabled: PropTypes.bool,
         layers: PropTypes.array,
@@ -27,15 +28,14 @@ class GwInfoValve extends React.Component {
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         refreshLayer: PropTypes.func,
-        setCurrentTask: PropTypes.func,
-        theme: PropTypes.object,
         removeLayer: PropTypes.func,
-        addLayerFeatures: PropTypes.func,
-        setIdentifyResult: PropTypes.func
+        setCurrentTask: PropTypes.func,
+        setIdentifyResult: PropTypes.func,
+        theme: PropTypes.object
     };
     static defaultProps = {
         standardLinesStyle: {
-           strokeColor: {
+            strokeColor: {
                 trace: [235, 167, 48, 1],
                 exit: [235, 74, 117, 1]
             },
@@ -48,8 +48,8 @@ class GwInfoValve extends React.Component {
         },
         standardPointsStyle: {
             strokeColor: {
-              "trace": [235, 167, 48, 1],
-              "exit": [235, 74, 117, 1]
+                trace: [235, 167, 48, 1],
+                exit: [235, 74, 117, 1]
             },
             strokeWidth: 2,
             strokeDash: [4],
@@ -60,25 +60,25 @@ class GwInfoValve extends React.Component {
         }
     };
     state = {
-        elevation: null, 
-        extraInfo: null, 
-        gwInfoResponse: null, 
-        loadedComponents : [],
+        elevation: null,
+        extraInfo: null,
+        gwInfoResponse: null,
+        loadedComponents: [],
         infoButtons: null,
-        loading: true,
+        loading: true
     };
-    componentDidMount(){
-        this.setState({point: this.props.point})
+    componentDidMount() {
+        this.setState({point: this.props.point});
         const point = this.props.point;
         this.loadValveResult(point);
     }
     componentDidUpdate(prevProps) {
-        if (prevProps.point !== this.props.point){
+        if (prevProps.point !== this.props.point) {
             this.clear();
-            this.loadValveResult(this.props.point)
+            this.loadValveResult(this.props.point);
         }
-    };
-    componentWillUnmount(){
+    }
+    componentWillUnmount() {
         this.clear();
     }
     loadValveResult = (point) => {
@@ -99,14 +99,14 @@ class GwInfoValve extends React.Component {
             layers: queryLayers.join(',')
         };
         axios.get(gwInfoService + 'getlayersfromcoordinates', {params: params}).then(response => {
-            gwInfoResponse = response.data
+            gwInfoResponse = response.data;
             if (gwInfoResponse) {
                 this.setState({gwInfoResponse: gwInfoResponse, loading: false});
             }
         }).catch((e) => {
             console.log(e);
         });
-    }
+    };
     toggleValveState = (data) => {
         const id = data.id;
         const tableName = data.tableName;
@@ -174,7 +174,7 @@ class GwInfoValve extends React.Component {
             axios.get(requestUrl + "fromid", { params: params }).then((response) => {
                 const result = response.data;
                 this.props.setIdentifyResult(result);
-                //this.setState({ identifyResult: result });
+                // this.setState({ identifyResult: result });
             }).catch((e) => {
                 console.log(e);
             });
@@ -195,7 +195,7 @@ class GwInfoValve extends React.Component {
         this.props.addLayerFeatures(layer, [feature], true);
     };
     highLightMultipleFeatures = (selection) => {
-        let features = [];
+        const features = [];
         this.props.removeLayer("identifyslection");
         const layer = {
             id: "identifyslection",
@@ -219,10 +219,10 @@ class GwInfoValve extends React.Component {
         const lastWord = words[words.length - 1];
         const capitalCaseLastWord = lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
         return capitalCaseLastWord;
-      }
+    };
     render() {
         const { loading, gwInfoResponse } = this.state;
-        if (loading){
+        if (loading) {
             return null;
         }
 
@@ -238,26 +238,26 @@ class GwInfoValve extends React.Component {
                 );
             }
             if (gwInfoResponse.body?.data?.layersNames) {
-                let layernames = gwInfoResponse.body?.data?.layersNames;
+                const layernames = gwInfoResponse.body?.data?.layersNames;
                 values = (
                     <td>
                         <div className="hover-dropdown">
                             <button>Features</button>
                             <div className="dropdown-content">
                                 {layernames.map((values, index) => (
-                                    <div key={index} className="hover-dropdown-item">
+                                    <div className="hover-dropdown-item" key={index}>
                                         <span className="first-item">{this.getLastWordFromLayer(values.layerName)}</span>
                                         <Icon className="item-icon" icon="chevron-right"/>
                                         <div className="dropdown-content">
                                             {(values.ids).map((subValues, index) => (
-                                                <span key={index} onMouseEnter={() => this.highLightFeature(subValues)} onClick={() => this.showInfo(subValues, values.layerName)}>{subValues.label}</span>
+                                                <span key={index} onClick={() => this.showInfo(subValues, values.layerName)} onMouseEnter={() => this.highLightFeature(subValues)}>{subValues.label}</span>
                                             ))}
                                         </div>
                                     </div>
                                 ))}
                                 <hr/>
                                 <div className="hover-dropdown-item" onMouseEnter={() => this.highLightMultipleFeatures(layernames)}>
-                                    Identify All ({layernames.reduce((partialSum, component) => partialSum + (component.ids).length,0)})
+                                    Identify All ({layernames.reduce((partialSum, component) => partialSum + (component.ids).length, 0)})
                                 </div>
                             </div>
                         </div>
@@ -279,7 +279,7 @@ class GwInfoValve extends React.Component {
         }
 
         return infoButtons;
-        
+
     }
 }
 

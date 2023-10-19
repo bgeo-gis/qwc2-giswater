@@ -61,8 +61,8 @@ class GwInfo extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        theme: PropTypes.object,
-        setIdentifyResult: PropTypes.func
+        setIdentifyResult: PropTypes.func,
+        theme: PropTypes.object
     };
     static defaultProps = {
         replaceImageUrls: true,
@@ -463,8 +463,8 @@ class GwInfo extends React.Component {
         let graphWindow = null;
         let visitWindow = null;
         let noIdentifyResult = false;
-        let identifyResult = this.state.identifyResult || this.props.identifyResult;
-        let headerText = identifyResult?.body?.form?.headerText
+        const identifyResult = this.state.identifyResult || this.props.identifyResult;
+        const headerText = identifyResult?.body?.form?.headerText;
         if (this.state.pendingRequests === true || identifyResult  !== null) {
             let body = null;
             if (isEmpty(identifyResult) || !identifyResult.form_xml) {
@@ -505,13 +505,13 @@ class GwInfo extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow minimizeable={true} dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight}
-                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
-                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
+                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
+                    initialX={this.props.initialX} initialY={this.props.initialY}
+                    initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight} minimizeable
                     onClose={this.clearResults}
                     scrollable={this.state.mode === "Dma" ? true : false}  title={typeof headerText !== "undefined" ? headerText : "Info"}
                 >
-                    {body}                    
+                    {body}
                 </ResizeableWindow>
             );
 

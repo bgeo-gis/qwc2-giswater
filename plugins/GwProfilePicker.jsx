@@ -54,6 +54,7 @@ class GwProfilePicker extends React.Component {
         currentTask: PropTypes.string,
         firstNodeCoordinates: PropTypes.object,
         firstNodeId: PropTypes.object,
+        initPointStyle: PropTypes.object,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
@@ -75,7 +76,6 @@ class GwProfilePicker extends React.Component {
         selection: PropTypes.object,
         standardLinesStyle: PropTypes.object,
         standardPointsStyle: PropTypes.object,
-        initPointStyle: PropTypes.object,
         theme: PropTypes.object
     };
 
@@ -97,8 +97,8 @@ class GwProfilePicker extends React.Component {
             textFill: "blue",
             textStroke: "white",
             textFont: "20pt sans-serif"
-         },
-         standardPointsStyle: {
+        },
+        standardPointsStyle: {
             strokeColor: [235, 167, 48, 1],
             strokeWidth: 2,
             strokeDash: [4],
@@ -106,8 +106,8 @@ class GwProfilePicker extends React.Component {
             textFill: "blue",
             textStroke: "white",
             textFont: "20pt sans-serif"
-         },
-         initPointStyle: {
+        },
+        initPointStyle: {
             strokeColor: [0, 51, 255, 1],
             strokeWidth: 2,
             strokeDash: [4],
@@ -115,7 +115,7 @@ class GwProfilePicker extends React.Component {
             textFill: "blue",
             textStroke: "white",
             textFont: "20pt sans-serif"
-         }
+        }
     };
 
     state = {
@@ -223,7 +223,7 @@ class GwProfilePicker extends React.Component {
         for (let i = 0; i < this.segmentMarkers.length; ++i) {
             this.updateSegmentMarker(this.segmentMarkers[i], coo[i], coo[i + 1], length[i]);
         }
-        
+
         this.props.changeProfileState({
             profiling: true,
             coordinates: coo,
@@ -231,7 +231,7 @@ class GwProfilePicker extends React.Component {
             allNodeCoordinates: allNodeCoordinates,
             allNodeLength: allNodeLength,
             feature: feature,
-            theme:  this.props.theme.title,
+            theme: this.props.theme.title,
             initNode: feature.body.data.node[0].node_id,
             endNode: feature.body.data.node[feature.body.data.node.length - 1].node_id,
             epsg: GwUtils.crsStrToInt(this.props.mapObj.projection)
@@ -342,7 +342,7 @@ class GwProfilePicker extends React.Component {
             const coordinates = featureGeoJSON.geometry.coordinates.map(coord => [coord[0], coord[1]]);
             const lineString = new LineString(coordinates);
             const feature = new Feature({
-                geometry: lineString,
+                geometry: lineString
             });
             return feature;
         });
@@ -510,7 +510,7 @@ class GwProfilePicker extends React.Component {
                 this.props.processFinished("profile_calc_msg", true, "Success!");
                 // this.props.removeLayer("profilehighlight")
                 // let arcs = result['body']['data']['arc']
-                
+
                 this.setState({ identifyResult: result });
                 this.enterTemporaryPickMode(result);
             }).catch((e) => {
@@ -673,7 +673,7 @@ const selector = (state) => ({
     measurement: state.measurement,
     selection: state.selection,
     profile: state.profile,
-    theme: state.theme.current,
+    theme: state.theme.current
 });
 
 export default connect(selector, {

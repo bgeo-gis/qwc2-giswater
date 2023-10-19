@@ -2,16 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
-import isEmpty from 'lodash.isempty'
-import displayCrsSelector from 'qwc2/selectors/displaycrs';;
+import isEmpty from 'lodash.isempty';
+import displayCrsSelector from 'qwc2/selectors/displaycrs';
 import {setCurrentTask} from 'qwc2/actions/task';
 import { LayerRole, refreshLayer, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 
-
 class PluginSample extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         displaycrs: PropTypes.string,
         enabled: PropTypes.bool,
         layers: PropTypes.array,
@@ -19,48 +19,47 @@ class PluginSample extends React.Component {
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         refreshLayer: PropTypes.func,
-        setCurrentTask: PropTypes.func,
-        theme: PropTypes.object,
         removeLayer: PropTypes.func,
-        addLayerFeatures: PropTypes.func
+        setCurrentTask: PropTypes.func,
+        theme: PropTypes.object
     };
     state = {
         dummyVariable: "Before",
-        coordinate: null, 
-        elevation: null, 
-        extraInfo: null, 
-        loadedComponents : [],
+        coordinate: null,
+        elevation: null,
+        extraInfo: null,
+        loadedComponents: [],
         infoButtons: null,
-        loading: true,
+        loading: true
     };
-    componentDidMount(){
-        this.setState({newPoint: this.props.newPoint})
+    componentDidMount() {
+        this.setState({newPoint: this.props.newPoint});
         this.changeVariables();
     }
-    changeVariables(){
+    changeVariables() {
         this.setState({dummyVariable: "After", loading: false});
     }
     // When MapInfoTooltip is closed clear variables/layers
-    componentWillUnmount(){
+    componentWillUnmount() {
         this.clear();
     }
-    
+
     clear = () => {
         this.setState({coordinate: null, height: null, extraInfo: null, gwInfoResponse: null, loading: true});
     };
     render() {
         const { loading, dummyVariable } = this.state;
-        if (loading){
+        if (loading) {
             return null;
         }
 
         // OnClick remove coordinates
-        let body = (
+        const body = (
             <button onClick={() => this.props.removeCoordinates()}>{dummyVariable}</button>
         );
 
         return body;
-        
+
     }
 }
 
@@ -75,10 +74,10 @@ const selector = createSelector([state => state, displayCrsSelector], (state, di
 
 export default {
     // Variable to get
-    cfg:{
+    cfg: {
         newPoint: true,
         removeCoordinates: true,
-        coordinates: false,
+        coordinates: false
     },
     controls: connect(selector, {
         // Random functions
@@ -87,6 +86,6 @@ export default {
         processStarted: processStarted,
         processFinished: processFinished,
         removeLayer: removeLayer,
-        addLayerFeatures: addLayerFeatures,
+        addLayerFeatures: addLayerFeatures
     })(PluginSample)
 };

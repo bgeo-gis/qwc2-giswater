@@ -52,9 +52,9 @@ class GwMincutManager extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        setCurrentTask: PropTypes.func,
         setActiveMincut: PropTypes.func,
-        setActiveSelector: PropTypes.func
+        setActiveSelector: PropTypes.func,
+        setCurrentTask: PropTypes.func
     };
     static defaultProps = {
         initialWidth: 800,
@@ -168,7 +168,7 @@ class GwMincutManager extends React.Component {
                 tableName: tableWidget.linkedobject,
                 filterFields: {}
             };
-            
+
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
                 this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidget.columnname]: result} }));
@@ -254,7 +254,7 @@ class GwMincutManager extends React.Component {
                     axios.get(requestUrl + "get", { params: params }).then(response => {
                         const result = response.data;
                         this.props.setActiveSelector(result, ids, this.props.keepManagerOpen);
-                        //this.setState({ selectorResult: result, pendingRequests: false });
+                        // this.setState({ selectorResult: result, pendingRequests: false });
                         // this.filterLayers(result);
                     }).catch((e) => {
                         console.log(e);
@@ -289,7 +289,7 @@ class GwMincutManager extends React.Component {
             axios.get(requestUrl + "open", { params: params }).then((response) => {
                 const result = response.data;
                 this.props.setActiveMincut(result, mincutId, this.props.keepManagerOpen);
-                //this.setState( { mincutResult: result, mincutId: mincutId } );
+                // this.setState( { mincutResult: result, mincutId: mincutId } );
             }).catch((e) => {
                 console.log(e);
             });
@@ -332,8 +332,8 @@ class GwMincutManager extends React.Component {
 
     render() {
         let resultWindow = null;
-        let bodyMincut = null;
-        let bodySelector = null;
+        const bodyMincut = null;
+        const bodySelector = null;
         if (this.state.pendingRequests === true || this.state.mincutmanagerResult !== null) {
             let body = null;
 
@@ -366,9 +366,9 @@ class GwMincutManager extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow minimizeable="true" dockable="bottom" icon="giswater" initialHeight={600}
-                    initialWidth= {900} initialX={this.props.initialX}
-                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwMincutManagerWindow"
+                <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={600} initialWidth= {900}
+                    initialX={this.props.initialX} initialY={this.props.initialY}
+                    initiallyDocked={this.props.initiallyDocked} key="GwMincutManagerWindow" minimizeable="true"
                     onClose={this.onToolClose}
                     scrollable title="Giswater Mincut Manager"
                 >

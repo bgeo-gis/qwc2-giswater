@@ -41,9 +41,9 @@ class GwSearchBox extends React.Component {
             sectionsDefaultCollapsed: PropTypes.bool
         }),
         setCurrentTask: PropTypes.func,
+        setIdentifyResult: PropTypes.func,
         theme: PropTypes.object,
-        zoomToPoint: PropTypes.func,
-        setIdentifyResult: PropTypes.func
+        zoomToPoint: PropTypes.func
     };
     static defaultProps = {
         infoDockable: "right"
@@ -120,13 +120,13 @@ class GwSearchBox extends React.Component {
             };
             axios.get(requestUrl + "fromid", { params: params }).then((response) => {
                 const result = response.data;
-                //this.setState({ identifyResult: result });
+                // this.setState({ identifyResult: result });
                 this.props.setIdentifyResult(result);
             }).catch((e) => {
                 console.log(e);
             });
         }
-        //this.setState({ identifyResult: {} });
+        // this.setState({ identifyResult: {} });
     };
 
     panToResult = (geometry) => {
@@ -246,7 +246,7 @@ class GwSearchBox extends React.Component {
     render() {
         const placeholder = LocaleUtils.tr("searchbox.placeholder");
         let resultWindow = null;
-        let bodyInfo = null;
+        const bodyInfo = null;
 
         resultWindow = (
             <div className="SearchBox" key="GwSearchBox">

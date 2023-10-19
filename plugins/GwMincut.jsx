@@ -46,11 +46,11 @@ class GwMincut extends React.Component {
         initialX: PropTypes.number,
         initialY: PropTypes.number,
         initiallyDocked: PropTypes.bool,
+        keepManagerOpen: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
         mincutId: PropTypes.number,
         mincutResult: PropTypes.object,
-        keepManagerOpen: PropTypes.bool,
         panTo: PropTypes.func,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
@@ -58,8 +58,8 @@ class GwMincut extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        setCurrentTask: PropTypes.func,
         setActiveMincut: PropTypes.func,
+        setCurrentTask: PropTypes.func,
         theme: PropTypes.object
     };
     static defaultProps = {
@@ -162,8 +162,8 @@ class GwMincut extends React.Component {
         const rootLayer = this.props.layers.find(l => l.type === "wms");
         const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
         if (layer) {
-           this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
-           return true;
+            this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+            return true;
         }
         return false;
     };
@@ -205,7 +205,7 @@ class GwMincut extends React.Component {
         }
     };
     manageLayers = (result) => {
-        if (!this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true)) {            
+        if (!this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true)) {
             this.addMincutLayers(result);
         }
     };
@@ -416,7 +416,7 @@ class GwMincut extends React.Component {
         this.props.removeMarker('mincut');
         this.props.removeLayer("mincutselection");
         this.props.setActiveMincut(null, null);
-        if (!this.props.keepManagerOpen){
+        if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
         }
         this.setState({
@@ -437,7 +437,7 @@ class GwMincut extends React.Component {
             if (this.props.dispatchButton) {
                 this.props.dispatchButton({ widgetfunction: { functionName: "mincutClose" } });
             }
-            
+
         } else {
             this.cancelMincut();
         }
@@ -640,10 +640,10 @@ class GwMincut extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow minimizeable="true" dockable={this.props.dockable} icon="giswater"
-                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
-                    initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
-                    key="GwMincutWindow"
+                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.props.initialHeight}
+                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
+                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwMincutWindow"
+                    minimizeable="true"
                     onClose={this.onDlgClose} scrollable title="Giswater Mincut"
                 >
                     {body}

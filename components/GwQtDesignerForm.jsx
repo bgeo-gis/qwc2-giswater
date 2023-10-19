@@ -231,7 +231,7 @@ class GwQtDesignerForm extends React.Component {
         // const attr = widget.attribute || {};
         const inputConstraints = {};
         inputConstraints.readOnly = this.props.readOnly || this.props.disabledWidgets.includes(widget.name) || prop.readOnly === "true" || prop.enabled === "false";
-        let tmp_name = (widget.name).replace("_label", "");
+        const tmp_name = (widget.name).replace("_label", "");
         inputConstraints.hidden = this.props.hiddenWidgets.includes(tmp_name);
         // inputConstraints.readOnly = false;
         inputConstraints.required = !inputConstraints.readOnly && (prop.required === "true");
@@ -373,9 +373,9 @@ class GwQtDesignerForm extends React.Component {
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
             return (
-                <select hidden={inputConstraints.hidden} disabled={inputConstraints.readOnly} title={prop.toolTip} name={elname} onChange={ev => updateField(widget, ev.target.value, false, inputConstraints.placeholder)} {...inputConstraints} style={fontStyle} value={value}>
+                <select disabled={inputConstraints.readOnly} hidden={inputConstraints.hidden} name={elname} onChange={ev => updateField(widget, ev.target.value, false, inputConstraints.placeholder)} title={prop.toolTip} {...inputConstraints} style={fontStyle} value={value}>
                     {!haveEmpty ? (
-                        <option hidden={inputConstraints.hidden} disabled={inputConstraints.required} value="">
+                        <option disabled={inputConstraints.required} hidden={inputConstraints.hidden} value="">
                             {inputConstraints.placeholder || LocaleUtils.tr("editing.select")}
                         </option>
                     ) : null}

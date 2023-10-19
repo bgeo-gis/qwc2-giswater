@@ -301,9 +301,9 @@ class GwDateSelector extends React.Component {
 
             }
             datesWindow = (
-                <ResizeableWindow minimizeable="true" dockable={false} icon="date_selector" id="GwDateSelector" initialHeight={this.props.initialHeight}
-                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
-                    initialY={this.props.initialY} key="GwDateSelectorWindow"
+                <ResizeableWindow dockable={false} icon="date_selector" id="GwDateSelector" initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
+                    initialX={this.props.initialX} initialY={this.props.initialY}
+                    key="GwDateSelectorWindow" minimizeable="true"
                     onClose={this.onToolClose} onShow={this.onShow} title="GW Date Selector"
                 >
                     {body}

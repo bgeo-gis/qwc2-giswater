@@ -51,6 +51,7 @@ class GwVisit extends React.Component {
         initialX: PropTypes.number,
         initialY: PropTypes.number,
         initiallyDocked: PropTypes.bool,
+        keepManagerOpen: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
         processFinished: PropTypes.func,
@@ -58,12 +59,11 @@ class GwVisit extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        theme: PropTypes.object,
-        visitResult: PropTypes.object,
-        setCurrentTask: PropTypes.func,
         setActiveVisit: PropTypes.func,
+        setCurrentTask: PropTypes.func,
         state: PropTypes.object,
-        keepManagerOpen: PropTypes.bool
+        theme: PropTypes.object,
+        visitResult: PropTypes.object
     };
     static defaultProps = {
         replaceImageUrls: true,
@@ -122,7 +122,7 @@ class GwVisit extends React.Component {
             });
             break;
         case 'set_visit': {
-            const ignoreWidgets = ['txt_visit_id', 'tbl_files','mail','sendto'];
+            const ignoreWidgets = ['txt_visit_id', 'tbl_files', 'mail', 'sendto'];
             // console.log("WIDGETS: ", this.state.widgetValues);
             // eslint-disable-next-line
             const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
@@ -143,12 +143,12 @@ class GwVisit extends React.Component {
 
                 const widgets = this.state.visitResult?.body?.data?.fields || this.props.visitResult?.body?.data?.fields;
 
-                if (this.state.widgetValues?.mail?.value){
-                    let email = this.state.widgetValues.sendto.value;
-                    let shareUrl = ""
+                if (this.state.widgetValues?.mail?.value) {
+                    const email = this.state.widgetValues.sendto.value;
+                    let shareUrl = "";
                     const posCrs = this.props.state.map.projection;
                     const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 4 : 0;
-                    let coordinates =  this.state.coords.map(x => x.toFixed(prec)).join(",");
+                    const coordinates =  this.state.coords.map(x => x.toFixed(prec)).join(",");
                     GwUtils.generatePermaLink(this.props.state, coordinates, (permalink => {
                         shareUrl = permalink;
                         this.setState({location: permalink});
@@ -158,7 +158,7 @@ class GwVisit extends React.Component {
                             const posCrs = urlParts.query.crs || this.props.state.map.projection;
                             const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 20 : 0;
                             urlParts.query.c = this.state.coords.map(x => x.toFixed(prec)).join(",");
-                            //urlParts.query.c =this.state.coords.map(x => x).join(",");
+                            // urlParts.query.c =this.state.coords.map(x => x).join(",");
                             const url = new URL(window.location.href);
                             const sValue = url.searchParams.get('s');
                             urlParts.query.s = sValue;
@@ -177,7 +177,7 @@ class GwVisit extends React.Component {
                             window.location.href = result;
                         }).catch((e) => {
                             console.warn(e);
-                        });   
+                        });
                     }));
                 }
 
@@ -267,7 +267,7 @@ class GwVisit extends React.Component {
         }
         case 'show_mails': {
             let hiddenWidgets = ["sendto"];
-            if (widget){
+            if (widget) {
                 hiddenWidgets = [];
             }
             this.setState({ hiddenWidgets: hiddenWidgets });
@@ -415,7 +415,7 @@ class GwVisit extends React.Component {
         this.props.removeLayer("visitselection");
         this.props.changeSelectionState({ geomType: undefined });
         this.props.setActiveVisit(null);
-        if (!this.props.keepManagerOpen){
+        if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
         }
         this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
@@ -435,7 +435,7 @@ class GwVisit extends React.Component {
 
     render() {
         let resultWindow = null;
-        if (this.state.pendingRequests === true || this.state.visitResult !== null || this.props.visitResult !==null ) {
+        if (this.state.pendingRequests === true || this.state.visitResult !== null || this.props.visitResult !== null ) {
             const result = this.state.visitResult || this.props.visitResult;
             let body = null;
             if (isEmpty(result)) {
@@ -457,7 +457,7 @@ class GwVisit extends React.Component {
                     body = (
                         <div className="identify-body" role="body">
                             <GwQtDesignerForm dispatchButton={this.dispatchButton} files={this.state.files} form_xml={result.form_xml}
-                                getInitialValues initiallyDocked={this.props.initiallyDocked} hiddenWidgets={this.state.hiddenWidgets}
+                                getInitialValues hiddenWidgets={this.state.hiddenWidgets} initiallyDocked={this.props.initiallyDocked}
                                 onTabChanged={this.onTabChanged} readOnly={false} replaceImageUrls
                                 theme={this.state.theme} updateField={this.updateField} widgetValues={widgetValues}
                             />
@@ -467,9 +467,9 @@ class GwVisit extends React.Component {
             }
             const title = result.body?.data?.form?.headerText || "Visit";
             resultWindow = (
-                <ResizeableWindow minimizeable="true" dockable={this.props.dockable} icon="giswater"
-                    initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
-                    initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow"
+                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight}
+                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
+                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minimizeable="true"
                     onClose={this.clearResults}
                     scrollable={this.state.mode === "Dma" ? true : false} title={title}
                 >

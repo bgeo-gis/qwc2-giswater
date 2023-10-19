@@ -15,14 +15,14 @@ import { setCurrentTask } from 'qwc2/actions/task';
 
 class GwClearTempLayersButton extends React.Component {
     static propTypes = {
+        closeTasks: PropTypes.bool,
         position: PropTypes.number,
         removeLayer: PropTypes.func,
-        closeTasks: PropTypes.bool,
         setCurrentTask: PropTypes.func
     };
     static defaultProps = {
         closeTasks: false
-    }
+    };
     clearLayers() {
         this.props.removeLayer("temp_points.geojson");
         this.props.removeLayer("temp_lines.geojson");
@@ -30,7 +30,7 @@ class GwClearTempLayersButton extends React.Component {
         this.props.removeLayer("redlining");
         if (this.props.closeTasks) {
             this.props.setCurrentTask(null);
-        }        
+        }
     }
     render() {
         return (

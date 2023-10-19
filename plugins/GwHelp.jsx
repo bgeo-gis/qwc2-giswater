@@ -21,30 +21,27 @@ class GwHelp extends React.Component {
 
     static defaultProps = {
         helpUrl: "https://qwc2.bgeo.es/legal/"
-    }
+    };
 
     handleButtonClick = () => {
         const { helpUrl } = this.props;
         window.open(helpUrl, '_blank');  // Open the helpUrl in a new tab
         this.props.setCurrentTask(null);
     };
-    
+
     render() {
         return [(
             <TaskBar key="GwHelpTaskBar"  onHide={this.onToolClose} onShow={this.handleButtonClick} task="GwHelp">
                 {() => ({
                 })}
             </TaskBar>
-        )];       
+        )];
     }
 }
-
 
 
 export default connect(() => ({}), {
     setCurrentTask: setCurrentTask
 })(GwHelp);
-
-
 
 

@@ -49,8 +49,8 @@ class GwVisitManager extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
-        setCurrentTask: PropTypes.func,
         setActiveVisit: PropTypes.func,
+        setCurrentTask: PropTypes.func,
         visitDockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string])
     };
 
@@ -239,7 +239,7 @@ class GwVisitManager extends React.Component {
             axios.get(requestUrl + "getvisit", { params: params }).then((response) => {
                 const result = response.data;
                 this.props.setActiveVisit(result, this.props.keepManagerOpen);
-                //this.setState({ visitResult: result });
+                // this.setState({ visitResult: result });
             }).catch((e) => {
                 console.log(e);
             });
@@ -268,7 +268,7 @@ class GwVisitManager extends React.Component {
 
     render() {
         let resultWindow = null;
-        let bodyvisit = null;
+        const bodyvisit = null;
         if (this.state.pendingRequests === true || this.state.visitmanagerResult !== null) {
             let body = null;
 
@@ -301,9 +301,9 @@ class GwVisitManager extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow minimizeable="true" dockable="bottom" icon="giswater" initialHeight={600}
-                    initialWidth= {900} initialX={this.props.initialX}
-                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwVisitManagerWindow"
+                <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={600} initialWidth= {900}
+                    initialX={this.props.initialX} initialY={this.props.initialY}
+                    initiallyDocked={this.props.initiallyDocked} key="GwVisitManagerWindow" minimizeable="true"
                     onClose={this.onToolClose}
                     scrollable title="Giswater Visit Manager"
                 >

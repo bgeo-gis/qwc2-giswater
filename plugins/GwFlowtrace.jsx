@@ -24,19 +24,19 @@ class GwFlowtrace extends React.Component {
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
+        initPointStyle: PropTypes.object,
         map: PropTypes.object,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
-        theme: PropTypes.object,
         standardLinesStyle: PropTypes.object,
         standardPointsStyle: PropTypes.object,
-        initPointStyle: PropTypes.object
+        theme: PropTypes.object
     };
     static defaultProps = {
         standardLinesStyle: {
-           strokeColor: {
+            strokeColor: {
                 trace: [232, 48, 235, 1],
                 exit: [235, 74, 117, 1]
             },
@@ -49,8 +49,8 @@ class GwFlowtrace extends React.Component {
         },
         standardPointsStyle: {
             strokeColor: {
-              "trace": [232, 48, 235, 1],
-              "exit": [235, 74, 117, 1]
+                trace: [232, 48, 235, 1],
+                exit: [235, 74, 117, 1]
             },
             strokeWidth: 2,
             strokeDash: [4],
@@ -61,8 +61,8 @@ class GwFlowtrace extends React.Component {
         },
         initPointStyle: {
             strokeColor: {
-              trace: [0, 51, 255, 1],
-              exit: [0, 51, 255, 1]
+                trace: [0, 51, 255, 1],
+                exit: [0, 51, 255, 1]
             },
             strokeWidth: 2,
             strokeDash: [4],
@@ -158,7 +158,7 @@ class GwFlowtrace extends React.Component {
         // Points
         const points = result.body.data.point;
         const standardPointsConfig = this.props.standardPointsStyle;
-        const initPointConfig =this.props.initPointStyle;
+        const initPointConfig = this.props.initPointStyle;
         const standardPointsStyle = {
             ...standardPointsConfig,
             strokeColor: this.state.mode === "trace" ? standardPointsConfig.strokeColor.trace : standardPointsConfig.strokeColor.exit

@@ -35,14 +35,14 @@ class GwSelector extends React.Component {
         initiallyDocked: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
+        mincutIds: PropTypes.string,
         refreshLayer: PropTypes.func,
         removeLayer: PropTypes.func,
         selectorResult: PropTypes.object,
-        mincutIds: PropTypes.string,
-        theme: PropTypes.object,
-        zoomToExtent: PropTypes.func,
+        setActiveSelector: PropTypes.func,
         setCurrentTask: PropTypes.func,
-        setActiveSelector: PropTypes.func
+        theme: PropTypes.object,
+        zoomToExtent: PropTypes.func
     };
     static defaultProps = {
         initialWidth: 480,
@@ -100,8 +100,8 @@ class GwSelector extends React.Component {
         if (prevProps.theme !== this.props.theme) {
             this.makeRequest(true);
         }
-        if (this.props.selectorResult && this.props.selectorResult !== prevProps.selectorResult){
-            this.setState({selectorResult: null})
+        if (this.props.selectorResult && this.props.selectorResult !== prevProps.selectorResult) {
+            this.setState({selectorResult: null});
         }
     }
     componentDidMount() {
@@ -116,7 +116,7 @@ class GwSelector extends React.Component {
             this.props.dispatchButton({ widgetfunction: { functionName: "selectorClose" } });
         }*/
         this.props.setActiveSelector(null);
-        //this.props.setCurrentTask(null);
+        // this.props.setCurrentTask(null);
         this.setState({ selectorResult: null, pendingRequests: false });
     };
     getSelectors = (params, hideForm = false) => {
@@ -147,7 +147,7 @@ class GwSelector extends React.Component {
         axios.post(requestUrl + "set", { ...params }).then(response => {
             const result = response.data;
             this.setState({ selectorResult: result, pendingRequests: false });
-            this.handleResult(result)
+            this.handleResult(result);
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
 
         }).catch((e) => {
@@ -160,12 +160,12 @@ class GwSelector extends React.Component {
         const rootLayer = this.props.layers.find(l => l.type === "wms");
         const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
         if (layer) {
-           this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
-           return true;
+            this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+            return true;
         }
         return false;
     };
-    
+
     addMincutLayers = (result) => {
         if (!result?.body?.data?.mincutArc) {
             return;
@@ -236,7 +236,7 @@ class GwSelector extends React.Component {
             fillColor: [51, 160, 44, 1]
         };
         const valveNotProposedFeatures = GwUtils.getGeoJSONFeatures("default", valveNotProposed, valveNotProposedStyle);
-        
+
         const pointFeatures = [].concat(nodeFeatures, connecFeatures, initpointFeatures, valveProposedFeatures, valveNotProposedFeatures);
         if (!isEmpty(pointFeatures)) {
             this.props.addLayerFeatures({

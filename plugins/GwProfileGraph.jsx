@@ -31,7 +31,6 @@ import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 
 
-
 import './style/GwProfileGraph.css';
 import { Tune } from '@mui/icons-material';
 
@@ -47,9 +46,9 @@ class GwProfileGraph extends React.Component {
         changeProfileState: PropTypes.func,
         heighProfilePrecision: PropTypes.number,
         height: PropTypes.number,
-        profile: PropTypes.object,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
+        profile: PropTypes.object,
         projection: PropTypes.string,
         removeMarker: PropTypes.func,
         samples: PropTypes.number
@@ -64,7 +63,7 @@ class GwProfileGraph extends React.Component {
         this.tooltip = null;
         this.marker = null;
         this.plot = null;
-        //this.queryElevations(props.profile.coordinates, props.profile.length, props.projection);
+        // this.queryElevations(props.profile.coordinates, props.profile.length, props.projection);
     }
     state = {
         profilePickerResult: null,
@@ -121,16 +120,16 @@ class GwProfileGraph extends React.Component {
         const serviceUrl = (ConfigUtils.getConfigProp("elevationServiceUrl") || "").replace(/\/$/, '');
         if (serviceUrl) {
             // this.props.processStarted("profile_msg", "Calculating Profile (2/2)...");
-            //this.setState({ isloading: true });
+            // this.setState({ isloading: true });
             axios.post(serviceUrl + '/getheightprofile', {coordinates, distances, projection, samples: this.props.samples}).then(response => {
                 // this.props.processFinished("profile_msg", true, "Success!");
-                //this.setState({data: response.data.elevations, isGraphLoading: false});
-                
+                // this.setState({data: response.data.elevations, isGraphLoading: false});
+
                 this.setState({data: response.data.elevations, isGraphLoading: false, ...this.getAllValuesForGraph(response.data.elevations)});
                 this.props.changeProfileState({...this.props.profile, pickPositionCallback: this.pickPositionCallback});
             }).catch(e => {
                 // this.props.processFinished("profile_msg", false, `Failed to get profile: ${e}`);
-                //this.setState({ isloading: false });
+                // this.setState({ isloading: false });
                 console.error("Query failed: " + e);
             });
         }
@@ -146,7 +145,7 @@ class GwProfileGraph extends React.Component {
         const jsonData = this.props.profile.feature.body.data;
         const nodes = jsonData.node;
         const arcs = jsonData.arc;
-        let totLength = (nodes.slice(-1))[0].total_distance + 1;
+        const totLength = (nodes.slice(-1))[0].total_distance + 1;
         const trueTerrain = dataElevations.map((elev, index) => ({
             x: index * totLength / this.props.samples,
             y: elev
@@ -169,7 +168,7 @@ class GwProfileGraph extends React.Component {
             }
         }
         const terrainMarks = [];
-        
+
         const nodeXCoordinates = [];
         for (let i = 0; i < nodes.length; i++) {
             // Get info of node
@@ -185,7 +184,7 @@ class GwProfileGraph extends React.Component {
         let index = 0;
         for (const arc_id of sortedArcIds) {
             const matchingCoordinates = data.find(item => item.properties.arc_id === arc_id);
-        
+
             if (matchingCoordinates) {
                 const coordinates = matchingCoordinates.geometry.coordinates;
                 const processedCoordinates =  index !== 0 ? coordinates.slice(1) : coordinates;
@@ -304,17 +303,17 @@ class GwProfileGraph extends React.Component {
         const maxHeightSupported = 13;
 
         if (maxHeight - minHeight < maxHeightSupported) {
-            var currentHeight = 0.1;
+            let currentHeight = 0.1;
             const guitarSize = 12;
             const spaceBetweenGuitarLines = 2.5;
             const labelBottomMargin = spaceBetweenGuitarLines * 0.2;
             const lineLateralOffset = 1;
 
             minHeight = minHeight - guitarSize;
-            let guitarLines = [];
+            const guitarLines = [];
             let currLinePosition = minHeight + currentHeight;
             let labelPosition = minHeight + currentHeight + labelBottomMargin;
-            
+
             // elev
             const elevGuitarLabels = nodeXCoordinates.map((entry) => ({
                 x: entry,
@@ -323,7 +322,7 @@ class GwProfileGraph extends React.Component {
             guitarLines.push(...[
                 {x: nodeXCoordinates[0] - lineLateralOffset, y: currLinePosition},
                 {x: nodeXCoordinates[nodeXCoordinates.length - 1] + lineLateralOffset, y: currLinePosition},
-                {x: null, y: null},
+                {x: null, y: null}
             ]);
             currentHeight = currentHeight + spaceBetweenGuitarLines;
 
@@ -337,10 +336,10 @@ class GwProfileGraph extends React.Component {
             guitarLines.push(...[
                 {x: nodeXCoordinates[0] - lineLateralOffset, y: currLinePosition},
                 {x: nodeXCoordinates[nodeXCoordinates.length - 1] + lineLateralOffset, y: currLinePosition},
-                {x: null, y: null},
+                {x: null, y: null}
             ]);
             currentHeight = currentHeight + spaceBetweenGuitarLines;
-            
+
             // topelev
             currLinePosition = minHeight + currentHeight;
             labelPosition = minHeight + currentHeight + labelBottomMargin;
@@ -351,7 +350,7 @@ class GwProfileGraph extends React.Component {
             guitarLines.push(...[
                 {x: nodeXCoordinates[0] - lineLateralOffset, y: currLinePosition},
                 {x: nodeXCoordinates[nodeXCoordinates.length - 1] + lineLateralOffset, y: currLinePosition},
-                {x: null, y: null},
+                {x: null, y: null}
             ]);
             currentHeight = currentHeight + spaceBetweenGuitarLines;
 
@@ -376,7 +375,7 @@ class GwProfileGraph extends React.Component {
             guitarLines.push(...[
                 {x: nodeXCoordinates[0] - lineLateralOffset, y: currLinePosition},
                 {x: nodeXCoordinates[nodeXCoordinates.length - 1] + lineLateralOffset, y: currLinePosition},
-                {x: null, y: null},
+                {x: null, y: null}
             ]);
 
             series = {
@@ -472,7 +471,7 @@ class GwProfileGraph extends React.Component {
                 }
             };
         }
-        
+
         series = {
             ...series,
             areaLine: {
@@ -493,8 +492,8 @@ class GwProfileGraph extends React.Component {
                     lineSmooth: false
                 }
             }
-        }
-        
+        };
+
         const fullData = {
             series: Object.entries(series).map(([name, data]) => {
                 return {
@@ -507,14 +506,14 @@ class GwProfileGraph extends React.Component {
 
         let scaleMinSpaceX = 40;
         let scaleMinSpaceY = 30;
-        if (totLength > 175){
+        if (totLength > 175) {
             scaleMinSpaceX = 70;
             scaleMinSpaceY = 50;
-        } else if (totLength > 100){
+        } else if (totLength > 100) {
             scaleMinSpaceX = 60;
             scaleMinSpaceY = 40;
         }
-        
+
         const options = {
             height: this.props.height,
             chartPadding: {left: 5, bottom: 0, top: 0},
@@ -524,14 +523,14 @@ class GwProfileGraph extends React.Component {
                     [name]: data.options
                 };
             }, {}),
-            //divisor: 6,
+            // divisor: 6,
             axisX: { // Generate x labels automatically to be able to zoom
                 type: Chartist.AutoScaleAxis,
-                scaleMinSpace: scaleMinSpaceX,
-                //referenceValue: totLength,
-                //divisor: 6,
-                //ensureTickValue: 0,
-                //high: totLength
+                scaleMinSpace: scaleMinSpaceX
+                // referenceValue: totLength,
+                // divisor: 6,
+                // ensureTickValue: 0,
+                // high: totLength
             },
             axisY: {
                 scaleMinSpace: scaleMinSpaceY,
@@ -608,7 +607,7 @@ class GwProfileGraph extends React.Component {
                         // Marker over the line
                         // Use ev.value.x instead of x to get coordinates of ev that will match with node x
                         const x = idx / this.props.samples * (totLength - 1);
-                        let closestNode = tmpXCoordinates.reduce(function(prev, curr) {
+                        const closestNode = tmpXCoordinates.reduce(function(prev, curr) {
                             return (Math.abs(curr - x) < Math.abs(prev - x) ? curr : prev);
                         });
                         this.updateMarker(x);
@@ -622,7 +621,7 @@ class GwProfileGraph extends React.Component {
         };
 
         return {fullData: fullData, options: options, listener: listener, terrainMarks: terrainMarks, callbackCoordinates: callbackCoordinates, terrain: terrain, trueTerrain: trueTerrain};
-    }
+    };
 
     getDialog = () => {
         let pendingRequests = false;
@@ -659,7 +658,7 @@ class GwProfileGraph extends React.Component {
             const prevArc = jsonData.arc[i - 1];
 
             if (i === 0) { // FirstNode coordinates
-                if (surfaceType == "TOP"){
+                if (surfaceType == "TOP") {
                     nodesTopCoords.push(
                         { x: x - halfWidth, y: y },
                         { x: x - halfWidth, y: groundY },
@@ -689,9 +688,9 @@ class GwProfileGraph extends React.Component {
                         { x: x + halfWidth, y: arc.elev1 }
                     );
                 }
-                
+
             } else if (i < numNodes - 1) { // Mid nodes coordinates
-                if (surfaceType == "TOP"){
+                if (surfaceType == "TOP") {
                     nodesTopCoords.push(
                         { x: x - halfWidth, y: prevArc.elev2 + prevArc.cat_geom1 },
                         { x: x - halfWidth, y: groundY },
@@ -716,9 +715,9 @@ class GwProfileGraph extends React.Component {
                         { x: x + halfWidth, y: arc.elev1 }
                     );
                 }
-                
+
             } else { // End Node coordinates
-                if (surfaceType == "TOP"){
+                if (surfaceType == "TOP") {
                     nodesTopCoords.push(
                         { x: x - halfWidth, y: prevArc.elev2 + prevArc.cat_geom1 },
                         { x: x - halfWidth, y: groundY },
@@ -742,7 +741,7 @@ class GwProfileGraph extends React.Component {
                         { x: x + halfWidth, y: y }
                     );
                 }
-                
+
             }
         }
         return [nodesTopCoords, nodesBottomCoords];
@@ -768,8 +767,8 @@ class GwProfileGraph extends React.Component {
         let dockerBody = null;
         let profileTool = null;
 
-        let fullData = this.state.fullData;
-        let options = this.state.options;
+        const fullData = this.state.fullData;
+        const options = this.state.options;
         const indexTerrain = fullData.series.findIndex(item => item.name === 'terrain');
         if (this.state.showTerrain) {
             if (indexTerrain === -1) {
@@ -782,9 +781,9 @@ class GwProfileGraph extends React.Component {
                     showArea: false,
                     showPoint: false,
                     lineSmooth: true
-                }
+                };
             }
-            
+
         } else {
             if (indexTerrain !== -1) {
                 fullData.series.splice(indexTerrain, 1);
@@ -803,7 +802,7 @@ class GwProfileGraph extends React.Component {
                     showArea: false,
                     showPoint: false,
                     lineSmooth: false
-                }
+                };
             }
         } else {
             if (indexTrueTerrain !== -1) {
@@ -832,7 +831,7 @@ class GwProfileGraph extends React.Component {
                         </div>
                     </div>
                     <div className='height-profile-buttons-bottom'>
-                        <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom(); this.setState({zoomAxisX: null})}}
+                        <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom(); this.setState({zoomAxisX: null});}}
                             title={"Reset Zoom"} />
                         <Icon className="export-profile-button" icon="export" onClick={() => this.getDialog()}
                             title={"Export profile"} />
@@ -868,7 +867,7 @@ class GwProfileGraph extends React.Component {
 
             }
             datesWindow = (
-                <ResizeableWindow minimizeable="true" dockable={false} icon="giswater" id="GwDateSelector" key="GwDateSelectorWindow"
+                <ResizeableWindow dockable={false} icon="giswater" id="GwDateSelector" key="GwDateSelectorWindow" minimizeable="true"
                     onClose={this.onToolClose} onShow={this.onShow} title="GW Profile Tool"
                 >
                     {body}
@@ -1052,7 +1051,7 @@ class GwProfileGraph extends React.Component {
         }
         const paths = this.plot.chart.getElementsByTagName("path");
         let path = null;
-        
+
         for (let i = paths.length - 1; i >= 0; --i) {
             if (paths[i].className.baseVal === "ct-area") {
                 path = paths[i];
@@ -1079,22 +1078,22 @@ class GwProfileGraph extends React.Component {
         const tolerance = 1.5;
         const foundCoordinate = this.state.terrainMarks.find(coordinate => Math.abs(coordinate.x - x) <= tolerance);
         let isNode = false;
-        let nodeX = null
+        let nodeX = null;
         if (foundCoordinate) {
             isNode = true;
             nodeX = foundCoordinate.x;
         }
-        
+
         const totLength = (this.props.profile.length || []).reduce((tot, num) => tot + num, 0);
         const k = Math.min(1, x / (totLength + 1));
         const idx = Math.min(this.state.data.length - 1, Math.floor(k * this.props.samples));
-        let realX = x;
+        const realX = x;
         x = isNode ? nodeX : x;
 
         // console.log("realX -> ", realX);
         // console.log("x -> ", x);
         const isInRange = !this.state.zoomAxisX || (realX >= this.state.zoomAxisX.low && realX <= this.state.zoomAxisX.high);
-        if (isInRange){
+        if (isInRange) {
             this.updateTooltip( x, this.state.data[idx], path.getBoundingClientRect().left + k * path.getBoundingClientRect().width, isNode);
         } else {
             this.clearMarkerAndTooltip();
