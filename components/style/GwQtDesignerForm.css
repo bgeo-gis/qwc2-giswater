@@ -29,6 +29,10 @@
     max-width: 100%;
 }
 
+.qt-designer-form-datetime > input {
+    width: 50%;
+}
+
 .mincut-body {
     height: 100%;
 }

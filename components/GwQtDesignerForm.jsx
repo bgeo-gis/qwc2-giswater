@@ -302,7 +302,7 @@ class GwQtDesignerForm extends React.Component {
                 </div>
             );
         } else if (widget.class === "QLabel") {
-            return (<div hidden={inputConstraints.hidden} style={fontStyle}>{prop.text}</div>);
+            return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);
         } else if (widget.class === "Line") {
             const linetype = (widget.property || {}).orientation === "Qt::Vertical" ? "vline" : "hline";
             return (<div className={"qt-designer-form-" + linetype} />);
@@ -349,9 +349,9 @@ class GwQtDesignerForm extends React.Component {
                 </div>
             );
         } else if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit") {
-            return (<textarea name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} value={value} />);
+            return (<textarea name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} value={value} />);
         } else if (widget.class === "QLineEdit") {
-            return (<input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} type="text" value={value} />);
+            return (<input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} title={prop.toolTip} type="text" value={value} />);
         } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const type = widget.class === "QCheckBox" ? "checkbox" : "radio";
             let action;
@@ -361,8 +361,8 @@ class GwQtDesignerForm extends React.Component {
                 action = "";
             }
             return (
-                <label style={fontStyle}>
-                    <input checked={value} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.checked, action)} {...inputConstraints} type={type} value={widget.name} />
+                <label style={fontStyle} title={prop.toolTip}>
+                    <input checked={value} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.checked, action)} {...inputConstraints} title={prop.toolTip} type={type} value={widget.name} />
                     {prop.text}
                 </label>
             );
@@ -373,7 +373,7 @@ class GwQtDesignerForm extends React.Component {
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
             return (
-                <select hidden={inputConstraints.hidden} disabled={inputConstraints.readOnly} name={elname} onChange={ev => updateField(widget, ev.target.value, false, inputConstraints.placeholder)} {...inputConstraints} style={fontStyle} value={value}>
+                <select hidden={inputConstraints.hidden} disabled={inputConstraints.readOnly} title={prop.toolTip} name={elname} onChange={ev => updateField(widget, ev.target.value, false, inputConstraints.placeholder)} {...inputConstraints} style={fontStyle} value={value}>
                     {!haveEmpty ? (
                         <option hidden={inputConstraints.hidden} disabled={inputConstraints.required} value="">
                             {inputConstraints.placeholder || LocaleUtils.tr("editing.select")}
@@ -393,17 +393,17 @@ class GwQtDesignerForm extends React.Component {
             const step = prop.singleStep ?? 1;
             const type = (widget.class === "QSlider" ? "range" : "number");
             return (
-                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} type={type} value={value} />
+                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} title={prop.toolTip} type={type} value={value} />
             );
         } else if (widget.class === "QDateEdit") {
             const min = prop.minimumDate ? this.dateConstraint(prop.minimumDate) : "1900-01-01";
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
             return (
-                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="date" value={value} />
+                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} type="date" value={value} />
             );
         } else if (widget.class === "QTimeEdit") {
             return (
-                <input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} type="time" value={value} />
+                <input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} type="time" value={value} />
             );
         } else if (widget.class === "QDateTimeEdit") {
 
@@ -416,7 +416,7 @@ class GwQtDesignerForm extends React.Component {
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
             const parts = (value || "").split("T");
             return (
-                <span className="qt-designer-form-datetime">
+                <span className="qt-designer-form-datetime" title={prop.toolTip}>
                     <input
                         max={max[0]}
                         min={min[0]}
@@ -444,7 +444,7 @@ class GwQtDesignerForm extends React.Component {
             if (widgetControls.icon) {
                 text = (<Icon icon={widgetControls.icon} />);
             }
-            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} type="button">{text}</button>);
+            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
