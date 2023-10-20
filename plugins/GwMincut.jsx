@@ -210,14 +210,13 @@ class GwMincut extends React.Component {
         }
     };
     addMincutLayers = (result) => {
-        if (!result?.body?.data?.arc) {
+        if (!result?.body?.data?.mincutArc) {
             return;
         }
-
         this.removeTempLayers();
 
         // Arc
-        const arc = result.body.data.arc;
+        const arc = result.body.data.mincutArc;
         const arcStyle = {
             strokeColor: [255, 206, 128, 1],
             strokeWidth: 6
@@ -235,7 +234,7 @@ class GwMincut extends React.Component {
         }
 
         // Init
-        const initPoint = result.body.data.init;
+        const initPoint = result.body.data.mincutInit;
         const initPointStyle = {
             strokeColor: [0, 24, 124, 1],
             strokeWidth: 1,
@@ -244,7 +243,7 @@ class GwMincut extends React.Component {
         };
         const initpointFeatures = GwUtils.getGeoJSONFeatures("default", initPoint, initPointStyle);
         // Node
-        const node = result.body.data.node;
+        const node = result.body.data.mincutNode;
         const nodeStyle = {
             strokeColor: [160, 134, 17, 1],
             strokeWidth: 1,
@@ -253,7 +252,7 @@ class GwMincut extends React.Component {
         };
         const nodeFeatures = GwUtils.getGeoJSONFeatures("default", node, nodeStyle);
         // Connec
-        const connec = result.body.data.connec;
+        const connec = result.body.data.mincutConnec;
         const connecStyle = {
             strokeColor: [102, 46, 25, 1],
             strokeWidth: 1,
@@ -262,7 +261,7 @@ class GwMincut extends React.Component {
         };
         const connecFeatures = GwUtils.getGeoJSONFeatures("default", connec, connecStyle);
         // Valve proposed
-        const valveProposed = result.body.data.valveClose;
+        const valveProposed = result.body.data.mincutProposedValve;
         const valveProposedStyle = {
             strokeColor: [134, 13, 13, 1],
             strokeWidth: 1,
@@ -271,7 +270,7 @@ class GwMincut extends React.Component {
         };
         const valveProposedFeatures = GwUtils.getGeoJSONFeatures("default", valveProposed, valveProposedStyle);
         // Valve not proposed
-        const valveNotProposed = result.body.data.valveNot;
+        const valveNotProposed = result.body.data.mincutNotProposedValve;
         const valveNotProposedStyle = {
             strokeColor: [6, 94, 0, 1],
             strokeWidth: 1,
@@ -643,7 +642,7 @@ class GwMincut extends React.Component {
                 <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.props.initialHeight}
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwMincutWindow"
-                    minimizeable="true"
+                    minimizeable={true}
                     onClose={this.onDlgClose} scrollable title="Giswater Mincut"
                 >
                     {body}
