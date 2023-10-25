@@ -32,7 +32,6 @@ import GwUtils from '../utils/GwUtils';
 
 
 import './style/GwProfileGraph.css';
-import { Tune } from '@mui/icons-material';
 
 import MeasureUtils from 'qwc2/utils/MeasureUtils';
 
@@ -178,12 +177,12 @@ class GwProfileGraph extends React.Component {
             nodeXCoordinates.push(x);
         }
 
-        const data =  jsonData.line.features;
+        const data = jsonData.line.features;
         const sortedArcIds = jsonData.arc.map(item => item.arc_id);
         const callbackCoordinates = [];
         let index = 0;
-        for (const arc_id of sortedArcIds) {
-            const matchingCoordinates = data.find(item => item.properties.arc_id === arc_id);
+        for (const arcId of sortedArcIds) {
+            const matchingCoordinates = data.find(item => item.properties.arc_id === arcId);
 
             if (matchingCoordinates) {
                 const coordinates = matchingCoordinates.geometry.coordinates;
@@ -831,8 +830,8 @@ class GwProfileGraph extends React.Component {
                         </div>
                     </div>
                     <div className='height-profile-buttons-bottom'>
-                        <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom(); this.setState({zoomAxisX: null});}}
-                            title={"Reset Zoom"} />
+                        <Icon className="resetzoom-profile-button" icon="expand" onClick={() => {if (resetZoom) resetZoom(); this.setState({zoomAxisX: null});}}
+                            title={"Reset Graph Zoom"} />
                         <Icon className="export-profile-button" icon="export" onClick={() => this.getDialog()}
                             title={"Export profile"} />
                     </div>
