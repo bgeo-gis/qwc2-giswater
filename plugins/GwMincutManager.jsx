@@ -287,7 +287,7 @@ class GwMincutManager extends React.Component {
             axios.get(requestUrl + "open", { params: params }).then((response) => {
                 const result = response.data;
                 this.props.setActiveMincut(result, mincutId, this.props.keepManagerOpen);
-                this.addMincutLayers(result);
+                this.manageLayers(result);
                 // this.setState( { mincutResult: result, mincutId: mincutId } );
             }).catch((e) => {
                 console.log(e);
@@ -295,6 +295,22 @@ class GwMincutManager extends React.Component {
         } catch (error) {
             console.warn(error);
         }
+    };
+
+    manageLayers = (result) => {
+        if (!this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true)) {
+            this.addMincutLayers(result);
+        }
+    };
+
+    setOMLayersVisibility = (layerName, visible = true) => {
+        const rootLayer = this.props.layers.find(l => l.type === "wms");
+        const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
+        if (layer) {
+            this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+            return true;
+        }
+        return false;
     };
 
     removeTempLayers = () => {
