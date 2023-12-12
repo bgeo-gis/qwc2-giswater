@@ -2,72 +2,72 @@
   "locale": "pt-PT",
   "messages": {
     "editing": {
-      "select": ""
+      "select": "Selecionar"
     },
     "fileselector": {
-      "files": ""
+      "files": "Ficheiros"
     },
     "heightprofile": {
-      "asl": "",
-      "distance": "",
-      "height": ""
+      "asl": "a.s.l.",
+      "distance": "Distância",
+      "height": "Altura"
     },
     "identify": {
-      "noresults": "",
-      "querying": ""
+      "noresults": "Nenhuma informação disponível para o ponto selecionado",
+      "querying": "A consultar..."
     },
     "infotool": {
-      "clickhelpPoint": ""
+      "clickhelpPoint": "Clique num local para identificar no mapa..."
     },
     "mapinfotooltip": {
-      "elevation": "",
-      "title": ""
+      "elevation": "Elevação",
+      "title": "Título"
     },
     "mincut": {
-      "clickhelpChangeValveStatus": "",
-      "clickhelpNetwork": "",
-      "clickhelpValveUnaccess": ""
+      "clickhelpChangeValveStatus": "Clique nas válvulas para abri-las ou fechá-las após atualizar o Mincut",
+      "clickhelpNetwork": "Clique em qualquer arco para executar um Mincut",
+      "clickhelpValveUnaccess": "Clique numa válvula para torná-la inoperante"
     },
     "qtdesignerform": {
-      "loading": ""
+      "loading": "A carregar..."
     },
     "routing": {
-      "addviapoint": "",
-      "fromhere": "",
-      "isocenter": "",
-      "isoextracenter": "",
-      "reachability": "",
-      "route": "",
-      "tohere": ""
+      "addviapoint": "Adicionar ponto de passagem",
+      "fromhere": "A partir daqui",
+      "isocenter": "Centro ISO",
+      "isoextracenter": "Centro extra ISO",
+      "reachability": "Acessibilidade",
+      "route": "Rota",
+      "tohere": "Até aqui"
     },
     "searchbox": {
-      "placeholder": ""
+      "placeholder": "Pesquisar..."
     },
     "appmenu": {
       "items": {
-        "GwTools": "",
-        "GwInfoPoint": "",
-        "GwInfoDma": "",
-        "GwInfoScada": "",
-        "GwProfilePicker": "",
-        "GwSelector": "",
-        "GwFlowtracetrace": "",
-        "GwFlowtraceexit": "",
-        "GwMincutNetwork": "",
-        "GwMincutManager": "",
-        "GwVisitVisit": "",
-        "GwVisitIncidencia": "",
-        "GwDateSelector": "",
-        "GwVisitManager": "",
-        "GwToolbox": "",
-        "NetCDFExplorer": "",
-        "GwHelp": ""
+        "GwTools": "Ferramentas Giswater",
+        "GwInfoPoint": "Informações Giswater",
+        "GwInfoDma": "Informações DMA",
+        "GwInfoScada": "Informações Scada",
+        "GwProfilePicker": "Perfil",
+        "GwSelector": "Selector",
+        "GwFlowtracetrace": "Traçar fluxo",
+        "GwFlowtraceexit": "Saída de fluxo",
+        "GwMincutNetwork": "Mincut",
+        "GwMincutManager": "Gestor Mincut",
+        "GwVisitVisit": "Nova Visita",
+        "GwVisitIncidencia": "Nova Incidência",
+        "GwDateSelector": "Seletor de Data",
+        "GwVisitManager": "Gestor de Visitas",
+        "GwToolbox": "Caixa de Ferramentas",
+        "NetCDFExplorer": "Visualizador NetCDF (Beta)",
+        "GwHelp": "Ajuda"
       }
     },
     "colorschemes": {
-      "giswater": "",
-      "white": "",
-      "transparent": ""
+      "giswater": "Giswater",
+      "white": "Branco",
+      "transparent": "Transparente"
     }
   }
 }
