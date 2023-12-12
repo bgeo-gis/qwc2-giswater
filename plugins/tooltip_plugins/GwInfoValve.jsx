@@ -125,7 +125,8 @@ class GwInfoValve extends React.Component {
             axios.put(requestUrl + "setfields", { ...params }).then(() => {
                 // refresh map
                 if (this.props.theme.tiled) {
-                    this.refreshTiles();
+                    console.log("VALVE ID: ", id)
+                    this.refreshTiles(id);
                 } else {
                     this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 }
@@ -137,20 +138,21 @@ class GwInfoValve extends React.Component {
             });
         }
     };
-    refreshTiles = () => {
+    refreshTiles = (id) => {
         const requestUrl = ConfigUtils.getConfigProp("tilingServiceUrl");
         if (isEmpty(requestUrl)) {
             return;
         }
 
         const params = {
-            theme: this.props.theme.title
+            theme: this.props.theme.title,
+            valveId: id
         };
 
         const processNotificationId = `tiling_msg-${+new Date()}`;
         this.props.processStarted(processNotificationId, "Updating tiles");
         // Send request
-        axios.get(requestUrl + "update", { params: params }).then(response => {
+        axios.get(requestUrl + "update_valve", { params: params }).then(response => {
             this.props.processFinished(processNotificationId, true, "Update successful");
             const result = response.data;
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
