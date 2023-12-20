@@ -22,7 +22,6 @@ import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import './style/SearchBox.css';
 
 import GwUtils from '../utils/GwUtils';
-import GwInfo from '../plugins/GwInfo';
 import {setIdentifyResult} from '../actions/info';
 
 class GwSearchBox extends React.Component {
@@ -246,7 +245,6 @@ class GwSearchBox extends React.Component {
     render() {
         const placeholder = LocaleUtils.tr("searchbox.placeholder");
         let resultWindow = null;
-        const bodyInfo = null;
 
         resultWindow = (
             <div className="SearchBox" key="GwSearchBox">

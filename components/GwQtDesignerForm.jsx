@@ -231,8 +231,8 @@ class GwQtDesignerForm extends React.Component {
         // const attr = widget.attribute || {};
         const inputConstraints = {};
         inputConstraints.readOnly = this.props.readOnly || this.props.disabledWidgets.includes(widget.name) || prop.readOnly === "true" || prop.enabled === "false";
-        const tmp_name = (widget.name).replace("_label", "");
-        inputConstraints.hidden = this.props.hiddenWidgets.includes(tmp_name);
+        const tmpName = (widget.name).replace("_label", "");
+        inputConstraints.hidden = this.props.hiddenWidgets.includes(tmpName);
         // inputConstraints.readOnly = false;
         inputConstraints.required = !inputConstraints.readOnly && (prop.required === "true");
         inputConstraints.placeholder = prop.placeholderText || "";
@@ -567,14 +567,14 @@ class GwQtDesignerForm extends React.Component {
 
         widget.name = widget.name || (":widget_" + counters.widget++);
 
-        console.log("getInitialValues :>>", this.props.getInitialValues);
+        //console.log("getInitialValues :>>", this.props.getInitialValues);
         if (this.props.getInitialValues) {
             const value = this.getWidgetValue(widget);
-            console.log("value :>>", value);
+            //console.log("value :>>", value);
             if (value !== null) {
-                console.log("updateField call :>>", widget, value);
+                //console.log("updateField call :>>", widget, value);
                 this.props.updateField(widget, value, true);
-                console.log("updateField called");
+                //console.log("updateField called");
             }
         }
 

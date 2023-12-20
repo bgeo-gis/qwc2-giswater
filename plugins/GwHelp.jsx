@@ -10,7 +10,6 @@ import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import TaskBar from 'qwc2/components/TaskBar';
 import { setCurrentTask } from 'qwc2/actions/task';
-import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 class GwHelp extends React.Component {
     static propTypes = {
