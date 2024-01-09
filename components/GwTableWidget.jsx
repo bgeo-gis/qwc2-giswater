@@ -150,12 +150,14 @@ class GwTableWidget extends React.Component {
         };
 
         const inputProps = {
+            enableTopToolbar: tableParams.enableTopToolbar ?? true,
             enableGlobalFilter: tableParams.enableGlobalFilter ?? false,
             enableStickyHeader: tableParams.enableStickyHeader ?? true,
             positionToolbarAlertBanner: tableParams.positionToolbarAlertBanner ?? "bottom",
             enableGrouping: tableParams.enableGrouping ?? true,
             enablePinning: tableParams.enablePinning ?? true,
             enableColumnOrdering: tableParams.enableColumnOrdering ?? true,
+            enableColumnFilters: tableParams.enableColumnFilters ?? true,
             enableColumnFilterModes: tableParams.enableColumnFilterModes ?? true,
             enablePagination: tableParams.enablePagination ?? true,
             enableExporting: tableParams.enableExporting ?? true,

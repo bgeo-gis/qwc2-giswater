@@ -285,7 +285,8 @@ class GwToolbox extends React.Component {
                                 table: {
                                     initialState: {
                                         density: 'compact'
-                                    }
+                                    },
+                                    enableTopToolbar: false
                                 }
                             },
                             data: { fields: [{
@@ -332,7 +333,8 @@ class GwToolbox extends React.Component {
                                 table: {
                                     initialState: {
                                         density: 'compact'
-                                    }
+                                    },
+                                    enableTopToolbar: false
                                 }
                             },
                             data: { fields: [{
