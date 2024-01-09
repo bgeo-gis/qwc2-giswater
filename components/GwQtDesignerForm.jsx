@@ -263,11 +263,13 @@ class GwQtDesignerForm extends React.Component {
         const value = this.getWidgetValue(widget);
 
         if (widget.class === "QTableWidget") {
+            // console.log(value)
             if (!value || !value.values) {
                 return null;
             }
-
+            
             const { values, form } = value;
+            // console.log(values, form)
             // if (!values) {
             //     return (<span>No results found</span>)
             // }
@@ -327,11 +329,13 @@ class GwQtDesignerForm extends React.Component {
             if (isEmpty(widget.widget)) {
                 return null;
             }
+            console.log(this.props.hiddenWidgets)
+            console.log(widget.widget)
             const activetab = this.props.activetabs[widget.name] || this.state.activetabs[widget.name] || widget.widget[0].name;
             return (
                 <div className="qt-designer-form-container">
                     <div className="qt-designer-form-tabbar">
-                        {widget.widget.map(tab => (
+                        {widget.widget.map(tab => this.props.hiddenWidgets.includes(tab.name) ? null : (
                             <span
                                 className={tab.name === activetab ? "qt-designer-form-tab-active" : ""}
                                 key={tab.name}

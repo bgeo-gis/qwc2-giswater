@@ -42,8 +42,8 @@ class GwToolbox extends React.Component {
         zoomToExtent: PropTypes.func
     };
     static defaultProps = {
-        initialWidth: 480,
-        initialHeight: 550,
+        initialWidth: 700,
+        initialHeight: 650,
         initialX: null,
         initialY: null,
         initiallyDocked: false
@@ -56,6 +56,7 @@ class GwToolbox extends React.Component {
         toolType: null,
 
         toolActiveTabs: {},
+        hiddenWidgets: ["tab_line", "tab_point", "tab_polygon"],
         executionResult: null,
         toolWidgetValues: {},
 
@@ -128,7 +129,7 @@ class GwToolbox extends React.Component {
         }
     }
     clearToolManager = () => {
-        this.setState({ toolResult: null, toolType: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {} });
+        this.setState({ hiddenWidgets: ["tab_line", "tab_point", "tab_polygon"], toolResult: null, toolType: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {} });
     };
     onShow = () => {
         let pendingRequests = false;
@@ -245,6 +246,9 @@ class GwToolbox extends React.Component {
                 this.props.removeLayer("temp_lines.geojson");
                 this.props.removeLayer("temp_polygons.geojson");
 
+                const hiddenWidgets = ["tab_polygon"];
+                const geojson_data = {}
+
                 // Points
                 let allFeatures = [];
                 const point = result.body.data.point;
@@ -268,6 +272,30 @@ class GwToolbox extends React.Component {
                             zoomToExtent: false
                         }, features, true);
                     }
+
+                    const point_params = Object.keys(point.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
+                    geojson_data["point_table"] = {
+                        body: {
+                            form: { headers: 
+                                point_params.map(name => ({
+                                    accessorKey: name,
+                                    header: name,
+                                    id: name
+                                })),
+                                table: {
+                                    initialState: {
+                                        density: 'compact'
+                                    }
+                                }
+                            },
+                            data: { fields: [{
+                                value: point.features.map((l) => l.properties)
+                            }]}
+                        }
+                    }
+                }
+                else {
+                    hiddenWidgets.push("tab_point")
                 }
 
                 const line = result.body.data.line;
@@ -291,6 +319,30 @@ class GwToolbox extends React.Component {
                             zoomToExtent: false
                         }, features, true);
                     }
+                    
+                    const line_params = Object.keys(line.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
+                    geojson_data["line_table"] = {
+                        body: {
+                            form: { headers: 
+                                line_params.map(name => ({
+                                    accessorKey: name,
+                                    header: name,
+                                    id: name
+                                })),
+                                table: {
+                                    initialState: {
+                                        density: 'compact'
+                                    }
+                                }
+                            },
+                            data: { fields: [{
+                                value: line.features.map((l) => l.properties)
+                            }]}
+                        }
+                    }
+                }
+                else {
+                    hiddenWidgets.push("tab_line")
                 }
 
                 if (!isEmpty(allFeatures)) {
@@ -308,8 +360,9 @@ class GwToolbox extends React.Component {
                 // }
 
                 this.setState((prevState) => ({
+                    hiddenWidgets: hiddenWidgets,
                     executionResult: result,
-                    toolWidgetValues: { ...prevState.toolWidgetValues, txt_infolog: { value: logText } },
+                    toolWidgetValues: { ...prevState.toolWidgetValues, ...geojson_data, txt_infolog: { value: logText } },
                     toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
                 }));
                 // this.setState({ toolboxResult: result, pendingRequests: false });
@@ -419,6 +472,7 @@ class GwToolbox extends React.Component {
 
             toolWindow = (
                 <ResizeableWindow icon="giswater"
+                    minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
                     initialHeight={this.props.initialHeight}
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="ToolManager"
@@ -427,6 +481,7 @@ class GwToolbox extends React.Component {
                     <div className={`tool-manager-body toolbox-${this.state.toolType}`} role='body'>
                         <GwQtDesignerForm
                             activetabs={this.state.toolActiveTabs}
+                            hiddenWidgets={this.state.hiddenWidgets}
                             dispatchButton={this.onToolButton}
                             form_xml={tool.form_xml}
                             onTabChanged={this.onToolTabChanged}
