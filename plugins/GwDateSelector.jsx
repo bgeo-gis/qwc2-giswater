@@ -39,8 +39,8 @@ class GwDateSelector extends React.Component {
     };
     static defaultProps = {
         replaceImageUrls: true,
-        initialWidth: 320,
-        initialHeight: 162,
+        initialWidth: 340,
+        initialHeight: 190,
         initialX: 0,
         initialY: 0
     };
@@ -197,7 +197,7 @@ class GwDateSelector extends React.Component {
                 const dateFrom = result.body.data?.date_from;
                 const dateTo = result.body.data?.date_to;
                 if (updateState) this.setState({ getDatesResult: result, dateSelectorResult: null, filters: { date_from: { value: dateFrom }, date_to: { value: dateTo } } });
-                this.filterLayers(result);
+                //this.filterLayers(result);
             }).catch((e) => {
                 console.log(e);
                 if (updateState) this.setState({});
@@ -216,7 +216,7 @@ class GwDateSelector extends React.Component {
         axios.put(requestUrl + "dates", { ...params }).then(response => {
             const result = response.data;
             this.setState({ dateSelectorResult: result, getDatesResult: result, pendingRequests: false });
-            this.filterLayers(result);
+            //this.filterLayers(result);
             this.props.setCurrentTask(null);
         }).catch((e) => {
             console.log(e);
@@ -301,9 +301,12 @@ class GwDateSelector extends React.Component {
 
             }
             datesWindow = (
-                <ResizeableWindow dockable={false} icon="date_selector" id="GwDateSelector" initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
+                <ResizeableWindow 
+                    dockable={false} icon="date_selector" id="GwDateSelector" 
+                    minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
+                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY}
-                    key="GwDateSelectorWindow" minimizeable="true"
+                    key="GwDateSelectorWindow" minimizeable="false"
                     onClose={this.onToolClose} onShow={this.onShow} title="GW Date Selector"
                 >
                     {body}
