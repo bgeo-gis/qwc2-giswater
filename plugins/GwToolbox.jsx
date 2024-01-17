@@ -403,11 +403,18 @@ class GwToolbox extends React.Component {
         const expanded = this.state.expandedTabs[path] !== undefined ? this.state.expandedTabs[path] : defaultVal;
         return (expanded || !isEmpty(this.state.toolboxFilter)) ? "identify-layer-expandable identify-layer-expanded" : "identify-layer-expandable";
     }
+    handleClick = (event, type, tabName) => {
+        event.stopPropagation();
+        this.toggleTabExpanded(type, tabName);
+    }
     renderTab(type, tabName, tools) {
         return (
             <div className={this.getExpandedTabClass(type, tabName)} key={`${type}-${tabName}`}>
                 <div className="identify-result-entry">
-                    <span className="clickable" onClick={() => this.toggleTabExpanded(type, tabName)}><b>{tabName}</b></span>
+                    <span className="clickable" 
+                        style={{ userSelect: 'none' }} 
+                        onClick={() => this.toggleTabExpanded(type, tabName)}><b>{tabName}</b> 
+                    </span>
                 </div>
                 <div className="identify-layer-entries toolbox-tool-list">
                     {tools.map(tool => this.renderTool(type, tool))}
@@ -426,6 +433,7 @@ class GwToolbox extends React.Component {
                     className={className}
                     onClick={()=>{this.toolClicked(type, tool);}}
                     title={`${tool.alias} - ${tool.functionname || ""}`}
+                    style={{ userSelect: 'none' }}
                 >
                     {tool.alias}
                 </span>
