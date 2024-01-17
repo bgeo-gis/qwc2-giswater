@@ -50,58 +50,6 @@ class GwDateSelector extends React.Component {
         pendingRequests: false,
         filters: {}
     };
-    filterLayers = (result) => {
-        if (isEmpty(result) || result.schema === null) {
-            this.props.processStarted("dateselector_msg", "DateSelector Error!");
-            this.props.processFinished("dateselector_msg", false, "Couldn't find schema, please check service config.");
-            return;
-        }
-        const layerFilters = ["filterdate"];  // TODO: get this from config?
-        const queryableLayers = this.getQueryableLayers();
-
-        if (!isEmpty(queryableLayers)) {
-            // Get values
-            const values = this.getFilterValues(result);
-            // Get filter query
-            const filter = this.getFilterStr(values, layerFilters, result.body.data.layerColumns);
-            // console.log("filter query =", filter);
-
-            // Apply filter, zoom to extent & refresh map
-            // console.log("queryable layers =", queryableLayers);
-            queryableLayers[0].params.FILTER = filter;
-            // Refresh map
-            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-        }
-    };
-    getFilterValues = (result) => {
-        return { from_date: result.body.data?.date_from, to_date: result.body.data?.date_to };
-    };
-    getFilterStr = (values, layerFilters, layerColumns) => {
-        // console.log("values ->", values);
-        // console.log("layerFilters ->", layerFilters);
-        // console.log("layerColumns ->", layerColumns);
-        let filterStr = "";
-        for (const lyr of layerColumns) {
-            const cols = layerColumns[lyr];  // Get columns for layer
-            const fields = layerFilters;  // Get columns to filter
-            let fieldsFilterStr = "";
-            for (let i = 0; i < fields.length; i++) {
-                const field = fields[i];  // Column to filter
-                if (!values || !cols.includes(field)) {  // If no value defined or layer doesn't have column to filter
-                    continue;
-                }
-                if (i > 0 && fieldsFilterStr.length > 0) {
-                    fieldsFilterStr += " AND ";
-                }
-                // {layer}: "{field}" >= {from_date} AND "{field}" <= {to_date};
-                fieldsFilterStr += "\"" + field + "\" >= '" + values.from_date + "' AND \"" + field + "\" <= '" + values.to_date + "'";
-            }
-            if (fieldsFilterStr) {
-                filterStr += lyr + ": " + fieldsFilterStr + ";";
-            }
-        }
-        return filterStr;
-    };
     componentDidMount() {
         this.getDates();
     }
@@ -197,7 +145,8 @@ class GwDateSelector extends React.Component {
                 const dateFrom = result.body.data?.date_from;
                 const dateTo = result.body.data?.date_to;
                 if (updateState) this.setState({ getDatesResult: result, dateSelectorResult: null, filters: { date_from: { value: dateFrom }, date_to: { value: dateTo } } });
-                //this.filterLayers(result);
+                //this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                
             }).catch((e) => {
                 console.log(e);
                 if (updateState) this.setState({});
@@ -216,7 +165,7 @@ class GwDateSelector extends React.Component {
         axios.put(requestUrl + "dates", { ...params }).then(response => {
             const result = response.data;
             this.setState({ dateSelectorResult: result, getDatesResult: result, pendingRequests: false });
-            //this.filterLayers(result);
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
             this.props.setCurrentTask(null);
         }).catch((e) => {
             console.log(e);
