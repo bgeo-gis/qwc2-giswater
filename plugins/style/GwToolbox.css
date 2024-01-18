@@ -48,3 +48,13 @@ div.toolbox-reports > div.qt-designer-form > .qt-designer-layout-grid {
 /* div.tool-manager-body div.qt-designer-layout-grid {
     grid-template-rows: 1fr;
 } */
+
+.arrow-clickable {
+    position: absolute;
+    content: "";
+    top: 0.3em;
+    left: -1em;
+    width: 1em; /* Adjust the width as needed */
+    height: 1em; /* Adjust the height as needed */
+    cursor: pointer;
+}
