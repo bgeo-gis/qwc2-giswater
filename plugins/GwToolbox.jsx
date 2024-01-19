@@ -465,7 +465,7 @@ class GwToolbox extends React.Component {
                         <div className='toolbox-results-container'>
                             {Object.entries(result.body.data).map(([type, tabs]) => (
                                 <div className="toolbox-type" key={type}>
-                                    <span><b>{type.toUpperCase()}</b></span>
+                                    <span style={{ userSelect: 'none' }}><b>{type.toUpperCase()}</b></span>
                                     <div className="toolbox-tabs-container">
                                         {Object.entries(tabs.fields).map(([tabName, tools]) => this.renderTab(type, tabName, tools))}
                                     </div>
