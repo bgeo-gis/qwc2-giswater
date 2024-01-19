@@ -66,7 +66,7 @@ class GwMincut extends React.Component {
         dockable: 'right',
         initiallyDock: true,
         initialWidth: 480,
-        initialHeight: 550,
+        initialHeight: 600,
         initialX: 0,
         initialY: 0,
         mincutResult: null

@@ -68,7 +68,7 @@ class GwVisit extends React.Component {
     static defaultProps = {
         replaceImageUrls: true,
         initialWidth: 480,
-        initialHeight: 575,
+        initialHeight: 520,
         initialX: 0,
         initialY: 0,
         initiallyDocked: false,
@@ -467,8 +467,8 @@ class GwVisit extends React.Component {
             }
             const title = result.body?.data?.form?.headerText || "Visit";
             resultWindow = (
-                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight}
-                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
+                <ResizeableWindow dockable={this.props.dockable} icon="giswater"
+                    initialWidth={this.props.initialWidth} initialX={this.props.initialX} initialHeight={this.props.initialHeight}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minimizeable="true"
                     onClose={this.clearResults}
                     scrollable={this.state.mode === "Dma" ? true : false} title={title}

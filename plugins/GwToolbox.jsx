@@ -38,12 +38,15 @@ class GwToolbox extends React.Component {
         removeLayer: PropTypes.func,
         theme: PropTypes.object,
         toolboxInitialWidth: PropTypes.number,
+        toolboxMinWidth: PropTypes.number,
         toolboxResult: PropTypes.object,
         zoomToExtent: PropTypes.func
     };
     static defaultProps = {
         initialWidth: 700,
         initialHeight: 650,
+        toolboxInitialWidth: 340,
+        toolboxMinWidth: 300,
         initialX: null,
         initialY: null,
         initiallyDocked: false
@@ -502,7 +505,9 @@ class GwToolbox extends React.Component {
 
         return [toolWindow, (
             <SideBar icon="giswater" id="GwToolbox" key="GwToolboxNull"
-                onShow={this.onShow} title="GW Toolbox" width={this.props.toolboxInitialWidth} >
+                onShow={this.onShow} title="GW Toolbox" 
+                minWidth={this.props.toolboxMinWidth}
+                width={this.props.toolboxInitialWidth} >
                 {body}
             </SideBar>
         )];
