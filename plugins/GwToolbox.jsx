@@ -37,16 +37,16 @@ class GwToolbox extends React.Component {
         processStarted: PropTypes.func,
         removeLayer: PropTypes.func,
         theme: PropTypes.object,
-        toolboxInitialWidth: PropTypes.number,
-        toolboxMinWidth: PropTypes.number,
+        toolboxInitialWidth: PropTypes.string,
+        toolboxMinWidth: PropTypes.string,
         toolboxResult: PropTypes.object,
         zoomToExtent: PropTypes.func
     };
     static defaultProps = {
         initialWidth: 700,
         initialHeight: 650,
-        toolboxInitialWidth: 340,
-        toolboxMinWidth: 300,
+        toolboxInitialWidth: '25em',
+        toolboxMinWidth: '25em',
         initialX: null,
         initialY: null,
         initiallyDocked: false
