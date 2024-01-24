@@ -64,3 +64,8 @@
     width: 100%;
     overflow: auto;
 }
+
+input:invalid, select:invalid, textarea:invalid, input:not([type=checkbox]):not([type=radio]):not([type=range]):invalid {
+   border: 2px solid red !important;
+   background: var(--input-bg-color) !important;
+}
