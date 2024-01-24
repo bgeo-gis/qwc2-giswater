@@ -214,9 +214,10 @@ class GwToolbox extends React.Component {
 
 
             const inputs = data.fields?.reduce((acc, val) => {
-                return { ...acc, [val.widgetname]: this.state.toolWidgetValues[val.widgetname].value};
+                return { ...acc, [val.widgetname]: {value: this.state.toolWidgetValues[val.widgetname].value, isMandatory: val.isMandatory}};
             }, {});
-            const params = {
+
+            var params = {
                 theme: this.props.theme.title,
                 functionname: data.functionname,
                 params: inputs || {}
@@ -230,11 +231,32 @@ class GwToolbox extends React.Component {
 
             this.props.processStarted("process_msg", `Executing "${data.alias}"`);
 
+            //Show message if any empty params
+            const emptyParams = Object.keys(params.params).filter(key => params.params[key].isMandatory && isEmpty(params.params[key].value));
+
+            if (emptyParams.length > 0) {
+                const emptyParamNames = emptyParams.join(', ');
+                this.props.processFinished("process_msg", false, `The following mandatory parameters are empty: ${emptyParamNames}`);
+                return;
+            }
+
+            const newParams = {};
+
+            for (const key in params.params) {
+              if (params.params.hasOwnProperty(key) && params.params[key].hasOwnProperty('value')) {
+                newParams[key] = params.params[key].value;
+              }
+            }
+            params.params = newParams;
             // Send request
             axios.post(requestUrl + "execute_process", {...params}).then(response => {
                 const result = response.data;
-
-                this.props.processFinished("process_msg", result.status === "Accepted", result.message.text);
+                
+                if (result.status !== 'Accepted'){
+                    this.props.processFinished("process_msg", false, result.NOSQLERR || result.SQLERR || result.message?.text || "Check logs");
+                    return;
+                }
+                this.props.processFinished("process_msg", result.status === "Accepted", result.message?.text);
 
                 let logText = "";
                 const log = result.body?.data?.info?.values;
