@@ -19,6 +19,7 @@ import MapUtils from 'qwc2/utils/MapUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
+import {setCurrentTask} from 'qwc2/actions/task';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwInfoDmaForm from '../components/GwInfoDmaForm';
@@ -62,7 +63,8 @@ class GwInfo extends React.Component {
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
         setIdentifyResult: PropTypes.func,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        setCurrentTask: PropTypes.func
     };
     static defaultProps = {
         replaceImageUrls: true,
@@ -378,6 +380,11 @@ class GwInfo extends React.Component {
                 pendingRequests = true;
                 axios.get(requestUrl + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
+                    if (isEmpty(result) || !result.form_xml) {
+                        this.onToolClose();
+                        this.props.setCurrentTask("Identify", null, null, {pos: clickPoint, exitTaskOnResultsClose: true});
+                        return;
+                    }
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
                     this.highlightResult(result);
                 }).catch((e) => {
@@ -677,5 +684,6 @@ export default connect(selector, {
     refreshLayer: refreshLayer,
     processFinished: processFinished,
     processStarted: processStarted,
-    setIdentifyResult: setIdentifyResult
+    setIdentifyResult: setIdentifyResult,
+    setCurrentTask: setCurrentTask
 })(GwInfo);
