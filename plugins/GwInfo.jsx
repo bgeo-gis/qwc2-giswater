@@ -382,7 +382,7 @@ class GwInfo extends React.Component {
                     const result = response.data;
                     if (isEmpty(result) || !result.form_xml) {
                         this.onToolClose();
-                        this.props.setCurrentTask("Identify", null, null, {pos: clickPoint, exitTaskOnResultsClose: true});
+                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});
                         return;
                     }
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
