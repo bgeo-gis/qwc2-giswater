@@ -14,17 +14,22 @@ import { setCurrentTask } from 'qwc2/actions/task';
 class GwHelp extends React.Component {
     static propTypes = {
 
-        helpUrl: PropTypes.string,
+        helpLink: PropTypes.string,
         setCurrentTask: PropTypes.func
     };
 
     static defaultProps = {
-        helpUrl: "https://qwc2.bgeo.es/legal/"
+        helpLink: "https://qwc2.bgeo.es/legal/"
     };
 
     handleButtonClick = () => {
-        const { helpUrl } = this.props;
-        window.open(helpUrl, '_blank');  // Open the helpUrl in a new tab
+        const { helpLink } = this.props;
+
+        if (helpLink.startsWith("https")) {
+            window.open(helpLink, '_blank')
+        } else {
+            window.open(`assets/pdf/${helpLink}`, '_blank')
+        }
         this.props.setCurrentTask(null);
     };
 
