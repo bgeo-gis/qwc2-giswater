@@ -380,9 +380,9 @@ class GwInfo extends React.Component {
                 pendingRequests = true;
                 axios.get(requestUrl + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
-                    if (isEmpty(result) || !result.form_xml) {
+                    if ((isEmpty(result) || !result.form_xml) && !this.props.theme.tiled) {
                         this.onToolClose();
-                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});
+                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});                        
                         return;
                     }
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
