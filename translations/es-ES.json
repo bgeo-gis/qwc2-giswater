@@ -32,13 +32,13 @@
       "loading": "Cargando..."
     },
     "routing": {
-      "addviapoint": "",
-      "fromhere": "",
-      "isocenter": "",
-      "isoextracenter": "",
-      "reachability": "",
-      "route": "",
-      "tohere": ""
+      "addviapoint": "Agregar punto intermedio",
+      "fromhere": "Desde aquí",
+      "isocenter": "Centro",
+      "isoextracenter": "Centro adicional",
+      "reachability": "Alcance",
+      "route": "Ruta",
+      "tohere": "Hasta aquí"
     },
     "searchbox": {
       "placeholder": ""

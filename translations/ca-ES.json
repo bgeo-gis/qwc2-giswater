@@ -32,13 +32,13 @@
       "loading": "Carregant..."
     },
     "routing": {
-      "addviapoint": "",
-      "fromhere": "",
-      "isocenter": "",
-      "isoextracenter": "",
-      "reachability": "",
-      "route": "",
-      "tohere": ""
+      "addviapoint": "Afegir punt intermedi",
+      "fromhere": "Des d'aquí",
+      "isocenter": "Centre",
+      "isoextracenter": "Centre addicional",
+      "reachability": "Accessibilitat",
+      "route": "Ruta",
+      "tohere": "Fins aquí"
     },
     "searchbox": {
       "placeholder": ""
