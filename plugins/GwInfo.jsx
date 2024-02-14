@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023 by BGEO. All rights reserved.
+ * Copyright © 2024 by BGEO. All rights reserved.
  * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
@@ -376,13 +376,13 @@ class GwInfo extends React.Component {
                     zoomRatio: zoomRatio,
                     layers: queryLayers.join(',')
                 };
-
+                console.log("LAYEERS: ", queryLayers.join(','));
                 pendingRequests = true;
                 axios.get(requestUrl + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
-                    if (isEmpty(result) || !result.form_xml) {
+                    if ((isEmpty(result) || !result.form_xml) && !this.props.theme.tiled) {
                         this.onToolClose();
-                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});
+                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});                        
                         return;
                     }
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });

@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023 by BGEO. All rights reserved.
+ * Copyright © 2024 by BGEO. All rights reserved.
  * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
@@ -27,13 +27,15 @@ class MapWatermark extends React.Component {
         logoUrl: PropTypes.string,
         mobile: PropTypes.bool,
         opacity: PropTypes.string,
-        width: PropTypes.string
+        width: PropTypes.string,
+        marginBottom: PropTypes.string
     };
     static defaultProps = {
         logoFormat: "svg",
         width: "100px",
         bottom: "3em",
-        opacity: "60%"
+        opacity: "60%",
+        marginBottom: "1.40em"
     };
     render() {
         let logo;
@@ -47,7 +49,8 @@ class MapWatermark extends React.Component {
         const style = {
             width: this.props.width,
             bottom: this.props.bottom,
-            opacity: this.props.opacity
+            opacity: this.props.opacity,
+            marginBottom: this.props.marginBottom
         };
 
         let logoEl = (<img className="logo" src={this.props.logoSrc || logo} />);

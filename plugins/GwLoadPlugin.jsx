@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023 by BGEO. All rights reserved.
+ * Copyright © 2024 by BGEO. All rights reserved.
  * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import GwUtils from '../utils/GwUtils';
+import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 
 class GwLoadPlugin extends React.Component {
@@ -18,7 +19,9 @@ class GwLoadPlugin extends React.Component {
         currentTask: PropTypes.string,
         layers: PropTypes.array,
         map: PropTypes.object,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        processFinished: PropTypes.func,
+        processStarted: PropTypes.func,
     };
 
     state = {
@@ -46,13 +49,23 @@ class GwLoadPlugin extends React.Component {
             };
 
             // Send request
+            this.props.processStarted("loadplugin_msg", `Loading plugin`);
+
             axios.post(requestUrl + "setinitproject", { ...params }).then(response => {
                 const result = response.data;
+
+                if (result.message?.text != "{}") {
+                    this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`);
+                } else {
+                    this.props.processFinished("loadplugin_msg", true, `Loaded plugin`);
+                }
                 console.log("LOADED PLUGIN: ", result);
                 this.setState({pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
                 this.setState({ pendingRequests: false });
+                this.props.processFinished("loadplugin_msg", false, `Could not execute the load plugin ${e}`);
+
             });
         }
 
@@ -70,4 +83,7 @@ const loadplugin = (state) => ({
     theme: state.theme.current
 });
 
-export default connect(loadplugin, {})(GwLoadPlugin);
+export default connect(loadplugin, {
+    processFinished: processFinished,
+    processStarted: processStarted
+})(GwLoadPlugin);

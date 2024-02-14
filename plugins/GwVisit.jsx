@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023 by BGEO. All rights reserved.
+ * Copyright © 2024 by BGEO. All rights reserved.
  * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
@@ -206,7 +206,7 @@ class GwVisit extends React.Component {
                 }).then((response) => {
                     const result = response.data;
                     // show message
-                    this.props.processFinished("visit_msg", result.status === "Accepted", "DB return:" + (result.SQLERR || result.message || "Check logs"));
+                    this.props.processFinished("visit_msg", result.status === "Accepted", "DB return:" + (result.SQLERR || result.message?.text || "Check logs"));
                     if (result?.status === "Accepted") {
                         this.onToolClose();
                     }

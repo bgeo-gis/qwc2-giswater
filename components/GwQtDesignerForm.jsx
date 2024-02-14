@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023 by BGEO. All rights reserved.
+ * Copyright © 2024 by BGEO. All rights reserved.
  * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
@@ -451,8 +451,8 @@ class GwQtDesignerForm extends React.Component {
             return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
-            const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
-            return (<FileSelector accept={accept} file={this.state.files} multiple onFilesSelected={this.onFilesSelected} overrideText={overrideText} showAllFilenames={false} />);
+            //const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
+            return (<FileSelector accept={accept} file={this.state.files} multiple onFilesSelected={this.onFilesSelected} showAllFilenames={false} />);
         }
         return null;
     };
