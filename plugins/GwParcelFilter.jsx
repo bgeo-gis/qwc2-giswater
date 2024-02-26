@@ -41,7 +41,7 @@ class GwParcelFilter extends React.Component {
     };
     static defaultProps = {
         replaceImageUrls: true,
-        initialWidth: 340,
+        initialWidth: 375,
         initialHeight: 190,
         initialX: 0,
         initialY: 0
@@ -222,7 +222,7 @@ class GwParcelFilter extends React.Component {
 
             parcelWindow = (
                 <ResizeableWindow 
-                    dockable={false} icon="cyclomedia" id="GwParcelFilter" 
+                    dockable={false} icon="parcel-filter" id="GwParcelFilter" 
                     minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY}
