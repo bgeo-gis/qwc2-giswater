@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
-import { LayerRole, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
+import { LayerRole, refreshLayer, setFilter} from 'qwc2/actions/layers';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
@@ -36,7 +36,7 @@ class GwParcelFilter extends React.Component {
         processStarted: PropTypes.func,
         refreshLayer: PropTypes.func,
         setCurrentTask: PropTypes.func,
-        changeLayerProperty: PropTypes.func,
+        setFilter: PropTypes.func,
         theme: PropTypes.object
     };
     static defaultProps = {
@@ -159,47 +159,43 @@ class GwParcelFilter extends React.Component {
     filterLayers = (hasPool, gardenFrom, gardenTo) => {
         const queryableLayers = this.getQueryableLayers();
         if (!isEmpty(queryableLayers)) {
-            let filterPool='';
-            if (hasPool){
-                filterPool = ` "m2piscina" > 0`
+            let filter = {};
+            let layerToFilter="LtsHabDia";
+    
+            let filterPool = '';
+            if (hasPool) {
+                filterPool = ["m2piscina", ">", "0"]; 
             }
-            let filterGarden= this.buildFilterString("m2garden", gardenFrom, gardenTo, "AND");
-            let filter = 'LtsHabDia:';
+            let filterGarden = this.buildFilterArray("m2garden", gardenFrom, gardenTo); 
 
-            if (filterPool !== '') {
-                filter += filterPool;
-                if (filterGarden !== '') {
-                    filter += " AND ";
+            //Add expr to filter
+            if (filterPool.length > 0) { 
+                filter[layerToFilter]= [filterPool];
+                if(filterGarden.length > 0){
+                    filter[layerToFilter].push("and",filterGarden);
                 }
+            }else if (filterGarden.length > 0){
+                filter[layerToFilter]= [filterGarden];
             }
-            filter = (filterPool === '' && filterGarden === '') ? undefined : filter+=filterGarden;
-
-            // Apply filter, zoom to extent & refresh map
-            const layer_q = queryableLayers[0];
-            let params = {...layer_q.params};
-            params.FILTER = filter;
-            const rootLayer = this.props.layers.find(l => l.type === "wms");
-            const { layer, path } = GwUtils.findLayer(rootLayer, "LtsHabDia");
-            if(layer){
-                this.props.changeLayerProperty(rootLayer.uuid, "params", params, path);
-            }
-             // Refresh map
+            //Set filter
+            this.props.setFilter(filter);
+            // Refresh map
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }
     }
-
-    buildFilterString = (fieldName, from, to, conjunction) => {
-        let filterString = '';
+    
+    buildFilterArray = (fieldName, from, to) => {
+        let filterArray = [];
     
         if (from !== '' && to !== '') {
-            filterString = `"${fieldName}" >= ${from} ${conjunction} "${fieldName}" <= ${to}`;
+            filterArray.push([fieldName, ">=", from], "and", [fieldName, "<=", to]);
         } else if (from !== '') {
-            filterString = `"${fieldName}" >= ${from}`;
+            filterArray.push([fieldName, ">=", from]);
         } else if (to !== '') {
-            filterString = `"${fieldName}" <= ${to}`;
+            filterArray.push([fieldName, "<=", to]);
         }
     
-        return filterString !== '' ? `${filterString} ` : '';
+        return filterArray;
     }
 
     render() {
@@ -253,7 +249,7 @@ export default connect(selector, {
     zoomToExtent: zoomToExtent,
     refreshLayer: refreshLayer,
     setCurrentTask: setCurrentTask,
-    changeLayerProperty: changeLayerProperty,
+    setFilter: setFilter,
     processFinished: processFinished,
     processStarted: processStarted
 })(GwParcelFilter);
