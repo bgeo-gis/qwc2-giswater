@@ -11,7 +11,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, refreshLayer } from 'qwc2/actions/layers';
-import { changeSelectionState } from 'qwc2/actions/selection';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import Spinner from 'qwc2/components/Spinner';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
@@ -29,7 +28,6 @@ import {setActiveSelector} from '../actions/selector';
 class GwMincutManager extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
-        changeSelectionState: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
@@ -530,7 +528,6 @@ const selector = (state) => ({
 export default connect(selector, {
     addLayerFeatures: addLayerFeatures,
     addMarker: addMarker,
-    changeSelectionState: changeSelectionState,
     panTo: panTo,
     removeMarker: removeMarker,
     removeLayer: removeLayer,

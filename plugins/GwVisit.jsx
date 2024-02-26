@@ -11,7 +11,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
-import { changeSelectionState } from 'qwc2/actions/selection';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
@@ -40,7 +39,6 @@ class GwVisit extends React.Component {
     static propTypes = {
         addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
-        changeSelectionState: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
@@ -400,7 +398,7 @@ class GwVisit extends React.Component {
         if (this.props.click.button !== 0 || this.props.click === prevProps.click || (this.props.click.features || []).find(entry => entry.feature === 'startupposmarker')) {
             return null;
         }
-        if (this.props.click.feature === 'searchmarker' && this.props.click.geometry && this.props.click.geomType === 'Point') {
+        if (this.props.click.feature === 'searchmarker' && this.props.click.geometry ) {
             return null;
             // return this.props.click.geometry;
         }
@@ -413,7 +411,6 @@ class GwVisit extends React.Component {
     onToolClose = () => {
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.props.changeSelectionState({ geomType: undefined });
         this.props.setActiveVisit(null);
         if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
@@ -503,7 +500,6 @@ const selector = (state) => ({
 export default connect(selector, {
     addLayerFeatures: addLayerFeatures,
     addMarker: addMarker,
-    changeSelectionState: changeSelectionState,
     panTo: panTo,
     removeMarker: removeMarker,
     removeLayer: removeLayer,

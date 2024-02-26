@@ -43,7 +43,7 @@ class GwProfileGraph extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
         changeProfileState: PropTypes.func,
-        heighProfilePrecision: PropTypes.number,
+        heightProfilePrecision: PropTypes.number,
         height: PropTypes.number,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
@@ -54,7 +54,7 @@ class GwProfileGraph extends React.Component {
     };
     static defaultProps = {
         samples: 500,
-        heighProfilePrecision: 0,
+        heightProfilePrecision: 0,
         height: 400
     };
     constructor(props) {
@@ -1019,9 +1019,9 @@ class GwProfileGraph extends React.Component {
             const distanceStr = LocaleUtils.tr("heightprofile.distance");
             const heightStr = LocaleUtils.tr("heightprofile.height");
             const aslStr = LocaleUtils.tr("heightprofile.asl");
-            const heighProfilePrecision = this.props.heighProfilePrecision;
-            const distance = Math.round(x * Math.pow(10, heighProfilePrecision)) / Math.pow(10, heighProfilePrecision);
-            const height = Math.round(y * Math.pow(10, heighProfilePrecision)) / Math.pow(10, heighProfilePrecision);
+            const heightProfilePrecision = this.props.heightProfilePrecision;
+            const distance = Math.round(x * Math.pow(10, heightProfilePrecision)) / Math.pow(10, heightProfilePrecision);
+            const height = Math.round(y * Math.pow(10, heightProfilePrecision)) / Math.pow(10, heightProfilePrecision);
             this.marker.style.visibility = this.tooltip.style.visibility = 'visible';
             this.marker.style.left = this.tooltip.style.left = plotPos + 'px';
             this.marker.style.bottom = '30px';

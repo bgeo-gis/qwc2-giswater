@@ -12,7 +12,6 @@ import ol from 'openlayers';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, addLayer } from 'qwc2/actions/layers';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
-import { changeSelectionState } from 'qwc2/actions/selection';
 import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
@@ -48,7 +47,6 @@ class GwProfilePicker extends React.Component {
         addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
         changeProfileState: PropTypes.func,
-        changeSelectionState: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
@@ -680,7 +678,6 @@ export default connect(selector, {
     addLayerFeatures: addLayerFeatures,
     addLayer: addLayer,
     addMarker: addMarker,
-    changeSelectionState: changeSelectionState,
     panTo: panTo,
     removeMarker: removeMarker,
     removeLayer: removeLayer,
