@@ -41,7 +41,7 @@
       "tohere": "Hasta aquí"
     },
     "searchbox": {
-      "placeholder": ""
+      "placeholder": "Busque un lugar o agregue mapa"
     },
     "appmenu": {
       "items": {
@@ -61,7 +61,8 @@
         "GwVisitManager": "Gestor de Visitas",
         "GwToolbox": "Caja de herramientas",
         "NetCDFExplorer": "Visualizador de NetCDF (Beta)",
-        "GwHelp": "Ayuda"
+        "GwHelp": "Ayuda",
+        "GwParcelFilter": ""
       }
     },
     "colorschemes": {

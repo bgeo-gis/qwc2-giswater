@@ -61,7 +61,8 @@
         "GwVisitManager": "",
         "GwToolbox": "",
         "NetCDFExplorer": "",
-        "GwHelp": ""
+        "GwHelp": "",
+        "GwParcelFilter": ""
       }
     },
     "colorschemes": {

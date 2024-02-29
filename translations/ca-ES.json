@@ -41,7 +41,7 @@
       "tohere": "Fins aquí"
     },
     "searchbox": {
-      "placeholder": ""
+      "placeholder": "Cerqui un lloc o afegueixi mapa"
     },
     "appmenu": {
       "items": {
@@ -61,7 +61,8 @@
         "GwVisitManager": "Gestor de Visites",
         "GwToolbox": "Caixa d'eines",
         "NetCDFExplorer": "Visualitzador de NetCDF (Beta)",
-        "GwHelp": "Ajuda"
+        "GwHelp": "Ajuda",
+        "GwParcelFilter": ""
       }
     },
     "colorschemes": {

@@ -61,7 +61,8 @@
         "GwVisitManager": "Gestor de Visitas",
         "GwToolbox": "Caixa de Ferramentas",
         "NetCDFExplorer": "Visualizador NetCDF (Beta)",
-        "GwHelp": "Ajuda"
+        "GwHelp": "Ajuda",
+        "GwParcelFilter": ""
       }
     },
     "colorschemes": {

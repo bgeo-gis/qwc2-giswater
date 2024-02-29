@@ -34,6 +34,7 @@
     "appmenu.items.GwToolbox",
     "appmenu.items.NetCDFExplorer",
     "appmenu.items.GwHelp",
+    "appmenu.items.GwParcelFilter",
     "colorschemes.giswater",
     "colorschemes.white",
     "colorschemes.transparent"
