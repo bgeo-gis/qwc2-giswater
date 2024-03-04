@@ -41,7 +41,7 @@ class GwParcelFilter extends React.Component {
     };
     static defaultProps = {
         replaceImageUrls: true,
-        initialWidth: 375,
+        initialWidth: 385,
         initialHeight: 190,
         initialX: 0,
         initialY: 0
