@@ -13,8 +13,6 @@ import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import GwUtils from '../utils/GwUtils';
-import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
-import { zoomToExtent } from 'qwc2/actions/map';
 import { refreshLayer, addLayerFeatures, removeLayer } from 'qwc2/actions/layers';
 import InputContainer from 'qwc2/components/InputContainer';
 import Icon from 'qwc2/components/Icon';
@@ -40,8 +38,8 @@ class GwToolbox extends React.Component {
         toolboxInitialWidth: PropTypes.string,
         toolboxMinWidth: PropTypes.string,
         toolboxResult: PropTypes.object,
-        zoomToExtent: PropTypes.func
-    };
+        zoomToLayer: PropTypes.bool,
+    }
     static defaultProps = {
         initialWidth: 700,
         initialHeight: 650,
@@ -49,7 +47,8 @@ class GwToolbox extends React.Component {
         toolboxMinWidth: '25em',
         initialX: null,
         initialY: null,
-        initiallyDocked: false
+        initiallyDocked: false,
+        zoomToLayer: false
     };
     constructor(props) {
         super(props);
@@ -251,7 +250,6 @@ class GwToolbox extends React.Component {
             // Send request
             axios.post(requestUrl + "execute_process", {...params}).then(response => {
                 const result = response.data;
-                
                 if (result.status !== 'Accepted'){
                     this.props.processFinished("process_msg", false, result.NOSQLERR || result.SQLERR || result.message?.text || "Check logs");
                     return;
@@ -294,7 +292,7 @@ class GwToolbox extends React.Component {
                             id: "temp_points.geojson",
                             name: "temp_points.geojson",
                             title: "Temporal Points",
-                            zoomToExtent: false
+                            zoomToExtent: this.props.zoomToLayer
                         }, features, true);
                     }
 
@@ -342,7 +340,7 @@ class GwToolbox extends React.Component {
                             id: "temp_lines.geojson",
                             name: "temp_lines.geojson",
                             title: "Temporal Lines",
-                            zoomToExtent: false
+                            zoomToExtent: this.props.zoomToLayer
                         }, features, true);
                     }
                     
@@ -371,20 +369,6 @@ class GwToolbox extends React.Component {
                 else {
                     hiddenWidgets.push("tab_line")
                 }
-
-                if (!isEmpty(allFeatures)) {
-                    const bbox = VectorLayerUtils.computeFeaturesBBox(allFeatures);
-                    this.props.zoomToExtent(bbox.bounds, bbox.crs);
-                }
-
-                // if (!isEmpty(allFeatures)) {
-                //     this.props.addLayerFeatures({
-                //         id: "temp_all.geojson",
-                //         name: "temp_all.geojson",
-                //         title: "Temporal Al",
-                //         zoomToExtent: true
-                //     }, allFeatures, true);
-                // }
 
                 this.setState((prevState) => ({
                     hiddenWidgets: hiddenWidgets,
@@ -545,7 +529,6 @@ const selector = (state) => ({
 });
 
 export default connect(selector, {
-    zoomToExtent: zoomToExtent,
     refreshLayer: refreshLayer,
     addLayerFeatures: addLayerFeatures,
     removeLayer: removeLayer,
