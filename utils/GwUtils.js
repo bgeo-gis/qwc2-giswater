@@ -94,8 +94,10 @@ const GwUtils = {
         }
         const features = data.features.map(feature => {
             let crs = defaultCrs;
-            if (feature.crs && feature.crs.properties && feature.crs.properties.name) {
+            if (feature.crs?.properties?.name) {
                 crs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
+            } else if (feature.geometry?.crs?.properties?.name){
+                crs = CoordinatesUtils.fromOgcUrnCrs(feature.geometry.crs.properties.name);
             } else if (typeof feature.crs === "string") {
                 crs = feature.crs;
             }
