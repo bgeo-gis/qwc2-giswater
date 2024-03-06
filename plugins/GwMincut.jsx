@@ -445,7 +445,11 @@ class GwMincut extends React.Component {
     setMincut = (clickPoint, updateState = true, action = this.state.action) => {
         this.props.removeLayer("mincutselection");
         let pendingRequests = false;
-        if (action === 'mincutValveUnaccess') updateState = false;
+        if (action === 'mincutValveUnaccess'){
+            updateState = false;
+            this.props.processStarted("mincut_msg", "Custom mincut");
+        }
+        if (action === 'mincutNetwork') this.props.processStarted("mincut_msg", "Setting mincut");
         clickPoint = clickPoint || [null, null];
         const requestUrl = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(requestUrl)) {
@@ -468,20 +472,30 @@ class GwMincut extends React.Component {
                 this.manageLayers(result);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 const newState = { mincutResult: result, mincutId: result?.body?.data?.mincutId || mincutId, prevMincutResult: null, pendingRequests: false, clickEnabled: false };
-                if (action === 'mincutNetwork') newState.ogClickPoint = clickPoint;
+                // if (action === 'mincutNetwork') newState.ogClickPoint = clickPoint;
                 if (updateState) this.setState(newState);
-                if (action === 'mincutValveUnaccess') this.setState({ clickEnabled: false });
+                if (action === 'mincutValveUnaccess'){
+                    this.setState({ clickEnabled: false });
+                    this.props.processFinished("mincut_msg", true, "Custom mincut executed correctly");
+                }
+                if (action === 'mincutNetwork'){
+                    newState.ogClickPoint = clickPoint;
+                    this.props.processFinished("mincut_msg", true, "Mincut setted correctly");
+                }  
             }).catch((e) => {
                 console.log(e);
                 if (updateState) this.setState({ pendingRequests: false });
+                if (action === 'mincutValveUnaccess') this.props.processFinished("mincut_msg", false, "Error on custom mincut");
+                if (action === 'mincutNetwork') this.props.processFinished("mincut_msg", false, `Error: "${e}`);
             });
         }
         this.props.addMarker('mincut', clickPoint, '', this.props.map.projection);
         if (updateState) this.setState({ mincutResult: {}, prevMincutResult: null, pendingRequests: pendingRequests });
     };
+
     changeValveStatus = (clickPoint) => {
         this.props.removeLayer("mincutselection");
-
+        this.props.processStarted("mincut_msg", "Change valve status");
         const requestUrl = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(requestUrl)) {
             const mincutId = this.state.mincutId;
@@ -500,8 +514,10 @@ class GwMincut extends React.Component {
                 const result = response.data;
                 this.manageLayers(result);
                 this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                this.props.processFinished("mincut_msg", true, "Valve status changed");
                 // this.setState({ action: 'mincutNetwork' });
             }).catch((e) => {
+                this.props.processFinished("mincut_msg", false, "Error changing valve status");
                 console.log(e);
             });
         }
