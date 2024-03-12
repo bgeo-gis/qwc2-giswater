@@ -62,7 +62,8 @@
         "GwToolbox": "Caja de herramientas",
         "NetCDFExplorer": "Visualizador de NetCDF (Beta)",
         "GwHelp": "Ayuda",
-        "GwParcelFilter": ""
+        "GwParcelFilter": "Filtrar parcelas",
+        "GwSuperset": "Apache Superset"
       }
     },
     "colorschemes": {

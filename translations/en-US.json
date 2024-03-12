@@ -62,7 +62,8 @@
         "GwToolbox": "Toolbox",
         "NetCDFExplorer": "NetCDF Viewer (Beta)",
         "GwHelp": "Help",
-        "GwParcelFilter": ""
+        "GwParcelFilter": "Filter parcels",
+        "GwSuperset": "Apache Superset"
       }
     },
     "colorschemes": {

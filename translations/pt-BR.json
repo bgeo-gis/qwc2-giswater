@@ -62,7 +62,8 @@
         "GwToolbox": "",
         "NetCDFExplorer": "",
         "GwHelp": "",
-        "GwParcelFilter": ""
+        "GwParcelFilter": "",
+        "GwSuperset": ""
       }
     },
     "colorschemes": {
