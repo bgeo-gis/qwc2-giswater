@@ -52,9 +52,10 @@ class GwLoadPlugin extends React.Component {
 
             axios.post(requestUrl + "setinitproject", { ...params }).then(response => {
                 const result = response.data;
-
-                if (result.message?.text != "{}") {
-                    this.props.processStarted("loadplugin_msg", `Loading plugin`);
+                this.props.processStarted("loadplugin_msg", `Loading plugin`);
+                if (result.status ==='Accepted') {
+                    this.props.processFinished("loadplugin_msg", true, `Plugin loaded succesfully`);                    
+                }else{
                     this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`);
                 }
                 console.log("LOADED PLUGIN: ", result);
