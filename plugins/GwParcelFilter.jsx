@@ -37,14 +37,16 @@ class GwParcelFilter extends React.Component {
         refreshLayer: PropTypes.func,
         setCurrentTask: PropTypes.func,
         setFilter: PropTypes.func,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        title: PropTypes.string
     };
     static defaultProps = {
         replaceImageUrls: true,
         initialWidth: 385,
         initialHeight: 190,
         initialX: 0,
-        initialY: 0
+        initialY: 0,
+        title: 'Parcel Filter'
     };
     state = {
         parcelFilterResult: null,
@@ -227,7 +229,7 @@ class GwParcelFilter extends React.Component {
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY}
                     key="GwParcelFilterWindow" minimizeable={false} maximizeabe={false}
-                    onClose={this.onToolClose} onShow={this.onShow} title="GW Parcel Filter"
+                    onClose={this.onToolClose} onShow={this.onShow} title={this.props.title}
                 >
                     {body}
                 </ResizeableWindow>
