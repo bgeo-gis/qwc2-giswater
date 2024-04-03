@@ -40,7 +40,9 @@ class GwToolbox extends React.Component {
         toolboxResult: PropTypes.object,
         zoomToLayer: PropTypes.bool,
         icon: PropTypes.string,
-        title: PropTypes.string
+        title: PropTypes.string,
+        showOnlyExpandedEntries: PropTypes.bool,
+        themesCfg: PropTypes.object
     }
     static defaultProps = {
         initialWidth: 700,
@@ -52,7 +54,8 @@ class GwToolbox extends React.Component {
         initiallyDocked: false,
         zoomToLayer: false,
         icon: 'giswater',
-        title: 'GW Toolbox'
+        title: 'GW Toolbox',
+        showOnlyExpandedEntries: false
     };
     constructor(props) {
         super(props);
@@ -417,20 +420,29 @@ class GwToolbox extends React.Component {
         return (expanded || !isEmpty(this.state.toolboxFilter)) ? "identify-layer-expandable identify-layer-expanded" : "identify-layer-expandable";
     }
     renderTab(type, tabName, tools) {
-        return (
-            <div className={this.getExpandedTabClass(type, tabName)} key={`${type}-${tabName}`}>
-                <div className="identify-result-entry">
-                    <span className="clickable" 
-                        style={{ userSelect: 'none' }} 
-                        onClick={() => this.toggleTabExpanded(type, tabName)}><b>{tabName}</b> 
-                    </span>
-                </div>
-                <div className="identify-layer-entries toolbox-tool-list">
+        if(this.props.showOnlyExpandedEntries){
+            return (
+                <div className="identify-layer-entries toolbox-tool-list" key={`${type}-${tabName}`}>
                     {tools.map(tool => this.renderTool(type, tool))}
                 </div>
-                <div className="arrow-clickable" onClick={() => this.toggleTabExpanded(type, tabName)}></div>
-            </div>
-        );
+            );
+        }else{
+            return (
+                <div className={this.getExpandedTabClass(type, tabName)} key={`${type}-${tabName}`}>
+                    <div className="identify-result-entry">
+                        <span className="clickable" 
+                            style={{ userSelect: 'none' }} 
+                            onClick={() => this.toggleTabExpanded(type, tabName)}><b>{tabName}</b> 
+                        </span>
+                    </div>
+                    <div className="identify-layer-entries toolbox-tool-list">
+                        {tools.map(tool => this.renderTool(type, tool))}
+                    </div>
+                    <div className="arrow-clickable" onClick={() => this.toggleTabExpanded(type, tabName)}></div>
+                </div>
+            );
+        }
+      
     }
     renderTool(type, tool) {
         let className = "clickable";
@@ -461,31 +473,54 @@ class GwToolbox extends React.Component {
                 } else {
                     body = (<div className="toolbox-body" role="body"><span className="identify-body-message">No result</span></div>); // TODO: TRANSLATION
                 }
-            } else {
-                body = (
-                    <div className="toolbox-body" role="body">
-                        <div className='toolbox-filter'>
-                            <InputContainer className="searchbox-field">
-                                <input onChange={ev => this.filterUpdate(ev.target.value)}
-                                    role="input"
-                                    type="text" value={this.state.toolboxFilter} />
-                                <Icon icon="remove" onClick={() => this.filterUpdate("")} role="suffix" />
-                            </InputContainer>
+            }else {
+                if (this.props.showOnlyExpandedEntries){
+                    body = (
+                        <div className="toolbox-body" role="body">
+                            <div className='toolbox-filter'>
+                                <InputContainer className="searchbox-field">
+                                    <input onChange={ev => this.filterUpdate(ev.target.value)}
+                                        role="input"
+                                        type="text" value={this.state.toolboxFilter} />
+                                    <Icon icon="remove" onClick={() => this.filterUpdate("")} role="suffix" />
+                                </InputContainer>
+                            </div>
+                            <div className='toolbox-results-container'>
+                                {Object.entries(result.body.data).map(([type, tabs]) => (
+                                    Object.entries(tabs.fields).map(([tabName, tools]) => this.renderTab(type, tabName, tools))
+                                ))}
+                            </div>
                         </div>
-                        <div className='toolbox-results-container'>
-                            {Object.entries(result.body.data).map(([type, tabs]) => (
-                                <div className="toolbox-type" key={type}>
-                                    <span style={{ userSelect: 'none' }}><b>{type.toUpperCase()}</b></span>
-                                    <div className="toolbox-tabs-container">
-                                        {Object.entries(tabs.fields).map(([tabName, tools]) => this.renderTab(type, tabName, tools))}
+                    );
+                }else {
+                    body = (
+                        <div className="toolbox-body" role="body">
+                            <div className='toolbox-filter'>
+                                <InputContainer className="searchbox-field">
+                                    <input onChange={ev => this.filterUpdate(ev.target.value)}
+                                        role="input"
+                                        type="text" value={this.state.toolboxFilter} />
+                                    <Icon icon="remove" onClick={() => this.filterUpdate("")} role="suffix" />
+                                </InputContainer>
+                            </div>
+                            <div className='toolbox-results-container'>
+                                {Object.entries(result.body.data).map(([type, tabs]) => (
+                                    <div className="toolbox-type" key={type}>
+                                        <span style={{ userSelect: 'none' }}><b>{type.toUpperCase()}</b></span>
+                                        <div className="toolbox-tabs-container">
+                                            {Object.entries(tabs.fields).map(([tabName, tools]) => this.renderTab(type, tabName, tools))}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                );
+                    );
+                }
+                
             }
         }
+
+        
         let toolWindow = null;
         if (this.state.toolResult !== null) {
             const tool = this.state.toolResult;
