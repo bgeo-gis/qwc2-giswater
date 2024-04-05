@@ -125,7 +125,13 @@ class GwTableWidget extends React.Component {
             }
         }
         const { rowSelection } = this.state;
+        const currentDate = new Date();
+        const pad = (num) => num.toString().padStart(2, '0');
+
+        const filename = `exported_${currentDate.getFullYear()}_${pad(currentDate.getMonth() + 1)}_${pad(currentDate.getDate())}_${pad(currentDate.getHours())}_${pad(currentDate.getMinutes())}_${pad(currentDate.getSeconds())}`;
+
         const csvOptions = {
+            filename: filename,
             fieldSeparator: ',',
             quoteStrings: '"',
             decimalSeparator: '.',
@@ -134,6 +140,7 @@ class GwTableWidget extends React.Component {
             useKeysAsHeaders: false,
             headers: cols.map((c) => c.header)
         };
+
 
         const csvExporter = new ExportToCsv(csvOptions);
 
