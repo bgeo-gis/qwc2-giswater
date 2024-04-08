@@ -42,7 +42,8 @@ class GwToolbox extends React.Component {
         icon: PropTypes.string,
         title: PropTypes.string,
         showOnlyExpandedEntries: PropTypes.bool,
-        themesCfg: PropTypes.object
+        themesCfg: PropTypes.object,
+        customMargin: PropTypes.string
     }
     static defaultProps = {
         initialWidth: 700,
@@ -55,7 +56,8 @@ class GwToolbox extends React.Component {
         zoomToLayer: false,
         icon: 'giswater',
         title: 'GW Toolbox',
-        showOnlyExpandedEntries: false
+        showOnlyExpandedEntries: false,
+        customMargin: '0'
     };
     constructor(props) {
         super(props);
@@ -455,7 +457,7 @@ class GwToolbox extends React.Component {
                     className={className}
                     onClick={()=>{this.toolClicked(type, tool);}}
                     title={`${tool.alias} - ${tool.functionname || ""}`}
-                    style={{ userSelect: 'none' }}
+                    style={{ userSelect: 'none', margin: this.props.customMargin }}
                 >
                     {tool.alias}
                 </span>
