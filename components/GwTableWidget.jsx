@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import MaterialReactTable from 'material-react-table';
 import isEmpty from 'lodash.isempty';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 // eslint-disable-next-line
 import { MRT_ToggleFiltersButton } from 'material-react-table';
@@ -66,7 +67,7 @@ class GwTableWidget extends React.Component {
             rowSelection: {}
         });
     };
-
+      
     render() {
         const data = this.props.values;
         const cols = [];
@@ -170,8 +171,17 @@ class GwTableWidget extends React.Component {
             enableExporting: tableParams.enableExporting ?? true,
             enableRowActions: tableParams.enableRowActions ?? false,
             initialState: tableParams.initialState ?? {},
-            modifyTopToolBar: tableParams.modifyTopToolBar ?? false
+            modifyTopToolBar: tableParams.modifyTopToolBar ?? false,
+            exportButtonColor: tableParams.exportButtonColor ?? "#007bff" //blue
         };
+
+        const exportButtonTheme = createTheme({
+            palette: {
+                primary: {
+                  main: inputProps.exportButtonColor
+                }
+              }
+          });
 
         if (inputProps.initialState.columnFilters) {
             inputProps.initialState.columnFilters.forEach(filter => {
@@ -317,17 +327,20 @@ class GwTableWidget extends React.Component {
             const multipleRowSelection = tableParams.multipleRowSelection;
             inputProps.renderBottomToolbarCustomActions = (({ table }) => (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <Button
-                        disabled={table.getPrePaginationRowModel().rows.length === 0}
-                        key={0}
-                        // export all rows, including from the next page, (still respects filtering and sorting)
-                        // onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
-                        onClick={() => {handleExportRows(table.getSortedRowModel().rows);}}
-                        startIcon={<FileDownloadIcon />}
-                        variant="contained"
-                    >
-                        Export Data
-                    </Button>
+                    <ThemeProvider theme={exportButtonTheme}>
+                        <Button
+                            disabled={table.getPrePaginationRowModel().rows.length === 0}
+                            key={0}
+                            // export all rows, including from the next page, (still respects filtering and sorting)
+                            // onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
+                            onClick={() => {handleExportRows(table.getSortedRowModel().rows);}}
+                            startIcon={<FileDownloadIcon />}
+                            variant="contained"
+                            color="primary"
+                        >
+                            Export
+                        </Button>
+                    </ThemeProvider>
                     {multipleRowSelection ? (
                         <Button
                             disabled={table.getSelectedRowModel().flatRows.length === 0}

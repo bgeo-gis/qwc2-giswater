@@ -170,7 +170,7 @@ class GwMincut extends React.Component {
             const requestUrl = GwUtils.getServiceUrl("util");
             let tableWidget = null;
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
-                if (widget.class === "QTableView") {
+                if (widget.class === "QTableView" || widget.class === 'QTableWidget') {
                     tableWidget = widget; // There should only be one
                 }
             });
