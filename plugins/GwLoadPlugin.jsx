@@ -47,23 +47,20 @@ class GwLoadPlugin extends React.Component {
                 theme: this.props.theme.title,
                 epsg: epsg
             };
-
-            // Send request
-
-            axios.post(requestUrl + "setinitproject", { ...params }).then(response => {
+            
+            axios.post(requestUrl + "setinitproject", { ...params }).then(response => {   
                 const result = response.data;
-                this.props.processStarted("loadplugin_msg", `Loading plugin`);
-                if (result.status ==='Accepted') {
-                    this.props.processFinished("loadplugin_msg", true, `Plugin loaded succesfully`);                    
-                }else{
-                    this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`);
+                if (result.status !=='Accepted') {
+                    this.props.processStarted("loadplugin_msg", `Loading plugin`);
+                    this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`, 4000);
                 }
-                console.log("LOADED PLUGIN: ", result);
+                console.log("Load plugin: ", result);
                 this.setState({pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
                 this.setState({ pendingRequests: false });
-                this.props.processFinished("loadplugin_msg", false, `Could not execute the load plugin ${e}`);
+                this.props.processStarted("loadplugin_err", `Loading plugin`);
+                this.props.processFinished("loadplugin_err", false, `Could not execute the load plugin ${e}`, false);
 
             });
         }
