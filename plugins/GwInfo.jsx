@@ -123,10 +123,10 @@ class GwInfo extends React.Component {
         }
         // Check if list need to update (current tab or filters changed)
         if (!isEmpty(this.state.currentTab) && ((prevState.currentTab !== this.state.currentTab) || (prevState.filters !== this.state.filters))) {
-            this.getList(this.state.currentTab.tab, this.state.currentTab.widget);
+            this.getList(this.state.currentTab.tab);
         }
     }
-    dispatchButton = (action, widget) => {
+    dispatchButton = (action, widget, value) => {
         let pendingRequests = false;
         switch (action.functionName) {
         case "featureLink":
@@ -165,6 +165,9 @@ class GwInfo extends React.Component {
         case "cancel":
             this.clearResults();
             break;
+        case "manage_visit_class":
+            this.getList(this.state.currentTab.tab, value);
+            break;
         default:
             console.warn(`Action \`${action.functionName}\` cannot be handled.`);
             break;
@@ -198,13 +201,14 @@ class GwInfo extends React.Component {
     onTabChanged = (tab, widget) => {
         this.setState({ currentTab: {tab: tab, widget: widget} });
     };
-    getList = (tab) => {
+    getList = (tab, _tableName) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("info");
 
             let tableWidget = null;
+            let tableName = null;
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
-                if (widget.class === "QTableView") {
+                if (widget.class === "QTableView" || widget.class === "QTableWidget") {
                     tableWidget = widget; // There should only be one
                 }
             });
@@ -217,12 +221,16 @@ class GwInfo extends React.Component {
             if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
                 idName = 'feature_id';
             }
+            if (tab.name === 'tab_visit'){
+                tableName =  _tableName || this.state.widgetValues.visit_class?.value;
+            }
+
             const params = {
                 theme: this.props.theme.title,
                 tabName: tab.name,  // tab.name, no? o widget.name?
                 widgetname: tableWidget.name,  // tabname_ prefix cal?
                 // "formtype": this.props.formtype,
-                tableName: prop.linkedobject,
+                tableName: tableName || prop.linkedobject,
                 idName: idName,
                 id: this.state.identifyResult.body.feature.id,
                 filterFields: JSON.stringify(this.state.filters[this.state.currentTab.tab?.name]),
@@ -389,7 +397,7 @@ class GwInfo extends React.Component {
                     const result = response.data;
                     if ((isEmpty(result) || !result.form_xml) && !this.props.theme.tiled) {
                         this.onToolClose();
-                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});                        
+                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});
                         return;
                     }
                     this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
