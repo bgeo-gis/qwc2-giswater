@@ -170,7 +170,7 @@ class GwInfo extends React.Component {
             break;
         }
     };
-    updateField = (widget, value) => {
+    updateField = (widget, value, isInitialValue=false) => {
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
@@ -183,10 +183,17 @@ class GwInfo extends React.Component {
                 filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
             }
             // Update filters
-            this.setState((state) => ({ filters: {...state.filters, [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}} }));
+            if (!isInitialValue){
+                let tabName = this.state.currentTab.tab?.name || 'pendingFilters';
+                this.setState((state) => ({ filters:{ ...state.filters, [tabName] : {...state.filters[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
+            }
+
         } else {
-            this.setState((state) => ({ widgetValues: {...state.widgetValues, [widget.name]: {columnname: columnname, value: value}} }));
+            let widgetFunction = JSON.parse(widget.property.widgetfunction)
+            this.dispatchButton(widgetFunction, widget, value);
         }
+        this.setState((state) => ({ widgetValues: {...state.widgetValues, [widget.name]: {columnname: columnname, value: value}} }));
+
     };
     onTabChanged = (tab, widget) => {
         this.setState({ currentTab: {tab: tab, widget: widget} });
@@ -218,7 +225,7 @@ class GwInfo extends React.Component {
                 tableName: prop.linkedobject,
                 idName: idName,
                 id: this.state.identifyResult.body.feature.id,
-                filterFields: JSON.stringify(this.state.filters)
+                filterFields: JSON.stringify(this.state.filters[this.state.currentTab.tab?.name]),
                 // "filterSign": action.params.tabName
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
@@ -497,7 +504,7 @@ class GwInfo extends React.Component {
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
-                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml} getInitialValues={false}
+                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml} getInitialValues={true}
                                 onTabChanged={this.onTabChanged} readOnly={false} updateField={this.updateField}
                                 widgetValues={widgetValues}
                             />
