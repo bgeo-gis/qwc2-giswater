@@ -853,7 +853,7 @@ class GwProfileGraph extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="profile-export-body" role="body">
-                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml} getInitialValues={false} readOnly={false} updateField={this.updateField} widgetValues={this.state.widget_values}/>
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false} readOnly={false} updateField={this.updateField} widgetValues={this.state.widget_values}/>
                         </div>
                     );
                 }
@@ -890,7 +890,7 @@ class GwProfileGraph extends React.Component {
         this.setState((state) => ({ widget_values: {...state.widget_values, [widget.name]: ev} }));
     };
 
-    dispatchButton = (action) => {
+    onWidgetAction = (action) => {
         switch (action.functionName) {
         case "accept":
             this.getProfileSvg(this.state.widget_values.txt_vnode, this.state.widget_values.txt_title, this.state.widget_values.date_to);

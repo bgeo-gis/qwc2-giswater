@@ -28,7 +28,7 @@ class GwQtDesignerForm extends React.Component {
         activetabs: PropTypes.object,
         autoResetTab: PropTypes.bool,
         disabledWidgets: PropTypes.array,
-        dispatchButton: PropTypes.func,
+        onWidgetAction: PropTypes.func,
         files: PropTypes.array,
         form_xml: PropTypes.string,
         getInitialValues: PropTypes.bool,
@@ -42,7 +42,7 @@ class GwQtDesignerForm extends React.Component {
     };
     static defaultProps = {
         updateField: (name, value, initial = false) => { console.log(name, value, initial); },
-        dispatchButton: (action) => { console.log(action); },
+        onWidgetAction: (action) => { console.log(action); },
         onTabChanged: (tab, widget) => { console.log(tab, widget); },
         autoResetTab: true,
         widgetValues: {},
@@ -274,7 +274,7 @@ class GwQtDesignerForm extends React.Component {
             //     return (<span>No results found</span>)
             // }
 
-            return (<GwTableWidget dispatchButton={this.props.dispatchButton} form={form} values={values}/>);
+            return (<GwTableWidget onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
             if (!value) {
                 return null;
@@ -448,7 +448,7 @@ class GwQtDesignerForm extends React.Component {
             if (widgetControls.icon) {
                 text = (<Icon icon={widgetControls.icon} />);
             }
-            return (<button className="button" onClick={() => this.props.dispatchButton(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
+            return (<button className="button" onClick={() => this.props.onWidgetAction(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             //const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
@@ -514,7 +514,7 @@ class GwQtDesignerForm extends React.Component {
     };
 
     onFilesSelected = (files) => {
-        this.props.dispatchButton({ functionName: "upload_file", file: files });
+        this.props.onWidgetAction({ functionName: "upload_file", file: files });
         this.setState({files});
     };
     groupOrName = (widget) => {

@@ -539,7 +539,7 @@ class GwToolbox extends React.Component {
                         <GwQtDesignerForm
                             activetabs={this.state.toolActiveTabs}
                             hiddenWidgets={this.state.hiddenWidgets}
-                            dispatchButton={this.onToolButton}
+                            onWidgetAction={this.onToolButton}
                             form_xml={tool.form_xml}
                             onTabChanged={this.onToolTabChanged}
                             updateField={this.toolOnFieldUpdated}

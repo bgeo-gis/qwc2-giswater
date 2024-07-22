@@ -42,7 +42,7 @@ class GwVisit extends React.Component {
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
-        dispatchButton: PropTypes.func,
+        onWidgetAction: PropTypes.func,
         dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -103,7 +103,7 @@ class GwVisit extends React.Component {
             this.identifyPoint(prevProps);
         }
     }
-    dispatchButton = (action, widget) => {
+    onWidgetAction = (action, widget) => {
         const requestUrl = GwUtils.getServiceUrl("visit");
         switch (action.functionName) {
         case 'upload_file':
@@ -285,7 +285,7 @@ class GwVisit extends React.Component {
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null" && widget.property.widgetfunction !== "{}") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
-            if (!initial) this.dispatchButton(JSON.parse(widget.property.widgetfunction), value);
+            if (!initial) this.onWidgetAction(JSON.parse(widget.property.widgetfunction), value);
         }
         columnname = columnname ?? widget.name;
         // Update filters
@@ -421,8 +421,8 @@ class GwVisit extends React.Component {
     clearResults = () => {
         if (this.props.visitResult) {
             this.onToolClose();
-            if (this.props.dispatchButton) {
-                this.props.dispatchButton({ widgetfunction: { functionName: "visitClose" } });
+            if (this.props.onWidgetAction) {
+                this.props.onWidgetAction({ widgetfunction: { functionName: "visitClose" } });
             }
         }
         this.props.removeMarker('visit');
@@ -453,7 +453,7 @@ class GwVisit extends React.Component {
                     };
                     body = (
                         <div className="identify-body" role="body">
-                            <GwQtDesignerForm dispatchButton={this.dispatchButton} files={this.state.files} form_xml={result.form_xml}
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} files={this.state.files} form_xml={result.form_xml}
                                 getInitialValues hiddenWidgets={this.state.hiddenWidgets} initiallyDocked={this.props.initiallyDocked}
                                 onTabChanged={this.onTabChanged} readOnly={false} replaceImageUrls
                                 theme={this.state.theme} updateField={this.updateField} widgetValues={widgetValues}

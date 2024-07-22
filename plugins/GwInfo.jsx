@@ -126,7 +126,7 @@ class GwInfo extends React.Component {
             this.getList(this.state.currentTab.tab);
         }
     }
-    dispatchButton = (action, widget, value) => {
+    onWidgetAction = (action, widget, value) => {
         let pendingRequests = false;
         switch (action.functionName) {
         case "featureLink":
@@ -193,7 +193,7 @@ class GwInfo extends React.Component {
 
         } else {
             let widgetFunction = JSON.parse(widget.property.widgetfunction)
-            this.dispatchButton(widgetFunction, widget, value);
+            this.onWidgetAction(widgetFunction, widget, value);
         }
         this.setState((state) => ({ widgetValues: {...state.widgetValues, [widget.name]: {columnname: columnname, value: value}} }));
 
@@ -512,7 +512,7 @@ class GwInfo extends React.Component {
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
-                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml} getInitialValues={true}
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={true}
                                 onTabChanged={this.onTabChanged} readOnly={false} updateField={this.updateField}
                                 widgetValues={widgetValues}
                             />

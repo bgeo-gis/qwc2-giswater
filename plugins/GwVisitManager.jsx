@@ -178,7 +178,7 @@ class GwVisitManager extends React.Component {
         }
     };
 
-    dispatchButton = (action) => {
+    onWidgetAction = (action) => {
         const functionName = action.widgetfunction.functionName;
         switch (functionName) {
         case "open":
@@ -289,7 +289,7 @@ class GwVisitManager extends React.Component {
                 } else {
                     body = (
                         <div className="manager-body" role="body">
-                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml}
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml}
                                 getInitialValues={false}
                                 readOnly={false} theme={this.props.currentTheme.title}
                                 updateField={this.updateField} widgetValues={this.state.widgetValues}
@@ -312,7 +312,7 @@ class GwVisitManager extends React.Component {
         /*
         if (this.state.visitResult) {
             bodyvisit = (
-                <GwVisit dispatchButton={this.dispatchButton} dockable={this.props.visitDockable} initiallyDocked key="visitFromManager" visitResult={this.state.visitResult}/>
+                <GwVisit onWidgetAction={this.onWidgetAction} dockable={this.props.visitDockable} initiallyDocked key="visitFromManager" visitResult={this.state.visitResult}/>
             );
         }
 

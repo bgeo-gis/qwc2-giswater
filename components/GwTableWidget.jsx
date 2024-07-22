@@ -37,7 +37,7 @@ import * as icons from '@mui/icons-material';
 
 class GwTableWidget extends React.Component {
     static propTypes = {
-        dispatchButton: PropTypes.func,
+        onWidgetAction: PropTypes.func,
         form: PropTypes.object,
         values: PropTypes.array
     };
@@ -269,7 +269,7 @@ class GwTableWidget extends React.Component {
                         <MenuItem
                             key={index}
                             onClick={() => {
-                                this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: row.original});
+                                this.props.onWidgetAction({ widgetfunction: item.widgetfunction, row: row.original});
                                 closeMenu();
                             } }
                             sx={{ m: 0 }}
@@ -308,7 +308,7 @@ class GwTableWidget extends React.Component {
                             } else {
                                 rows = table.getSelectedRowModel().flatRows;
                             }
-                            this.props.dispatchButton({ widgetfunction: item.widgetfunction, row: rows, removeSelectedRow: this.removeSelectedRow  });
+                            this.props.onWidgetAction({ widgetfunction: item.widgetfunction, row: rows, removeSelectedRow: this.removeSelectedRow  });
                         } }
                         variant="contained"
                     >

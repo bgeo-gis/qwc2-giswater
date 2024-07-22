@@ -27,7 +27,7 @@ class GwSelector extends React.Component {
         addLayerFeatures: PropTypes.func,
         changeLayerProperty: PropTypes.func,
         currentTask: PropTypes.string,
-        dispatchButton: PropTypes.func,
+        onWidgetAction: PropTypes.func,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
@@ -112,8 +112,8 @@ class GwSelector extends React.Component {
     };
     onToolClose = () => {
         /*
-        if (this.props.dispatchButton) {
-            this.props.dispatchButton({ widgetfunction: { functionName: "selectorClose" } });
+        if (this.props.onWidgetAction) {
+            this.props.onWidgetAction({ widgetfunction: { functionName: "selectorClose" } });
         }*/
         this.props.setActiveSelector(null);
         // this.props.setCurrentTask(null);
@@ -279,7 +279,7 @@ class GwSelector extends React.Component {
         // Call setselectors
         this.setSelectors(params);
     };
-    dispatchButton = (action) => {
+    onWidgetAction = (action) => {
         switch (action.name) {
         default:
             console.warn(`Action \`${action.name}\` cannot be handled.`);
@@ -326,7 +326,7 @@ class GwSelector extends React.Component {
             } else {
                 body = (
                     <div className="selector-body" role="body">
-                        <GwQtDesignerForm autoResetTab={false} dispatchButton={this.dispatchButton} form_xml={result.form_xml} getInitialValues={false}
+                        <GwQtDesignerForm autoResetTab={false} onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false}
                             readOnly={false} updateField={this.updateField} />
                     </div>
                 );

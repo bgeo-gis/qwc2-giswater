@@ -37,7 +37,7 @@ class GwMincut extends React.Component {
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
         currentTheme: PropTypes.object,
-        dispatchButton: PropTypes.func,
+        onWidgetAction: PropTypes.func,
         dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -330,7 +330,7 @@ class GwMincut extends React.Component {
         // Update filters
         this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } } }));
     };
-    dispatchButton = (action) => {
+    onWidgetAction = (action) => {
         let disabledWidgets = [];
         switch (action.functionName) {
         case "accept":
@@ -431,8 +431,8 @@ class GwMincut extends React.Component {
         if (this.props.mincutResult) {
             this.onToolClose();
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-            if (this.props.dispatchButton) {
-                this.props.dispatchButton({ widgetfunction: { functionName: "mincutClose" } });
+            if (this.props.onWidgetAction) {
+                this.props.onWidgetAction({ widgetfunction: { functionName: "mincutClose" } });
             }
 
         } else {
@@ -643,7 +643,7 @@ class GwMincut extends React.Component {
                     body = (
                         <div className="mincut-body" role="body">
                             <GwQtDesignerForm activetabs={this.state.activetabs} autoResetTab={false}
-                                disabledWidgets={this.state.disabledWidgets} dispatchButton={this.dispatchButton}
+                                disabledWidgets={this.state.disabledWidgets} onWidgetAction={this.onWidgetAction}
                                 form_xml={result.form_xml} onTabChanged={this.onTabChanged} readOnly={false}
                                 updateField={this.updateField} widgetValues={this.state.widgetValues}
                             />

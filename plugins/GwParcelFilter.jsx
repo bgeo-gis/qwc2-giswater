@@ -136,7 +136,7 @@ class GwParcelFilter extends React.Component {
         this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { value: ev } } }));
     };
 
-    dispatchButton = (action) => {
+    onWidgetAction = (action) => {
         switch (action.functionName) {
         case "accept": {
             const queryableLayers = this.getQueryableLayers();
@@ -216,7 +216,7 @@ class GwParcelFilter extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="parcel-filter-body" role="body">
-                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml} readOnly={false} updateField={this.updateField} widgetValues={this.state.widgetValues} />
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} updateField={this.updateField} widgetValues={this.state.widgetValues} />
                         </div>
                     );
                 }

@@ -177,7 +177,7 @@ class GwMincutManager extends React.Component {
         }
     };
 
-    dispatchButton = (action) => {
+    onWidgetAction = (action) => {
         const functionName = action.widgetfunction.functionName;
         switch (functionName) {
         case "selector":
@@ -472,7 +472,7 @@ class GwMincutManager extends React.Component {
                 } else {
                     body = (
                         <div className="manager-body" role="body">
-                            <GwQtDesignerForm dispatchButton={this.dispatchButton} form_xml={result.form_xml}
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml}
                                 getInitialValues={false}
                                 readOnly={false} theme={this.props.currentTheme.title}
                                 updateField={this.updateField} widgetValues={this.state.widgetValues}
@@ -496,12 +496,12 @@ class GwMincutManager extends React.Component {
         /*
         if (this.state.mincutResult) {
             bodyMincut = (
-                <GwMincut dispatchButton={this.dispatchButton} key="MincutFromManager" mincutId={this.state.mincutId} mincutResult={this.state.mincutResult}/>
+                <GwMincut onWidgetAction={this.onWidgetAction} key="MincutFromManager" mincutId={this.state.mincutId} mincutResult={this.state.mincutResult}/>
             );
         }
         if (this.state.selectorResult) {
             bodySelector = (
-                <GwSelector dispatchButton={this.dispatchButton} key="SelectorFromManager" selectorResult={this.state.selectorResult}/>
+                <GwSelector onWidgetAction={this.onWidgetAction} key="SelectorFromManager" selectorResult={this.state.selectorResult}/>
             );
         }
 
