@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023 by BGEO. All rights reserved.
+ * Copyright © 2024 by BGEO. All rights reserved.
  * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
@@ -53,7 +53,7 @@ class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonPro
             this.props.setCurrentTask(null);
         }
     }
-    
+
     btnClicked(){
         if (this.props.currentTask === "Redlining"){
             this.props.setCurrentTask(null);

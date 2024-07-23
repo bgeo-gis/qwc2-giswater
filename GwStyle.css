@@ -1,3 +1,9 @@
+/**
+ * Copyright © 2024 by BGEO. All rights reserved.
+ * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version
+ */
 * {
     --edge-space: 1em;
 }
@@ -46,7 +52,7 @@ button.button {
 }
 
 /* AppMenu.css */
-#PluginsContainer 
+#PluginsContainer
 div.AppMenu.appmenu-visible {
     background-color: inherit;
     color: inherit;
@@ -110,18 +116,18 @@ div.input-container .input-container-input {
 }
 
 /* QtDesignerForm.css */
-#PluginsContainer 
+#PluginsContainer
 div.qt-designer-layout-grid {
     grid-column-gap: 10px;
     grid-row-gap: 10px;
 }
 
-#PluginsContainer 
+#PluginsContainer
 .qt-designer-form-datetime > input:first-child {
     border-radius: var(--radius-small) 0 0 var(--radius-small);
 }
 
-#PluginsContainer 
+#PluginsContainer
 .qt-designer-form-datetime > input:nth-last-child(2) {
     border-radius: 0 var(--radius-small) var(--radius-small) 0;
     border-left: none
@@ -308,7 +314,7 @@ div.mapinfotooltip-window .mapinfotooltip-body-gwinfo .cl-menu li
 {
 	position: relative;
 }
-	
+
 div.mapinfotooltip-window .mapinfotooltip-body-gwinfo .cl-menu > li:hover
 {
     font-weight:bold;
@@ -333,7 +339,7 @@ div.mapinfotooltip-window .mapinfotooltip-body-gwinfo .cl-menu li a
 div.mapinfotooltip-window .mapinfotooltip-body-gwinfo .cl-menu li:hover a
 {
     color:#8b0000;
-    
+
 }
 
 div.mapinfotooltip-window .mapinfotooltip-body-gwinfo .cl-menu li ul

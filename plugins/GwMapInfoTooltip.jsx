@@ -1,9 +1,8 @@
 /**
- * Copyright 2018-2021 Sourcepole AG
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree.
+ * Copyright © 2024 by BGEO. All rights reserved.
+ * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version
  */
 
 import React from 'react';
