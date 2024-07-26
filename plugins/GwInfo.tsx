@@ -74,11 +74,8 @@ type GwInfoState = {
     currentTab: any,
     showGraph: boolean,
     graphJson: any,
-    showVisit: boolean,
-    visitJson: any,
-    visitWidgetValues: any,
     tableValues: any,
-    filters: any,
+    filterValues: any,
     widgetValues: any,
     widgetsProperties: any
 };
@@ -131,11 +128,8 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         currentTab: {},
         showGraph: false,
         graphJson: null,
-        showVisit: false,
-        visitJson: null,
-        visitWidgetValues: {},
         tableValues: {},
-        filters: {},
+        filterValues: {},
         widgetValues: {},
         widgetsProperties: {}
     };
@@ -144,7 +138,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         super(props);
         this.state = GwInfo.defaultState;
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps: GwInfoProps, prevState: GwInfoState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
             this.clearResults();
         }
@@ -167,7 +161,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             this.addMarkerToResult(this.state.identifyResult || this.props.identifyResult);
         }
         // Check if list need to update (current tab or filters changed)
-        if (!isEmpty(this.state.currentTab) && ((prevState.currentTab !== this.state.currentTab) || (prevState.filters !== this.state.filters))) {
+        if (!isEmpty(this.state.currentTab) && ((prevState.currentTab !== this.state.currentTab) || (prevState.filterValues !== this.state.filterValues))) {
             this.getList(this.state.currentTab.tab);
         }
     }
@@ -233,7 +227,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             // Update filters
             if (!isInitialValue){
                 let tabName = this.state.currentTab.tab?.name || 'pendingFilters';
-                this.setState((state) => ({ filters: { ...state.filters, [tabName] : {...state.filters[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
+                this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName] : {...state.filterValues[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
             }
 
         } else {
@@ -283,7 +277,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
                 tableName: tableName || prop.linkedobject,
                 idName: idName,
                 id: this.state.identifyResult.body.feature.id,
-                filterFields: JSON.stringify(this.state.filters[this.state.currentTab.tab?.name]),
+                filterFields: JSON.stringify(this.state.filterValues[this.state.currentTab.tab?.name]),
                 // "filterSign": action.params.tabName
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
@@ -502,7 +496,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
         this.props.setIdentifyResult(null);
-        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, widgetValues: {}, filters: {}, showGraph: false, graphJson: null });
+        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, widgetValues: {}, filterValues: {}, showGraph: false, graphJson: null });
         if (this.props.onClose) {
             this.props.onClose();
         }
@@ -513,9 +507,103 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         this.addMarkerToResult(this.state.prevIdentifyResult);
         this.panToResult(this.state.prevIdentifyResult);
     };
-    closeVisit = () => {
-        this.setState({ showVisit: false, visitJson: null, visitWidgetValues: {} });
-    };
+
+    renderGraph = () => {
+        const result = this.state.graphJson;
+        const fieldsReal = result.body.data.fields.real_data;
+        const fieldsGen = result.body.data.fields.gen_data;
+        const labels = [];
+        const line1 = [];
+        const line2 = [];
+
+        fieldsReal.forEach(element => {
+            labels.push(element.time.split(':')[0]);
+            line1.push({x: parseInt(element.time.split(':')[0], 10), y: element.head});
+        });
+
+        fieldsGen.forEach(element => {
+            labels.push(element.time.split(':')[0]);
+            line2.push({x: parseInt(element.time.split(':')[0], 10), y: element.head});
+        });
+
+        const data = {
+            labels: labels,
+            series: [
+                {
+                    name: 'line1',
+                    data: line1,
+                    className: 'ct-line-real'
+                },
+                {
+                    name: 'line2',
+                    data: line2,
+                    className: 'ct-line-gen'
+                }
+            ]
+        };
+        const options = {
+            width: window.innerWidth - 20 + 'px',
+            height: 200,
+            chartPadding: {left: 5, bottom: 1, top: 0},
+            series: {
+                line1: {
+                    low: 0,
+                    showArea: true,
+                    showPoint: false,
+                    lineSmooth: true
+                },
+                line2: {
+                    low: 0,
+                    showArea: true,
+                    showPoint: false,
+                    lineSmooth: true
+                }
+            },
+            axisX: {
+                type: Chartist.AutoScaleAxis,
+                onlyInteger: true,
+                scaleMinSpace: 0
+            },
+            // Plugins used on profile
+            plugins: [
+                // Add titles to the axisY and axisX
+                // eslint-disable-next-line
+                ChartistAxisTitle({
+                    axisX: {
+                        axisTitle: "Tiempo",
+                        axisClass: 'ct-axis-title',
+                        offset: {x: 0, y: 30},
+                        textAnchor: 'middle'
+                    },
+                    axisY: {
+                        axisTitle: "Elevación",
+                        axisClass: 'ct-axis-title',
+                        offset: {x: -10, y: 10},
+                        flipTitle: true
+                    }
+                }),
+
+                // Do zoom on x axis
+                // eslint-disable-next-line
+                ChartistZoom({
+                    onZoom: function(chart, reset) { resetZoom = reset; },
+                    noClipY: true,
+                    autoZoomY: {high: true, low: true}
+                })
+            ]};
+        const listeners = {};
+        return (
+            <div id="GwInfoGraph">
+                <ChartistComponent data={data} listener={listeners} options={options} type="Line" />
+                {/* <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" /> */}
+                <div>
+                    <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom();}}
+                        title={"Reset Zoom"} />
+                </div>
+            </div>
+        );
+    }
+
     loadWidgetsProperties = (widgets) => {
         const widgetValues = Object.entries(widgets).reduce((acc, [name, data]: any[]) => {
             if (data.value === null) {
@@ -586,116 +674,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             );
 
             if (this.state.showGraph && !noIdentifyResult && this.state.graphJson !== null) {
-                const result = this.state.graphJson;
-                const fieldsReal = result.body.data.fields.real_data;
-                const fieldsGen = result.body.data.fields.gen_data;
-                const labels = [];
-                const line1 = [];
-                const line2 = [];
-
-                fieldsReal.forEach(element => {
-                    labels.push(element.time.split(':')[0]);
-                    line1.push({x: parseInt(element.time.split(':')[0], 10), y: element.head});
-                });
-
-                fieldsGen.forEach(element => {
-                    labels.push(element.time.split(':')[0]);
-                    line2.push({x: parseInt(element.time.split(':')[0], 10), y: element.head});
-                });
-
-                const data = {
-                    labels: labels,
-                    series: [
-                        {
-                            name: 'line1',
-                            data: line1,
-                            className: 'ct-line-real'
-                        },
-                        {
-                            name: 'line2',
-                            data: line2,
-                            className: 'ct-line-gen'
-                        }
-                    ]
-                };
-                const options = {
-                    width: window.innerWidth - 20 + 'px',
-                    height: 200,
-                    chartPadding: {left: 5, bottom: 1, top: 0},
-                    series: {
-                        line1: {
-                            low: 0,
-                            showArea: true,
-                            showPoint: false,
-                            lineSmooth: true
-                        },
-                        line2: {
-                            low: 0,
-                            showArea: true,
-                            showPoint: false,
-                            lineSmooth: true
-                        }
-                    },
-                    /*
-                    axisX: {
-                        // Generate x labels automatically to be able to zoom
-                        type: Chartist.AutoScaleAxis//,
-                    },
-                    */
-                    /*
-                    axisX: {
-                        min: 0,
-                        max: line1[line1.length - 1]['x']
-                    },
-                    */
-                    axisX: {
-                        type: Chartist.AutoScaleAxis,
-                        onlyInteger: true,
-                        scaleMinSpace: 0
-                    },
-                    /* ,
-                    axisY: {
-                        type: Chartist.AutoScaleAxis
-                    },
-                    */
-                    // Plugins used on profile
-                    plugins: [
-                        // Add titles to the axisY and axisX
-                        // eslint-disable-next-line
-                        ChartistAxisTitle({
-                            axisX: {
-                                axisTitle: "Tiempo",
-                                axisClass: 'ct-axis-title',
-                                offset: {x: 0, y: 30},
-                                textAnchor: 'middle'
-                            },
-                            axisY: {
-                                axisTitle: "Elevación",
-                                axisClass: 'ct-axis-title',
-                                offset: {x: -10, y: 10},
-                                flipTitle: true
-                            }
-                        }),
-
-                        // Do zoom on x axis
-                        // eslint-disable-next-line
-                        ChartistZoom({
-                            onZoom: function(chart, reset) { resetZoom = reset; },
-                            noClipY: true,
-                            autoZoomY: {high: true, low: true}
-                        })
-                    ]};
-                const listeners = {};
-                graphWindow = (
-                    <div id="GwInfoGraph">
-                        <ChartistComponent data={data} listener={listeners} options={options} type="Line" />
-                        {/* <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" /> */}
-                        <div>
-                            <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom();}}
-                                title={"Reset Zoom"} />
-                        </div>
-                    </div>
-                );
+                graphWindow = this.renderGraph();
             }
         }
         return [this.state.mode !== "Scada" ? resultWindow : null, graphWindow, (
