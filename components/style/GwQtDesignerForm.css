@@ -1,12 +1,21 @@
 .qtableview {
     width: 100%;
     border-collapse: collapse;
+    overflow: scroll;
+}
+
+.qtableview-container {
+    overflow-x: auto;
+}
+
+.qtableview td, .qtableview th, .qtableview {
+    border: 1px solid #bbb;
 }
 
 .qtableview-header {
     background-color: #d9d9d9;
     font-weight: bold;
-    text-align: left;
+    text-align: center;
     padding: 2px 8px;
     border: 1px solid #bbb;
 }

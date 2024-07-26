@@ -335,22 +335,21 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             }
 
             return (
-                <div className="qtableview">
+                <div className="qtableview-container">
                     <table className="qtableview">
-                        <tbody>
+                        <thead className="qtableview-head">
+                            <tr className="qtableview-row">
+                                {Object.keys(value[0]).map((field, i) => (
+                                    <th className="qtableview-header" key={i}>{field}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="qtableview-body">
                             {value.map((v, i) => (
                                 <tr className="qtableview-row" key={i}>
-                                    <td className="qtableview">
-                                        <ul>
-                                            {Object.keys(v).map((field, j) => {
-                                                if (this.props.replaceImageUrls && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(v[field])) {
-                                                    return (<a href={v[field]} key={j} rel="noreferrer" target="_blank"><img src={v[field]} /></a>);
-                                                } else {
-                                                    return (<li key={j}><b>{field}</b>: {String(v[field])}</li>);
-                                                }
-                                            })}
-                                        </ul>
-                                    </td>
+                                    {Object.values(v).map((field: string, j) => (
+                                        <td className="qtableview-cell" key={j}>{field}</td>
+                                    ))}
                                 </tr>
                             ))}
                         </tbody>
