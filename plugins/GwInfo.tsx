@@ -37,7 +37,54 @@ import { setIdentifyResult } from '../actions/info';
 
 let resetZoom = null;
 
-class GwInfo extends React.Component {
+type GwInfoProps = {
+    addLayerFeatures: Function,
+    addMarker: Function,
+    click: any,
+    currentIdentifyTool: string,
+    currentTask: string,
+    dockable: boolean | string,
+    identifyResult: any,
+    initialHeight: number,
+    initialWidth: number,
+    initialX: number,
+    initialY: number,
+    initiallyDocked: boolean,
+    layers: Array<any>,
+    map: any,
+    minHeight: number,
+    onClose: Function,
+    panTo: Function,
+    processFinished: Function,
+    processStarted: Function,
+    refreshLayer: Function,
+    removeLayer: Function,
+    removeMarker: Function,
+    selection: any,
+    setIdentifyResult: Function,
+    theme: any,
+    setCurrentTask: Function
+};
+
+type GwInfoState = {
+    mode: string,
+    identifyResult: any,
+    prevIdentifyResult: any,
+    pendingRequests: boolean,
+    currentTab: any,
+    showGraph: boolean,
+    graphJson: any,
+    showVisit: boolean,
+    visitJson: any,
+    visitWidgetValues: any,
+    tableValues: any,
+    filters: any,
+    widgetValues: any,
+    widgetsProperties: any
+};
+
+
+class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
     static propTypes = {
         addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
@@ -66,8 +113,7 @@ class GwInfo extends React.Component {
         theme: PropTypes.object,
         setCurrentTask: PropTypes.func
     };
-    static defaultProps = {
-        replaceImageUrls: true,
+    static defaultProps: Partial<GwInfoProps> = {
         minHeight: 500,
         initialWidth: 480,
         initialHeight: 600,
@@ -77,7 +123,7 @@ class GwInfo extends React.Component {
         initiallyDocked: false,
         dockable: true
     };
-    state = {
+    static defaultState: GwInfoState = {
         mode: 'Point',
         identifyResult: null,
         prevIdentifyResult: null,
@@ -96,9 +142,7 @@ class GwInfo extends React.Component {
 
     constructor(props) {
         super(props);
-        if (props.identifyResult) {
-            this.state.identifyResult = props.identifyResult;
-        }
+        this.state = GwInfo.defaultState;
     }
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
@@ -127,7 +171,7 @@ class GwInfo extends React.Component {
             this.getList(this.state.currentTab.tab);
         }
     }
-    onWidgetAction = (action, widget, value) => {
+    onWidgetAction = (action, widget, value?) => {
         let pendingRequests = false;
         switch (action.functionName) {
         case "featureLink":
@@ -206,7 +250,7 @@ class GwInfo extends React.Component {
     onTabChanged = (tab, widget) => {
         this.setState({ currentTab: {tab: tab, widget: widget} });
     };
-    getList = (tab, _tableName) => {
+    getList = (tab, _tableName?) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("info");
 
@@ -473,7 +517,7 @@ class GwInfo extends React.Component {
         this.setState({ showVisit: false, visitJson: null, visitWidgetValues: {} });
     };
     loadWidgetsProperties = (widgets) => {
-        const widgetValues = Object.entries(widgets).reduce((acc, [name, data]) => {
+        const widgetValues = Object.entries(widgets).reduce((acc, [name, data]: any[]) => {
             if (data.value === null) {
                 return acc;
             }
@@ -492,7 +536,6 @@ class GwInfo extends React.Component {
     render() {
         let resultWindow = null;
         let graphWindow = null;
-        let visitWindow = null;
         let noIdentifyResult = false;
         const identifyResult = this.state.identifyResult || this.props.identifyResult;
         const headerText = identifyResult?.body?.form?.headerText;
@@ -645,7 +688,8 @@ class GwInfo extends React.Component {
                 const listeners = {};
                 graphWindow = (
                     <div id="GwInfoGraph">
-                        <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" />
+                        <ChartistComponent data={data} listener={listeners} options={options} type="Line" />
+                        {/* <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" /> */}
                         <div>
                             <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom();}}
                                 title={"Reset Zoom"} />
@@ -653,27 +697,8 @@ class GwInfo extends React.Component {
                     </div>
                 );
             }
-            if (this.state.showVisit && !noIdentifyResult && this.state.visitJson !== null) {
-                body = (
-                    <div className="visit-body" role="body">
-                        <GwQtDesignerForm form_xml={this.state.visitJson.form_xml} getInitialValues
-                            readOnly={false} widgetValues={this.state.visitWidgetValues}
-                        />
-                    </div>
-                );
-                visitWindow = (
-                    <ResizeableWindow icon="giswater"
-                        initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
-                        initialX={this.props.initialX} initialY={this.props.initialY} initiallyDocked={false} key="GwVisitWindow"
-                        onClose={this.closeVisit}
-                        scrollable title="Giswater Visit"
-                    >
-                        {body}
-                    </ResizeableWindow>
-                );
-            }
         }
-        return [this.state.mode !== "Scada" ? resultWindow : null, graphWindow, visitWindow, (
+        return [this.state.mode !== "Scada" ? resultWindow : null, graphWindow, (
             <TaskBar key="GwInfoTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwInfo">
                 {() => ({
                     body: LocaleUtils.tr("infotool.clickhelpPoint")
