@@ -172,7 +172,7 @@ class GwDateSelector extends React.Component {
             this.setState({ pendingRequests: false });
         });
     };
-    updateField = (widget, ev) => {
+    onWidgetValueChange = (widget, ev) => {
         this.setState((state) => ({ filters: { ...state.filters, [widget.name]: { value: ev } } }));
     };
     onWidgetAction = (action) => {
@@ -237,7 +237,7 @@ class GwDateSelector extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} updateField={this.updateField} widgetValues={this.state.filters} />
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.filters} />
                         </div>
                     );
                 }

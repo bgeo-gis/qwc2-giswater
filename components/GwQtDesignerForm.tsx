@@ -23,6 +23,18 @@ import GwUtils from 'qwc2-giswater/utils/GwUtils';
 import Icon from 'qwc2/components/Icon';
 
 
+type Properties = {
+    value: any,
+    props: {[name: string]: any},
+    disabled: boolean,
+    hidden: boolean,
+    // items: any, // For comboboxes, but needs to be implemented
+};
+
+type WidgetsProperties = {
+    [widgetName: string]: Properties
+};
+
 type GwQtDesignerFormProps = {
     activetabs: any,
     autoResetTab: boolean,
@@ -36,9 +48,11 @@ type GwQtDesignerFormProps = {
     onTabChanged: (tab: any, widget: any) => void,
     readOnly: boolean,
     replaceImageUrls: boolean,
-    updateField: (name: string, value: any, initial: boolean) => void,
+    onWidgetValueChange: (name: string, value: any, initial?: boolean) => void,
     widgetValues: any,
-    widgetProperties: any,
+    useNew: boolean,
+    widgetsProperties: WidgetsProperties,
+    loadWidgetsProperties: (widgetsProperties: WidgetsProperties) => void,
 };
 
 type GwQtDesignerFormState = {
@@ -49,24 +63,25 @@ type GwQtDesignerFormState = {
     files: any,
 };
 
-
 class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesignerFormState> {
 
-    static defaultProps = {
-        updateField: (name, value, initial = false) => { console.log(name, value, initial); },
+    static defaultProps: Partial<GwQtDesignerFormProps> = {
+        onWidgetValueChange: (name, value, initial = false) => { console.log(name, value, initial); },
         onWidgetAction: (action) => { console.log(action); },
         onTabChanged: (tab, widget) => { console.log(tab, widget); },
         autoResetTab: true,
         widgetValues: {},
-        widgetProperties: {},
         disabledWidgets: [],
         hiddenWidgets: [],
         getInitialValues: true,
         replaceImageUrls: false,
         files: [],
-        activetabs: {}
+        activetabs: {},
+        useNew: false,
+        widgetsProperties: {},
+        loadWidgetsProperties: (widgetsProperties) => {}
     };
-    static defaultState = {
+    static defaultState: GwQtDesignerFormState = {
         activetabs: {},
         formData: null,
         loading: false,
@@ -87,26 +102,27 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             this.setState((state, props) => ({
                 ...GwQtDesignerForm.defaultState,
                 activetabs: props.autoResetTab ? {} : state.activetabs
-            }));
-            if (this.props.form_xml) {
-                this.parseForm(this.props.form_xml);
-            } else {
-                console.error("Empty xml");
-            }
+            }), () => {
+                if (this.props.form_xml) {
+                    this.parseForm(this.props.form_xml);
+                } else {
+                    console.error("Empty xml");
+                }
+            });
         }
     }
     render() {
         if (this.state.loading) {
             return (
                 <div className="qt-designer-form-loading">
-                    <Spinner /><span>{LocaleUtils.tr("qtdesignerform.loading")}</span>
+                    <Spinner/><span>{LocaleUtils.tr("qtdesignerform.loading")}</span>
                 </div>
             );
         } else if (this.state.formData) {
             const root = this.state.formData.ui.widget;
             return (
                 <div className={"qt-designer-form"}>
-                    {this.renderLayout(root.layout, this.props.updateField)}
+                    {this.renderLayout(root.layout)}
                 </div>
             );
         } else if (!this.props.form_xml) {
@@ -117,7 +133,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             return null;
         }
     }
-    renderLayout = (layout, updateField, nametransform = (name) => name, visible = true) => {
+    renderLayout = (layout, nametransform = (name) => name, visible = true) => {
         let containerClass = "";
         let itemStyle = (item, idx) => ({});
         let sortKey = (item, idx?) => idx;
@@ -163,9 +179,9 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                 {layout.item.sort((a, b) => (sortKey(a) - sortKey(b))).map((item, idx) => {
                     let child = null;
                     if (item.widget) {
-                        child = this.renderWidget(item.widget, updateField, nametransform);
+                        child = this.renderWidget(item.widget, nametransform);
                     } else if (item.layout) {
-                        child = this.renderLayout(item.layout, updateField, nametransform);
+                        child = this.renderLayout(item.layout, nametransform);
                     } else if (item.spacer) {
                         child = (<div />);
                     } else {
@@ -236,16 +252,38 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         this.setState((prevState) => ({ activetabs: { ...prevState.activetabs, [widget.name]: tab.name } }));
         this.props.onTabChanged(tab, widget);
     };
-    renderWidget = (widget, updateField, nametransform = (name) => name) => {
-        const prop = widget.property || {};
+    getWidgetProperties = (widget): Properties => {
+
+        const properties = this.getBaseWidgetProperties(widget);
+        const userProperties: any = this.props.widgetsProperties[widget.name] || {};
+        return {
+            value: userProperties.value ?? properties.value,
+            props: {
+                ...properties.props,
+                ...userProperties.props
+            },
+            disabled: userProperties.disabled ?? properties.disabled,
+            hidden: userProperties.hidden ?? properties.hidden,
+        };
+    };
+    renderWidget = (widget, nametransform = (name) => name) => {
+
+        const widgetProperties = this.getWidgetProperties(widget);
+
+        const prop = this.props.useNew ? widgetProperties.props : (widget.property || {});
         if (prop.visible === "false") {
             return null;
         }
         // const attr = widget.attribute || {};
         const inputConstraints: any = {};
-        inputConstraints.readOnly = this.props.readOnly || this.props.disabledWidgets.includes(widget.name) || prop.readOnly === "true" || prop.enabled === "false";
+        inputConstraints.readOnly = this.props.useNew ? widgetProperties.disabled : (
+            this.props.readOnly 
+            || this.props.disabledWidgets.includes(widget.name)
+            || prop.readOnly === "true" 
+            || prop.enabled === "false"
+        );
         const tmpName = (widget.name).replace("_label", "");
-        inputConstraints.hidden = this.props.hiddenWidgets.includes(tmpName);
+        inputConstraints.hidden = this.props.useNew ? widgetProperties.hidden : this.props.hiddenWidgets.includes(tmpName);
         // inputConstraints.readOnly = false;
         inputConstraints.required = !inputConstraints.readOnly && (prop.required === "true");
         inputConstraints.placeholder = prop.placeholderText || "";
@@ -269,11 +307,13 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         const elname = nametransform(widget.name);
         const widgetFunction = prop.widgetfunction || "{}";
         const widgetControls = JSON.parse(prop.widgetcontrols || "{}");
+
+        // TODO: This should be removed (make sure it's ok)
         if (this.props.widgetValues[widget.name.replace("lbl_", "")]?.visible === false) {
             return null;
         }
 
-        const value = this.getWidgetValue(widget);
+        const value = this.props.useNew ? widgetProperties.value : this.getWidgetValue(widget);
 
         if (widget.class === "QTableWidget") {
             // console.log(value)
@@ -289,6 +329,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
 
             return (<GwTableWidget onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
+            console.log("QTableView", widget.name, value);
             if (!value) {
                 return null;
             }
@@ -319,13 +360,13 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         } else if (widget.class === "QLabel") { // @ts-ignore
             return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);
         } else if (widget.class === "Line") {
-            const linetype = (widget.property || {}).orientation === "Qt::Vertical" ? "vline" : "hline";
+            const linetype = prop.orientation === "Qt::Vertical" ? "vline" : "hline";
             return (<div className={"qt-designer-form-" + linetype} />);
         } else if (widget.class === "QFrame") {
             return (
                 <div className="qt-designer-form-container">
                     <div className="qt-designer-form-frame">
-                        {this.renderLayout(widget.layout, updateField, nametransform)}
+                        {this.renderLayout(widget.layout, nametransform)}
                     </div>
                 </div>
             );
@@ -335,7 +376,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                     {/* @ts-ignore */}
                     <div className="qt-designer-form-frame-title" style={fontStyle}>{prop.title}</div>
                     <div className="qt-designer-form-frame">
-                        {this.renderLayout(widget.layout, updateField, nametransform)}
+                        {this.renderLayout(widget.layout, nametransform)}
                     </div>
                 </div>
             );
@@ -343,13 +384,12 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             if (isEmpty(widget.widget)) {
                 return null;
             }
-            console.log(this.props.hiddenWidgets)
             console.log(widget.widget)
             const activetab = this.props.activetabs[widget.name] || this.state.activetabs[widget.name] || widget.widget[0].name;
             return (
                 <div className="qt-designer-form-container">
                     <div className="qt-designer-form-tabbar">
-                        {widget.widget.map(tab => this.props.hiddenWidgets.includes(tab.name) ? null : (
+                        {widget.widget.map(tab => (this.props.useNew ? this.getWidgetProperties(tab.name).hidden : this.props.hiddenWidgets.includes(tab.name)) ? null : (
                             <span
                                 className={tab.name === activetab ? "qt-designer-form-tab-active" : ""}
                                 key={tab.name}
@@ -361,26 +401,22 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                     </div>
                     <div className="qt-designer-form-frame">
                         {widget.widget.filter(child => child.layout).map(child => (
-                            this.renderLayout(child.layout, updateField, nametransform, child.name === activetab)
+                            this.renderLayout(child.layout, nametransform, child.name === activetab)
                         ))}
                     </div>
                 </div>
             );
         } else if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit") {
-            return (<textarea name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} value={value} />);
+            return (<textarea name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} value={value} />);
         } else if (widget.class === "QLineEdit") {
-            return (<input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} title={prop.toolTip} type="text" value={value} />);
+            return (<input name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} title={prop.toolTip} type="text" value={value} />);
         } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const type = widget.class === "QCheckBox" ? "checkbox" : "radio";
-            let action;
-            try {
-                action = JSON.parse(prop.action);
-            } catch (error) {
-                action = "";
-            }
-            return (  // @ts-ignore
+
+            return (
+                // @ts-ignore
                 <label style={fontStyle} title={prop.toolTip}>
-                    <input checked={value} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => updateField(widget, ev.target.checked, action)} {...inputConstraints} title={prop.toolTip} type={type} value={widget.name} />
+                    <input checked={value} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.checked)} {...inputConstraints} title={prop.toolTip} type={type} value={widget.name} />
                     {prop.text}
                 </label>
             );
@@ -391,7 +427,8 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
             return (
-                <select disabled={inputConstraints.readOnly} hidden={inputConstraints.hidden} name={elname} onChange={ev => updateField(widget, ev.target.value, false, inputConstraints.placeholder)} title={prop.toolTip} {...inputConstraints} style={fontStyle} value={value}>
+                // @ts-ignore
+                <select disabled={inputConstraints.readOnly} hidden={inputConstraints.hidden} name={elname} onChange={ev => this.props.onWidgetValueChange(widget, ev.target.value, false, inputConstraints.placeholder)} title={prop.toolTip} {...inputConstraints} style={fontStyle} value={value}>
                     {!haveEmpty ? (
                         <option disabled={inputConstraints.required} hidden={inputConstraints.hidden} value="">
                             {inputConstraints.placeholder || LocaleUtils.tr("editing.select")}
@@ -411,17 +448,17 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             const step = prop.singleStep ?? 1;
             const type = (widget.class === "QSlider" ? "range" : "number");
             return (
-                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} title={prop.toolTip} type={type} value={value} />
+                <input max={max} min={min} name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} size={5} step={step} style={fontStyle} title={prop.toolTip} type={type} value={value} />
             );
         } else if (widget.class === "QDateEdit") {
             const min = prop.minimumDate ? this.dateConstraint(prop.minimumDate) : "1900-01-01";
             const max = prop.maximumDate ? this.dateConstraint(prop.maximumDate) : "9999-12-31";
             return (
-                <input max={max} min={min} name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} type="date" value={value} />
+                <input max={max} min={min} name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} type="date" value={value} />
             );
         } else if (widget.class === "QTimeEdit") {
             return (
-                <input name={elname} onChange={(ev) => updateField(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} type="time" value={value} />
+                <input name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} type="time" value={value} />
             );
         } else if (widget.class === "QDateTimeEdit") {
 
@@ -438,7 +475,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                     <input
                         max={max[0]}
                         min={min[0]}
-                        onChange={(ev) => updateField(widget, ev.target.value ? ev.target.value + (parts[1] ? ("T" + parts[1]) : "") : "")}
+                        onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value ? ev.target.value + (parts[1] ? ("T" + parts[1]) : "") : "")}
                         readOnly={inputConstraints.readOnly}
                         required={inputConstraints.required}
                         // @ts-ignore
@@ -448,7 +485,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                     />
                     <input
                         disabled={!parts[0]}
-                        onChange={(ev) => updateField(widget, parts[0] + (ev.target.value ? "T" + ev.target.value : ""))}
+                        onChange={(ev) => this.props.onWidgetValueChange(widget, parts[0] + (ev.target.value ? "T" + ev.target.value : ""))}
                         {...inputConstraints} style={fontStyle}
                         type="time"
                         value={parts[1] || ""}
@@ -457,7 +494,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                 </span>
             );
         } else if (widget.class === "QWidget") {
-            return this.renderLayout(widget.layout, updateField, nametransform);
+            return this.renderLayout(widget.layout, nametransform);
         } else if (widget.class === "QPushButton") {
             let text = prop.text;
             if (widgetControls.icon) {
@@ -488,7 +525,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             const optObj = (items || []).find(obj => obj.property.value === prop.value);
             return (this.props.widgetValues[widget.name]?.value ?? (optObj?.property?.value || (items || [""])[0]?.property?.value || ""));
 
-            // Commented out because the updateField called when it updates only uses the value, not the text
+            // Commented out because the onWidgetValueChange called when it updates only uses the value, not the text
             // let option_value = null
             // if (prop.textIsValue === "true") {
             //     const optObj = items.find(obj => obj.property.text === prop.value);
@@ -538,34 +575,42 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
     dateConstraint = (constr) => {
         return (constr.year + "-" + ("0" + constr.month).slice(-2) + "-" + ("0" + constr.day).slice(-2));
     };
-    parseForm = (data) => {
+    parseForm = (data: string) => {
         const options = {
             explicitArray: false,
             mergeAttrs: true
         };
         const loadingReqId = uuidv1();
+        const widgetsProperties: WidgetsProperties = {};
+
         this.setState({ loading: true, loadingReqId: loadingReqId });
         xml2js.parseString(data.replace(/&/g, '&amp;'), options, (err, json) => {
             if (err !== null) {
                 console.warn(err);
             }
-            const externalFields = {};
-            const fields = {};
             const counters = {
                 widget: 0,
                 layout: 0
             };
-            this.reformatWidget(json.ui.widget, fields, externalFields, counters);
-            json.externalFields = externalFields;
-            json.fields = fields;
+            this.reformatWidget(json.ui.widget, widgetsProperties, counters);
 
+            this.props.loadWidgetsProperties(widgetsProperties);
+            
             // const activetabs = this.filterActiveTabs(json, this.state.activetabs)
 
             this.setState({ formData: json, loading: false, loadingReqId: null });
             // this.setState({ formData: json, loading: false, loadingReqId: null, activetabs: activetabs });
         });
     };
-    reformatWidget = (widget, fields, externalFields, counters) => {
+    getBaseWidgetProperties = (widget) => {
+        return {
+            value: widget.value,
+            props: widget.property || {},
+            disabled: this.props.readOnly || widget.property?.readOnly === "true" || widget.property?.enabled === "false",
+            hidden: false,
+        };
+    };
+    reformatWidget = (widget, widgetsProperties: WidgetsProperties, counters) => {
         if (widget.property) {
             widget.property = MiscUtils.ensureArray(widget.property).reduce((res, prop) => {
                 return ({ ...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")] });
@@ -581,47 +626,50 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             widget.attribute = {};
         }
         if (widget.item) {
-            MiscUtils.ensureArray(widget.item).map(item => this.reformatWidget(item, fields, externalFields, counters));
+            MiscUtils.ensureArray(widget.item).map(item => this.reformatWidget(item, widgetsProperties, counters));
         }
 
         widget.name = widget.name || (":widget_" + counters.widget++);
+        widget.value = this.getWidgetValue(widget);
+
+        widgetsProperties[widget.name] = this.getBaseWidgetProperties(widget);
 
         //console.log("getInitialValues :>>", this.props.getInitialValues);
         if (this.props.getInitialValues) {
-            const value = this.getWidgetValue(widget);
+            const value = widget.value;
             //console.log("value :>>", value);
             if (value !== null) {
-                //console.log("updateField call :>>", widget, value);
-                this.props.updateField(widget, value, true);
-                //console.log("updateField called");
+                //console.log("onWidgetValueChange call :>>", widget, value);
+                this.props.onWidgetValueChange(widget, value, true);
+                //console.log("onWidgetValueChange called");
             }
         }
 
         if (widget.layout) {
-            this.reformatLayout(widget.layout, fields, externalFields, counters);
+            this.reformatLayout(widget.layout, widgetsProperties, counters);
         }
         if (widget.widget) {
             widget.widget = Array.isArray(widget.widget) ? widget.widget : [widget.widget];
             widget.widget.forEach(child => {
                 child.name = child.name || (":widget_" + counters.widget++);
-                this.reformatWidget(child, fields, externalFields, counters);
+                this.reformatWidget(child, widgetsProperties, counters);
             });
         }
     };
-    reformatLayout = (layout, fields, externalFields, counters) => {
+    reformatLayout = (layout, widgetsProperties: WidgetsProperties, counters) => {
         layout.item = MiscUtils.ensureArray(layout.item);
         layout.name = layout.name || (":layout_" + counters.layout++);
         layout.item.forEach(item => {
             if (!item) {
                 return;
             } else if (item.widget) {
-                this.reformatWidget(item.widget, fields, externalFields, counters);
+                this.reformatWidget(item.widget, widgetsProperties, counters);
             } else if (item.spacer) {
                 item.spacer.property = MiscUtils.ensureArray(item.spacer.property).reduce((res, prop) => {
                     return ({...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")]});
                 }, {});
             } else if (item.layout) {
-                this.reformatLayout(item.layout, fields, externalFields, counters);
+                this.reformatLayout(item.layout, widgetsProperties, counters);
             }
         });
     };

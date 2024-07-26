@@ -26,7 +26,7 @@ class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonPro
 
     redliningOpen: boolean;
 
-    static defaultProps = {
+    static defaultProps: Partial<GwClearTempLayersButtonProps> = {
         closeTasks: false
     };
 

@@ -132,7 +132,7 @@ class GwParcelFilter extends React.Component {
         });
     };
 
-    updateField = (widget, ev) => {
+    onWidgetValueChange = (widget, ev) => {
         this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { value: ev } } }));
     };
 
@@ -216,7 +216,7 @@ class GwParcelFilter extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="parcel-filter-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} updateField={this.updateField} widgetValues={this.state.widgetValues} />
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widgetValues} />
                         </div>
                     );
                 }

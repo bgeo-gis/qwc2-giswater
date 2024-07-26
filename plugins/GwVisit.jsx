@@ -276,7 +276,7 @@ class GwVisit extends React.Component {
             break;
         }
     };
-    updateField = (widget, value, initial = false) => {
+    onWidgetValueChange = (widget, value, initial = false) => {
         // Get filterSign
         let filterSign = "=";
         if (widget.property.widgetcontrols !== "null") {
@@ -456,7 +456,7 @@ class GwVisit extends React.Component {
                             <GwQtDesignerForm onWidgetAction={this.onWidgetAction} files={this.state.files} form_xml={result.form_xml}
                                 getInitialValues hiddenWidgets={this.state.hiddenWidgets} initiallyDocked={this.props.initiallyDocked}
                                 onTabChanged={this.onTabChanged} readOnly={false} replaceImageUrls
-                                theme={this.state.theme} updateField={this.updateField} widgetValues={widgetValues}
+                                theme={this.state.theme} onWidgetValueChange={this.onWidgetValueChange} widgetValues={widgetValues}
                             />
                         </div>
                     );

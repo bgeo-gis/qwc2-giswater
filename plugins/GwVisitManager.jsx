@@ -115,7 +115,7 @@ class GwVisitManager extends React.Component {
     };
 
 
-    updateField = (widget, value) => {
+    onWidgetValueChange = (widget, value) => {
         // Get filterSign
         let filterSign = "=";
         let widgetcontrols = {};
@@ -292,7 +292,7 @@ class GwVisitManager extends React.Component {
                             <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml}
                                 getInitialValues={false}
                                 readOnly={false} theme={this.props.currentTheme.title}
-                                updateField={this.updateField} widgetValues={this.state.widgetValues}
+                                onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widgetValues}
                             />
                         </div>
                     );

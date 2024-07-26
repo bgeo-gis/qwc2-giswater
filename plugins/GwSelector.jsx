@@ -253,7 +253,14 @@ class GwSelector extends React.Component {
         this.props.removeLayer("temp_lines.geojson");
         this.props.removeLayer("temp_polygons.geojson");
     };
-    updateField = (widgetName, ev, action) => {
+    onWidgetValueChange = (widget, ev) => {
+        let action;
+        try {
+            action = JSON.parse(widget.property.action);
+        } catch (error) {
+            action = {};
+        }
+
         // Get request paramas
         const epsg = GwUtils.crsStrToInt(this.props.map.projection);
         const selectorType = action.params.selectorType;
@@ -327,7 +334,7 @@ class GwSelector extends React.Component {
                 body = (
                     <div className="selector-body" role="body">
                         <GwQtDesignerForm autoResetTab={false} onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false}
-                            readOnly={false} updateField={this.updateField} />
+                            readOnly={false} onWidgetValueChange={this.onWidgetValueChange} />
                     </div>
                 );
             }

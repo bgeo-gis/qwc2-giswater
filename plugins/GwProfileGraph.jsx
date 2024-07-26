@@ -853,7 +853,7 @@ class GwProfileGraph extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="profile-export-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false} readOnly={false} updateField={this.updateField} widgetValues={this.state.widget_values}/>
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false} readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widget_values}/>
                         </div>
                     );
                 }
@@ -886,7 +886,7 @@ class GwProfileGraph extends React.Component {
         return [profileTool];
     }
 
-    updateField = (widget, ev) => {
+    onWidgetValueChange = (widget, ev) => {
         this.setState((state) => ({ widget_values: {...state.widget_values, [widget.name]: ev} }));
     };
 

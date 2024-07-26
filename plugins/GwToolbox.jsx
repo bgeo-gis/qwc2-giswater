@@ -542,7 +542,7 @@ class GwToolbox extends React.Component {
                             onWidgetAction={this.onToolButton}
                             form_xml={tool.form_xml}
                             onTabChanged={this.onToolTabChanged}
-                            updateField={this.toolOnFieldUpdated}
+                            onWidgetValueChange={this.toolOnFieldUpdated}
                             widgetValues={this.state.toolWidgetValues}
                         />
                     </div>

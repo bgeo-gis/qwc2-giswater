@@ -90,7 +90,8 @@ class GwInfo extends React.Component {
         visitWidgetValues: {},
         tableValues: {},
         filters: {},
-        widgetValues: {}
+        widgetValues: {},
+        widgetsProperties: {}
     };
 
     constructor(props) {
@@ -173,7 +174,7 @@ class GwInfo extends React.Component {
             break;
         }
     };
-    updateField = (widget, value, isInitialValue=false) => {
+    onWidgetValueChange = (widget, value, isInitialValue=false) => {
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
@@ -188,14 +189,18 @@ class GwInfo extends React.Component {
             // Update filters
             if (!isInitialValue){
                 let tabName = this.state.currentTab.tab?.name || 'pendingFilters';
-                this.setState((state) => ({ filters:{ ...state.filters, [tabName] : {...state.filters[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
+                this.setState((state) => ({ filters: { ...state.filters, [tabName] : {...state.filters[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
             }
 
         } else {
             let widgetFunction = JSON.parse(widget.property.widgetfunction)
             this.onWidgetAction(widgetFunction, widget, value);
         }
-        this.setState((state) => ({ widgetValues: {...state.widgetValues, [widget.name]: {columnname: columnname, value: value}} }));
+
+        this.setState((state) => ({
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: {value: value} },
+            widgetValues: {...state.widgetValues, [widget.name]: {columnname: columnname, value: value}} 
+        }));
 
     };
     onTabChanged = (tab, widget) => {
@@ -216,12 +221,13 @@ class GwInfo extends React.Component {
             if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
                 return;
             }
+            console.log(this.state.identifyResult)
             const prop = tableWidget.property || {};
             let idName = this.state.identifyResult.body.feature.idName;
             if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
                 idName = 'feature_id';
             }
-            if (tab.name === 'tab_visit'){
+            if (tab.name === 'tab_visit') {
                 tableName =  _tableName || this.state.widgetValues.visit_class?.value;
             }
 
@@ -238,7 +244,15 @@ class GwInfo extends React.Component {
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ tableValues: {...state.tableValues, [tableWidget.name]: result} }));
+                this.setState((state) => ({
+                    widgetsProperties: {
+                        ...state.widgetsProperties,
+                        [tableWidget.name]: {
+                            value: result.body?.data.fields?.at(0).value
+                        }
+                    } 
+                }));
+                // this.setState((state) => ({ tableValues: {...state.tableValues, [tableWidget.name]: result} }));
             }).catch((e) => {
                 console.log(e);
             });
@@ -303,28 +317,6 @@ class GwInfo extends React.Component {
                     this.setState({ pendingRequests: false });
                 });
             }
-        }
-    };
-    // TODO: This is not used?
-    showVisit = () => {
-        this.setState({ showVisit: true });
-
-        const requestUrl = GwUtils.getServiceUrl("visit");
-        if (!isEmpty(requestUrl)) {
-            const params = {
-                theme: this.props.theme.title,
-                visit_id: 10,
-                featureType: "node",
-                id: this.state.identifyResult.body.feature.id
-            };
-
-            axios.get(requestUrl + "get", { params: params }).then(response => {
-                const result = response.data;
-                this.setState({ visitJson: result, showVisit: true, pendingRequests: false });
-            }).catch((e) => {
-                console.log(e);
-                this.setState({ pendingRequests: false });
-            });
         }
     };
 
@@ -466,7 +458,7 @@ class GwInfo extends React.Component {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
         this.props.setIdentifyResult(null);
-        this.setState({ identifyResult: null, pendingRequests: false, widgetValues: {}, filters: {}, showGraph: false, graphJson: null });
+        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, widgetValues: {}, filters: {}, showGraph: false, graphJson: null });
         if (this.props.onClose) {
             this.props.onClose();
         }
@@ -480,6 +472,23 @@ class GwInfo extends React.Component {
     closeVisit = () => {
         this.setState({ showVisit: false, visitJson: null, visitWidgetValues: {} });
     };
+    loadWidgetsProperties = (widgets) => {
+        const widgetValues = Object.entries(widgets).reduce((acc, [name, data]) => {
+            if (data.value === null) {
+                return acc;
+            }
+
+            let columnname = name;
+            if (data.props.widgetfunction !== "null") {
+                columnname = JSON.parse(data.props.widgetfunction)?.parameters?.columnfind;
+            }
+            columnname = columnname ?? name;
+
+            return {...acc, [name]: {columnname: columnname, value: data.value}};
+        });
+
+        this.setState({ widgetValues: widgetValues });
+    }
     render() {
         let resultWindow = null;
         let graphWindow = null;
@@ -504,17 +513,13 @@ class GwInfo extends React.Component {
                     this.props.processStarted("info_msg", "GwInfo Error!");
                     this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
                 } else if (this.state.mode === "Point") {
-                    const widgetValues = {
-                        ...this.state.filters,
-                        ...this.state.tableValues,
-                        ...this.state.widgetValues
-                    };
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={true}
-                                onTabChanged={this.onTabChanged} readOnly={false} updateField={this.updateField}
-                                widgetValues={widgetValues}
+                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false}
+                                onTabChanged={this.onTabChanged} readOnly={false} onWidgetValueChange={this.onWidgetValueChange}
+                                loadWidgetsProperties={this.loadWidgetsProperties}
+                                widgetsProperties={this.state.widgetsProperties} useNew={true}
                             />
                         </div>
                     );
@@ -647,7 +652,6 @@ class GwInfo extends React.Component {
                         </div>
                     </div>
                 );
-
             }
             if (this.state.showVisit && !noIdentifyResult && this.state.visitJson !== null) {
                 body = (

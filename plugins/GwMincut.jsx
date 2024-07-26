@@ -316,7 +316,7 @@ class GwMincut extends React.Component {
     };
     // #endregion
     // #region DIALOG
-    updateField = (widget, value) => {
+    onWidgetValueChange = (widget, value) => {
         // Get filterSign
         let filterSign = "=";
         if (widget.property.widgetcontrols !== "null") {
@@ -645,7 +645,7 @@ class GwMincut extends React.Component {
                             <GwQtDesignerForm activetabs={this.state.activetabs} autoResetTab={false}
                                 disabledWidgets={this.state.disabledWidgets} onWidgetAction={this.onWidgetAction}
                                 form_xml={result.form_xml} onTabChanged={this.onTabChanged} readOnly={false}
-                                updateField={this.updateField} widgetValues={this.state.widgetValues}
+                                onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widgetValues}
                             />
                         </div>
                     );
