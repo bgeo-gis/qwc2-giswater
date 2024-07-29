@@ -70,7 +70,7 @@ class GwProfileGraph extends React.Component {
         pendingRequestsDialog: false,
         pendingRequests: false,
         dockerLoaded: false,
-        widget_values: {},
+        widgetsProperties: {},
         showTerrain: true,
         showTrueTerrain: false,
         width: window.innerWidth,
@@ -853,7 +853,9 @@ class GwProfileGraph extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="profile-export-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false} readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widget_values}/>
+                            <GwQtDesignerForm 
+                                onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false} useNew={true}
+                                readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.widgetsProperties}/>
                         </div>
                     );
                 }
@@ -886,14 +888,18 @@ class GwProfileGraph extends React.Component {
         return [profileTool];
     }
 
-    onWidgetValueChange = (widget, ev) => {
-        this.setState((state) => ({ widget_values: {...state.widget_values, [widget.name]: ev} }));
+    onWidgetValueChange = (widget, value) => {
+        this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [widget.name]: { value: value }} }));
     };
 
     onWidgetAction = (action) => {
         switch (action.functionName) {
         case "accept":
-            this.getProfileSvg(this.state.widget_values.txt_vnode, this.state.widget_values.txt_title, this.state.widget_values.date_to);
+            this.getProfileSvg(
+                this.state.widgetsProperties.txt_vnode.value,
+                this.state.widgetsProperties.txt_title.value,
+                this.state.widgetsProperties.date_to.value
+            );
             break;
         case "closeDlg":
             this.onClose();
@@ -905,11 +911,11 @@ class GwProfileGraph extends React.Component {
     };
 
     onClose = () => {
-        this.setState({ profilePickerResult: null, pendingRequestsDialog: false, widget_values: {} });
+        this.setState({ profilePickerResult: null, pendingRequestsDialog: false, widgetsProperties: {} });
         // this.props.setCurrentTask(null);
     };
     onToolClose = () => {
-        this.setState({ profilePickerResult: null, pendingRequestsDialog: false, widget_values: {} });
+        this.setState({ profilePickerResult: null, pendingRequestsDialog: false, widgetsProperties: {} });
         // this.props.setCurrentTask(null);
     };
 
