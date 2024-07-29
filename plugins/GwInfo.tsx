@@ -76,7 +76,7 @@ type GwInfoState = {
     graphJson: any,
     tableValues: any,
     filterValues: any,
-    widgetValues: any,
+    infoValues: any,
     widgetsProperties: any
 };
 
@@ -130,7 +130,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         graphJson: null,
         tableValues: {},
         filterValues: {},
-        widgetValues: {},
+        infoValues: {},
         widgetsProperties: {}
     };
 
@@ -196,8 +196,8 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             break;
         }
         case "accept": {
-            console.log("widgetValues :>>", this.state.widgetValues);
-            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.widgetValues};
+            console.log("infoValues :>>", this.state.infoValues);
+            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.infoValues};
             this.setFields(data);
             break;
         }
@@ -212,7 +212,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             break;
         }
     };
-    onWidgetValueChange = (widget, value, isInitialValue=false) => {
+    onWidgetValueChange = (widget, value) => {
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
@@ -225,10 +225,9 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
                 filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
             }
             // Update filters
-            if (!isInitialValue){
-                let tabName = this.state.currentTab.tab?.name || 'pendingFilters';
-                this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName] : {...state.filterValues[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
-            }
+            let tabName = this.state.currentTab.tab?.name || 'pendingFilters';
+            this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName] : {...state.filterValues[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
+
 
         } else {
             let widgetFunction = JSON.parse(widget.property.widgetfunction)
@@ -237,7 +236,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
 
         this.setState((state) => ({
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: {value: value} },
-            widgetValues: {...state.widgetValues, [widget.name]: {columnname: columnname, value: value}} 
+            infoValues: {...state.infoValues, [widget.name]: {columnname: columnname, value: value}}
         }));
 
     };
@@ -266,7 +265,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
                 idName = 'feature_id';
             }
             if (tab.name === 'tab_visit') {
-                tableName =  _tableName || this.state.widgetValues.visit_class?.value;
+                tableName =  _tableName || this.state.infoValues.visit_class?.value;
             }
 
             const params = {
@@ -496,7 +495,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
         this.props.setIdentifyResult(null);
-        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, widgetValues: {}, filterValues: {}, showGraph: false, graphJson: null });
+        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, infoValues: {}, filterValues: {}, showGraph: false, graphJson: null });
         if (this.props.onClose) {
             this.props.onClose();
         }
@@ -605,7 +604,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
     }
 
     loadWidgetsProperties = (widgets) => {
-        const widgetValues = Object.entries(widgets).reduce((acc, [name, data]: any[]) => {
+        const infoValues = Object.entries(widgets).reduce((acc, [name, data]: any[]) => {
             if (data.value === null) {
                 return acc;
             }
@@ -619,7 +618,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             return {...acc, [name]: {columnname: columnname, value: data.value}};
         });
 
-        this.setState({ widgetValues: widgetValues });
+        this.setState({ infoValues: infoValues });
     }
     render() {
         let resultWindow = null;
