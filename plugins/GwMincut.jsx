@@ -58,8 +58,7 @@ class GwMincut extends React.Component {
         selection: PropTypes.object,
         setActiveMincut: PropTypes.func,
         setCurrentTask: PropTypes.func,
-        theme: PropTypes.object,
-        widgetsProperties: PropTypes.object
+        theme: PropTypes.object
     };
     static defaultProps = {
         dockable: 'right',
@@ -69,9 +68,8 @@ class GwMincut extends React.Component {
         initialX: 0,
         initialY: 0,
         mincutResult: null,
-        widgetsProperties: {}
     };
-
+    
     state = {
         action: 'mincutNetwork',
         mincutState: 0,
@@ -85,7 +83,8 @@ class GwMincut extends React.Component {
         disabledWidgets: ['exec_start', 'exec_descript', 'exec_user', 'exec_from_plot', 'exec_depth', 'exec_appropiate', 'exec_end'],
         clickEnabled: true,
         activetabs: {},
-        ogClickPoint: null
+        ogClickPoint: null,
+        widgetsProperties: {}
     };
     componentDidUpdate(prevProps) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwMincut") {
