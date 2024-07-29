@@ -633,14 +633,11 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
 
         widgetsProperties[widget.name] = this.getBaseWidgetProperties(widget);
 
-        //console.log("getInitialValues :>>", this.props.getInitialValues);
         if (this.props.getInitialValues) {
             const value = widget.value;
-            //console.log("value :>>", value);
-            if (value !== null) {
-                //console.log("onWidgetValueChange call :>>", widget, value);
+            // console.log("value :>>", widget.name, value);
+            if ((value ?? null) !== null) {  // value is not null or undefined
                 this.props.onWidgetValueChange(widget, value, true);
-                //console.log("onWidgetValueChange called");
             }
         }
 
