@@ -69,7 +69,7 @@ class GwMincutManager extends React.Component {
         currentTab: {},
         feature_id: null,
         filters: {},
-        widgetValues: {},
+        widgetsProperties: {},
         mincutResult: null,
         selectorResult: null,
         mincutId: null
@@ -81,7 +81,6 @@ class GwMincutManager extends React.Component {
         if (!this.state.mincutmanagerResult && this.props.currentTask === "GwMincutManager" && this.props.currentTask !== prevProps.currentTask) {
             this.openMincutManager();
         }
-
         if (this.state.mincutmanagerResult && this.state.filters !== prevState.filters) {
             this.getList(this.state.mincutmanagerResult);
         }
@@ -108,7 +107,7 @@ class GwMincutManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetValues: {}, mincutId: null});
+        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetsProperties: {}, mincutId: null});
     };
 
 
@@ -140,8 +139,10 @@ class GwMincutManager extends React.Component {
                 }
             }
         }
-        this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { value: value }},
-            filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } } }));
+        this.setState((state) => ({ 
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value }},
+            filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } } 
+        }));
 
     };
 
@@ -167,7 +168,10 @@ class GwMincutManager extends React.Component {
 
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidget.columnname]: result} }));
+                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: { value: {
+                    values: result.body.data.fields.at(0).value,
+                    form: result.body.form
+                } } } }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -474,8 +478,8 @@ class GwMincutManager extends React.Component {
                         <div className="manager-body" role="body">
                             <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml}
                                 getInitialValues={false}
-                                readOnly={false} theme={this.props.currentTheme.title}
-                                onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widgetValues}
+                                readOnly={false} theme={this.props.currentTheme.title} useNew={true}
+                                onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>
                     );
