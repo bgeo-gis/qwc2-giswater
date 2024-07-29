@@ -237,7 +237,10 @@ class GwDateSelector extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.filters} />
+                            <GwQtDesignerForm 
+                                onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} 
+                                onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.filters} useNew={true}
+                            />
                         </div>
                     );
                 }
