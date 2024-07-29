@@ -334,7 +334,7 @@ class GwSelector extends React.Component {
                 body = (
                     <div className="selector-body" role="body">
                         <GwQtDesignerForm autoResetTab={false} onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false}
-                            readOnly={false} onWidgetValueChange={this.onWidgetValueChange} />
+                            readOnly={false} onWidgetValueChange={this.onWidgetValueChange} useNew={true} />
                     </div>
                 );
             }
