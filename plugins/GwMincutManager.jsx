@@ -168,10 +168,9 @@ class GwMincutManager extends React.Component {
 
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: { value: {
-                    values: result.body.data.fields.at(0).value,
-                    form: result.body.form
-                } } } }));
+                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: { 
+                    value: GwUtils.getListToValue(result)
+                } } }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });

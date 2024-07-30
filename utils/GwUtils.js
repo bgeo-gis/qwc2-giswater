@@ -20,6 +20,13 @@ import LayerUtils from 'qwc2/utils/LayerUtils';
 import {UrlParams} from 'qwc2/utils/PermaLinkUtils';
 
 const GwUtils = {
+
+    getListToValue(result) {
+        return {
+            values: result.body?.data?.fields?.at(0).value,
+            form: result.body?.form
+        }
+    },
     getServiceUrl(service) {
         const requestUrl = ConfigUtils.getConfigProp("giswaterServiceUrl");
         if (isEmpty(requestUrl)) {
