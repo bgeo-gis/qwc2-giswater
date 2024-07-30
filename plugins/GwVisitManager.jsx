@@ -72,6 +72,7 @@ class GwVisitManager extends React.Component {
         tableWidgets: new Set(),
         filters: {},
         widgetValues: {},
+        widgetsProperties: {},
         visitResult: null
     };
     componentDidUpdate(prevProps, prevState) {
@@ -111,7 +112,7 @@ class GwVisitManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ visitmanagerResult: null, pendingRequests: false, filters: {}, visitResult: null, widgetValues: {}});
+        this.setState({ visitmanagerResult: null, pendingRequests: false, filters: {}, visitResult: null, widgetValues: {}, widgetsProperties: {} });
     };
 
 
@@ -143,9 +144,11 @@ class GwVisitManager extends React.Component {
                 }
             }
         }
-        this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { value: value }},
-            filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } } }));
-
+        this.setState((state) => ({
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } },
+            widgetValues: { ...state.widgetValues, [widget.name]: { value: value }},
+            filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } }
+        }));
     };
 
     getList = (visitManagerResult) => {
@@ -168,7 +171,12 @@ class GwVisitManager extends React.Component {
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetValues: {...state.widgetValues, [tableWidgets[0].columnname]: result} }));
+                this.setState((state) => ({
+                    widgetsProperties: {...state.widgetsProperties, [tableWidgets[0].columnname]: {
+                        value: GwUtils.getListToValue(result)
+                    }},
+                    widgetValues: {...state.widgetValues, [tableWidgets[0].columnname]: result} 
+                }));
             }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
@@ -291,8 +299,9 @@ class GwVisitManager extends React.Component {
                         <div className="manager-body" role="body">
                             <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml}
                                 getInitialValues={false}
-                                readOnly={false} theme={this.props.currentTheme.title}
+                                readOnly={false} theme={this.props.currentTheme.title} 
                                 onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widgetValues}
+                                widgetsProperties={this.state.widgetsProperties} useNew={true}
                             />
                         </div>
                     );
