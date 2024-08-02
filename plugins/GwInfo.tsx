@@ -66,7 +66,8 @@ type GwInfoState = {
     currentTab: any,
     tableValues: any,
     filterValues: any,
-    infoValues: any,
+    dataValues: any,
+    epaValues: any,
     widgetsProperties: any
 };
 
@@ -118,7 +119,8 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         currentTab: {},
         tableValues: {},
         filterValues: {},
-        infoValues: {},
+        dataValues: {},
+        epaValues: {},
         widgetsProperties: {}
     };
 
@@ -177,27 +179,20 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             break;
         }
         case "accept": {
-            console.log("infoValues :>>", this.state.infoValues);
-            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.infoValues};
+            console.log("dataValues :>>", this.state.dataValues);
+            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.dataValues};
             this.setFields(data);
             break;
         }
         case "cancel":
-            
             this.clearResults();
             break;
         case "manage_visit_class":
             this.getList(this.state.currentTab.tab, value);
             break;
 
-        case "debug": {
-            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.infoValues};
-            console.log("infoValues data :>>", data);
-            break;
-        }
-        
         default:
-            console.warn(`Action \`${action.functionName}\` cannot be handled.`);
+            console.warn(`Action \`${action.functionName}\` cannot be handled.`, action);
             break;
         }
     };
@@ -216,18 +211,28 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             // Update filters
             let tabName = this.state.currentTab.tab?.name || 'pendingFilters';
             this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName] : {...state.filterValues[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
-
-
         } else {
             let widgetFunction = JSON.parse(widget.property.widgetfunction)
             this.onWidgetAction(widgetFunction, widget, value);
         }
 
+        const newDataValue = {};
+        if (widget.containingLayout === "lyt_tab_data") {
+            newDataValue[widget.name] = {value: value, columnname: columnname};
+        }
+        const newEpaValue = {};
+        if (widget.containingLayout === "lyt_tab_epa") {
+            newEpaValue[widget.name] = {value: value, columnname: columnname};
+        }
+        
         this.setState((state) => ({
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: {value: value} },
-            infoValues: {...state.infoValues, [widget.name]: {columnname: columnname, value: value}}
+            dataValues: {...state.dataValues, ...newDataValue },
+            epaValues: {...state.epaValues, ...newEpaValue }
         }));
-
+    };
+    loadWidgetsProperties = (widgetsProperties) => {
+        this.setState({ widgetsProperties: widgetsProperties });
     };
     onTabChanged = (tab, widget) => {
         this.setState({ currentTab: {tab: tab, widget: widget} });
@@ -253,8 +258,10 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
                 idName = 'feature_id';
             }
+
+            // TODO: Is this still necessary?
             if (tab.name === 'tab_visit') {
-                tableName =  _tableName || this.state.infoValues.visit_class?.value;
+                tableName =  _tableName || this.state.widgetsProperties.visit_class?.value;
             }
 
             const params = {
@@ -422,7 +429,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
         this.props.setIdentifyResult(null);
-        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, infoValues: {}, filterValues: {} });
+        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, dataValues: {}, filterValues: {} });
         if (this.props.onClose) {
             this.props.onClose();
         }
@@ -433,24 +440,6 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         this.addMarkerToResult(this.state.prevIdentifyResult);
         this.panToResult(this.state.prevIdentifyResult);
     };
-
-    loadWidgetsProperties = (widgets) => {
-        const infoValues = Object.entries(widgets).reduce((acc, [name, data]: any[]) => {
-            if (data.value === null) {
-                return acc;
-            }
-
-            let columnname = name;
-            if (data.props.widgetfunction !== "null") {
-                columnname = JSON.parse(data.props.widgetfunction)?.parameters?.columnfind;
-            }
-            columnname = columnname ?? name;
-
-            return {...acc, [name]: {columnname: columnname, value: data.value}};
-        });
-
-        this.setState({ infoValues: infoValues });
-    }
     render() {
         let resultWindow = null;
         const identifyResult = this.state.identifyResult || this.props.identifyResult;

@@ -98,7 +98,6 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
     componentDidUpdate(prevProps) {
         // Query form
         if (this.props.form_xml !== prevProps.form_xml) {
-            console.log("Form  updated");
             this.setState((state, props) => ({
                 ...GwQtDesignerForm.defaultState,
                 activetabs: props.autoResetTab ? {} : state.activetabs
@@ -329,7 +328,6 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
 
             return (<GwTableWidget onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
-            console.log("QTableView", widget.name, value);
             if (!value) {
                 return null;
             }
@@ -383,7 +381,6 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             if (isEmpty(widget.widget)) {
                 return null;
             }
-            console.log(widget.widget)
             const activetab = this.props.activetabs[widget.name] || this.state.activetabs[widget.name] || widget.widget[0].name;
             return (
                 <div className="qt-designer-form-container">
@@ -580,7 +577,6 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             mergeAttrs: true
         };
         const loadingReqId = uuidv1();
-        const widgetsProperties: WidgetsProperties = {};
 
         this.setState({ loading: true, loadingReqId: loadingReqId });
         xml2js.parseString(data.replace(/&/g, '&amp;'), options, (err, json) => {
@@ -591,7 +587,11 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                 widget: 0,
                 layout: 0
             };
-            this.reformatWidget(json.ui.widget, widgetsProperties, counters);
+
+            const widgetsProperties: WidgetsProperties = {};
+            let currentLayout: string = null;
+
+            this.reformatWidget(json.ui.widget, currentLayout, widgetsProperties, counters);
 
             this.props.loadWidgetsProperties(widgetsProperties);
             
@@ -609,7 +609,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             hidden: false,
         };
     };
-    reformatWidget = (widget, widgetsProperties: WidgetsProperties, counters) => {
+    reformatWidget = (widget, currentLayout: string, widgetsProperties: WidgetsProperties, counters) => {
         if (widget.property) {
             widget.property = MiscUtils.ensureArray(widget.property).reduce((res, prop) => {
                 return ({ ...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")] });
@@ -625,9 +625,10 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             widget.attribute = {};
         }
         if (widget.item) {
-            MiscUtils.ensureArray(widget.item).map(item => this.reformatWidget(item, widgetsProperties, counters));
+            MiscUtils.ensureArray(widget.item).map(item => this.reformatWidget(item, currentLayout, widgetsProperties, counters));
         }
 
+        widget.containingLayout = currentLayout;
         widget.name = widget.name || (":widget_" + counters.widget++);
         widget.value = this.getWidgetValue(widget);
 
@@ -642,30 +643,31 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         }
 
         if (widget.layout) {
-            this.reformatLayout(widget.layout, widgetsProperties, counters);
+            this.reformatLayout(widget.layout, currentLayout, widgetsProperties, counters);
         }
         if (widget.widget) {
             widget.widget = Array.isArray(widget.widget) ? widget.widget : [widget.widget];
             widget.widget.forEach(child => {
                 child.name = child.name || (":widget_" + counters.widget++);
-                this.reformatWidget(child, widgetsProperties, counters);
+                this.reformatWidget(child, currentLayout, widgetsProperties, counters);
             });
         }
     };
-    reformatLayout = (layout, widgetsProperties: WidgetsProperties, counters) => {
+    reformatLayout = (layout, currentLayout: string, widgetsProperties: WidgetsProperties, counters) => {
         layout.item = MiscUtils.ensureArray(layout.item);
         layout.name = layout.name || (":layout_" + counters.layout++);
+        currentLayout = layout.name;
         layout.item.forEach(item => {
             if (!item) {
                 return;
             } else if (item.widget) {
-                this.reformatWidget(item.widget, widgetsProperties, counters);
+                this.reformatWidget(item.widget, currentLayout, widgetsProperties, counters);
             } else if (item.spacer) {
                 item.spacer.property = MiscUtils.ensureArray(item.spacer.property).reduce((res, prop) => {
                     return ({...res, [prop.name]: prop[Object.keys(prop).find(key => key !== "name")]});
                 }, {});
             } else if (item.layout) {
-                this.reformatLayout(item.layout, widgetsProperties, counters);
+                this.reformatLayout(item.layout, currentLayout, widgetsProperties, counters);
             }
         });
     };
