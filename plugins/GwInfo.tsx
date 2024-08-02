@@ -22,20 +22,12 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 import {setCurrentTask} from 'qwc2/actions/task';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwInfoDmaForm from '../components/GwInfoDmaForm';
 import GwUtils from '../utils/GwUtils';
-
-import Chartist from 'chartist';
-import ChartistComponent from 'react-chartist';
-import ChartistAxisTitle from 'chartist-plugin-axistitle';
-import Icon from 'qwc2/components/Icon';
-import ChartistZoom from 'chartist-plugin-zoom';
 
 import './style/GwInfoGraphs.css';
 
 import { setIdentifyResult } from '../actions/info';
 
-let resetZoom = null;
 
 type GwInfoProps = {
     addLayerFeatures: Function,
@@ -72,8 +64,6 @@ type GwInfoState = {
     prevIdentifyResult: any,
     pendingRequests: boolean,
     currentTab: any,
-    showGraph: boolean,
-    graphJson: any,
     tableValues: any,
     filterValues: any,
     infoValues: any,
@@ -126,8 +116,6 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         prevIdentifyResult: null,
         pendingRequests: false,
         currentTab: {},
-        showGraph: false,
-        graphJson: null,
         tableValues: {},
         filterValues: {},
         infoValues: {},
@@ -147,13 +135,6 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             if (this.state.mode === "Point") {
                 this.identifyPoint(prevProps);
             }
-            if (this.state.mode === "Dma") {
-                this.identifyDma(prevProps);
-            }
-            if (this.state.mode === "Scada") {
-                this.showGraph(prevProps);
-            }
-
         }
         // Manage highlight and marker from result
         if (this.props.identifyResult && this.props.identifyResult !== prevProps.identifyResult) {
@@ -202,11 +183,19 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             break;
         }
         case "cancel":
+            
             this.clearResults();
             break;
         case "manage_visit_class":
             this.getList(this.state.currentTab.tab, value);
             break;
+
+        case "debug": {
+            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.infoValues};
+            console.log("infoValues data :>>", data);
+            break;
+        }
+        
         default:
             console.warn(`Action \`${action.functionName}\` cannot be handled.`);
             break;
@@ -289,7 +278,6 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
                         }
                     } 
                 }));
-                // this.setState((state) => ({ tableValues: {...state.tableValues, [tableWidget.name]: result} }));
             }).catch((e) => {
                 console.log(e);
             });
@@ -328,67 +316,6 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
                 console.warn(e);
                 this.props.processFinished("info_msg", false, `Execution failed "${e}"`);
             });
-        }
-    };
-    showGraph = (prevProps) => {
-        const clickPoint = this.queryPoint(prevProps);
-        if (clickPoint) {
-            // let pendingRequests = false;
-
-            const requestUrl = GwUtils.getServiceUrl("info");
-            if (!isEmpty(requestUrl)) {
-                const params = {
-                    theme: this.props.theme.title,
-                    node_id: this.state.identifyResult.body.feature.id
-                };
-
-                // pendingRequests = true
-                axios.get(requestUrl + "getgraph", { params: params }).then(response => {
-                    const result = response.data;
-                    console.log("getGraph -> ", result);
-                    if (this.state.mode === "Scada") { this.setState({identifyResult: result});}
-                    this.setState({ graphJson: result, showGraph: true, pendingRequests: false });
-                    this.highlightResult(result);
-                }).catch((e) => {
-                    console.log(e);
-                    this.setState({ pendingRequests: false });
-                });
-            }
-        }
-    };
-
-    identifyDma = (prevProps) => {
-        const clickPoint = this.queryPoint(prevProps);
-        if (clickPoint) {
-            // Remove any search selection layer to avoid confusion
-            this.props.removeLayer("searchselection");
-            let pendingRequests = false;
-
-            const requestUrl = GwUtils.getServiceUrl("info");
-            if (!isEmpty(requestUrl)) {
-                const epsg = GwUtils.crsStrToInt(this.props.map.projection);
-                const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
-                const params = {
-                    theme: this.props.theme.title,
-                    epsg: epsg,
-                    xcoord: clickPoint[0],
-                    ycoord: clickPoint[1],
-                    zoomRatio: zoomRatio
-                };
-
-                pendingRequests = true;
-                axios.get(requestUrl + "getdma", { params: params }).then(response => {
-                    const result = response.data;
-                    this.setState({ identifyResult: result, prevIdentifyResult: null, pendingRequests: false });
-                }).catch((e) => {
-                    console.error(e);
-                    this.setState({ pendingRequests: false });
-                });
-            }
-            this.props.removeMarker('identify');
-            this.props.addMarker('identify', clickPoint, '', this.props.map.projection);
-            this.setState({ identifyResult: {}, prevIdentifyResult: null, pendingRequests: pendingRequests });
-
         }
     };
 
@@ -489,13 +416,13 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
     onToolClose = () => {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
-        this.setState({ identifyResult: null, pendingRequests: false, showGraph: false, graphJson: null, mode: 'Point' });
+        this.setState({ identifyResult: null, pendingRequests: false, mode: 'Point' });
     };
     clearResults = () => {
         this.props.removeMarker('identify');
         this.props.removeLayer("identifyslection");
         this.props.setIdentifyResult(null);
-        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, infoValues: {}, filterValues: {}, showGraph: false, graphJson: null });
+        this.setState({ identifyResult: null, pendingRequests: false, widgetsProperties: {}, infoValues: {}, filterValues: {} });
         if (this.props.onClose) {
             this.props.onClose();
         }
@@ -506,102 +433,6 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         this.addMarkerToResult(this.state.prevIdentifyResult);
         this.panToResult(this.state.prevIdentifyResult);
     };
-
-    renderGraph = () => {
-        const result = this.state.graphJson;
-        const fieldsReal = result.body.data.fields.real_data;
-        const fieldsGen = result.body.data.fields.gen_data;
-        const labels = [];
-        const line1 = [];
-        const line2 = [];
-
-        fieldsReal.forEach(element => {
-            labels.push(element.time.split(':')[0]);
-            line1.push({x: parseInt(element.time.split(':')[0], 10), y: element.head});
-        });
-
-        fieldsGen.forEach(element => {
-            labels.push(element.time.split(':')[0]);
-            line2.push({x: parseInt(element.time.split(':')[0], 10), y: element.head});
-        });
-
-        const data = {
-            labels: labels,
-            series: [
-                {
-                    name: 'line1',
-                    data: line1,
-                    className: 'ct-line-real'
-                },
-                {
-                    name: 'line2',
-                    data: line2,
-                    className: 'ct-line-gen'
-                }
-            ]
-        };
-        const options = {
-            width: window.innerWidth - 20 + 'px',
-            height: 200,
-            chartPadding: {left: 5, bottom: 1, top: 0},
-            series: {
-                line1: {
-                    low: 0,
-                    showArea: true,
-                    showPoint: false,
-                    lineSmooth: true
-                },
-                line2: {
-                    low: 0,
-                    showArea: true,
-                    showPoint: false,
-                    lineSmooth: true
-                }
-            },
-            axisX: {
-                type: Chartist.AutoScaleAxis,
-                onlyInteger: true,
-                scaleMinSpace: 0
-            },
-            // Plugins used on profile
-            plugins: [
-                // Add titles to the axisY and axisX
-                // eslint-disable-next-line
-                ChartistAxisTitle({
-                    axisX: {
-                        axisTitle: "Tiempo",
-                        axisClass: 'ct-axis-title',
-                        offset: {x: 0, y: 30},
-                        textAnchor: 'middle'
-                    },
-                    axisY: {
-                        axisTitle: "Elevación",
-                        axisClass: 'ct-axis-title',
-                        offset: {x: -10, y: 10},
-                        flipTitle: true
-                    }
-                }),
-
-                // Do zoom on x axis
-                // eslint-disable-next-line
-                ChartistZoom({
-                    onZoom: function(chart, reset) { resetZoom = reset; },
-                    noClipY: true,
-                    autoZoomY: {high: true, low: true}
-                })
-            ]};
-        const listeners = {};
-        return (
-            <div id="GwInfoGraph">
-                <ChartistComponent data={data} listener={listeners} options={options} type="Line" />
-                {/* <ChartistComponent data={data} listener={listeners} options={options} ref={el => {this.plot = el; }} type="Line" /> */}
-                <div>
-                    <Icon className="resetzoom-profile-button" icon="zoom" onClick={() => {if (resetZoom) resetZoom();}}
-                        title={"Reset Zoom"} />
-                </div>
-            </div>
-        );
-    }
 
     loadWidgetsProperties = (widgets) => {
         const infoValues = Object.entries(widgets).reduce((acc, [name, data]: any[]) => {
@@ -622,19 +453,18 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
     }
     render() {
         let resultWindow = null;
-        let graphWindow = null;
-        let noIdentifyResult = false;
         const identifyResult = this.state.identifyResult || this.props.identifyResult;
         const headerText = identifyResult?.body?.form?.headerText;
         if (this.state.pendingRequests === true || identifyResult  !== null) {
             let body = null;
             if (isEmpty(identifyResult) || !identifyResult.form_xml) {
+                let text;
                 if (this.state.pendingRequests === true) {
-                    body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.querying")}</span></div>);
+                    text = LocaleUtils.tr("identify.querying")
                 } else {
-                    noIdentifyResult = true;
-                    body = (<div className="identify-body" role="body"><span className="identify-body-message">{LocaleUtils.tr("identify.noresults")}</span></div>);
+                    text = LocaleUtils.tr("identify.noresults")
                 }
+                body = (<div className="identify-body" role="body"><span className="identify-body-message">{text}</span></div>);
             } else {
                 const result = identifyResult;
                 const prevResultButton = !isEmpty(this.state.prevIdentifyResult) ? (<button className='button' onClick={this.showPrevResult}>Back</button>) : null;
@@ -653,30 +483,20 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
                             />
                         </div>
                     );
-                } else if (this.state.mode === "Dma") {
-                    body = (
-                        <div className="identify-body" role="body">
-                            <GwInfoDmaForm jsonData ={result.body.data}/>
-                        </div>
-                    );
                 }
             }
             resultWindow = (
-                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.state.mode === "Dma" ? 800 : this.props.initialHeight} initialWidth={this.props.initialWidth}
+                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY}
                     initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight} minimizeable
                     onClose={this.clearResults}
-                    scrollable={this.state.mode === "Dma" ? true : false}  title={typeof headerText !== "undefined" ? headerText : "Info"}
+                    scrollable={false}  title={typeof headerText !== "undefined" ? headerText : "Info"}
                 >
                     {body}
                 </ResizeableWindow>
             );
-
-            if (this.state.showGraph && !noIdentifyResult && this.state.graphJson !== null) {
-                graphWindow = this.renderGraph();
-            }
         }
-        return [this.state.mode !== "Scada" ? resultWindow : null, graphWindow, (
+        return [resultWindow, (
             <TaskBar key="GwInfoTaskBar" onHide={this.onToolClose} onShow={this.onShow} task="GwInfo">
                 {() => ({
                     body: LocaleUtils.tr("infotool.clickhelpPoint")
