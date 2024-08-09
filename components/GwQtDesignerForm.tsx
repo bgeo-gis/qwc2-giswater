@@ -45,6 +45,7 @@ type GwQtDesignerFormProps = {
     getInitialValues: boolean,
     hiddenWidgets: string[],
     locale: string,
+    loading: boolean,
     onTabChanged: (tab: any, widget: any) => void,
     readOnly: boolean,
     replaceImageUrls: boolean,
@@ -53,6 +54,7 @@ type GwQtDesignerFormProps = {
     useNew: boolean,
     widgetsProperties: WidgetsProperties,
     loadWidgetsProperties: (widgetsProperties: WidgetsProperties) => void,
+    widgetPrefix: string,
 };
 
 type GwQtDesignerFormState = {
@@ -78,6 +80,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         files: [],
         activetabs: {},
         useNew: false,
+        loading: false,
         widgetsProperties: {},
         loadWidgetsProperties: (widgetsProperties) => {}
     };
@@ -105,13 +108,13 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                 if (this.props.form_xml) {
                     this.parseForm(this.props.form_xml);
                 } else {
-                    console.error("Empty xml");
+                    console.warn("Empty xml");
                 }
             });
         }
     }
     render() {
-        if (this.state.loading) {
+        if (this.state.loading || this.props.loading) {
             return (
                 <div className="qt-designer-form-loading">
                     <Spinner/><span>{LocaleUtils.tr("qtdesignerform.loading")}</span>
@@ -252,9 +255,9 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         this.props.onTabChanged(tab, widget);
     };
     getWidgetProperties = (widget): Properties => {
-
         const properties = this.getBaseWidgetProperties(widget);
         const userProperties: any = this.props.widgetsProperties[widget.name] || {};
+
         return {
             value: userProperties.value ?? properties.value,
             props: {
@@ -293,7 +296,8 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             fontStyle: fontProps.italic === "true" ? "italic" : "normal",
             textDecoration: [fontProps.underline === "true" ? "underline" : "", fontProps.strikeout === "true" ? "line-through" : ""].join(" "),
             fontSize: Math.round((fontProps.pointsize || 9) / 9 * 100) + "%",
-            textAlign: 'left'
+            textAlign: 'left',
+            textWrap: 'pretty',
         };
         if (prop.alignment) {
             if (prop.alignment.includes("Qt::AlignRight")) {
@@ -314,14 +318,34 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
 
         const value = this.props.useNew ? widgetProperties.value : this.getWidgetValue(widget);
 
-        if (widget.class === "QTableWidget") {
-            // console.log(value)
+        if (widget.class === "GwQtDesignerForm") {
+            return (
+                <GwQtDesignerForm
+                    form_xml={value?.form_xml}
+                    activetabs={this.props.activetabs}
+                    autoResetTab={this.props.autoResetTab}
+                    files={this.props.files}
+                    getInitialValues={this.props.getInitialValues}
+                    locale={this.props.locale}
+                    loading={value?.loading}
+                    onTabChanged={this.props.onTabChanged}
+                    onWidgetAction={this.props.onWidgetAction}
+                    onWidgetValueChange={this.props.onWidgetValueChange}
+                    readOnly={this.props.readOnly}
+                    replaceImageUrls={this.props.replaceImageUrls}
+                    useNew={true}
+                    widgetsProperties={this.props.widgetsProperties}
+                    loadWidgetsProperties={this.props.loadWidgetsProperties}
+                    // widgetPrefix={widget.name + "_" + (this.props.widgetPrefix ?? '')}
+                />
+            );
+        }
+        else if (widget.class === "QTableWidget") {
             if (!value || !value.values) {
                 return null;
             }
             
             const { values, form } = value;
-            // console.log(values, form)
             // if (!values) {
             //     return (<span>No results found</span>)
             // }
@@ -630,13 +654,15 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
 
         widget.containingLayout = currentLayout;
         widget.name = widget.name || (":widget_" + counters.widget++);
+        if (this.props.widgetPrefix) {
+            widget.name = this.props.widgetPrefix + widget.name;
+        }
         widget.value = this.getWidgetValue(widget);
 
         widgetsProperties[widget.name] = this.getBaseWidgetProperties(widget);
 
         if (this.props.getInitialValues) {
             const value = widget.value;
-            // console.log("value :>>", widget.name, value);
             if ((value ?? null) !== null) {  // value is not null or undefined
                 this.props.onWidgetValueChange(widget, value, true);
             }

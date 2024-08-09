@@ -1,0 +1,11 @@
+.identify-body [name="MainLayout"] > div:first-child {
+    overflow: hidden;
+}
+
+.identify-body [name="MainLayout"] > div:first-child div.qt-designer-form-tabbar {
+    overflow-x: unset;
+}
+
+.identify-body [name="MainLayout"] > div:first-child div.qt-designer-form-frame {
+    overflow-y: auto;
+}

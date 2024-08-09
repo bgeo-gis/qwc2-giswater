@@ -24,55 +24,12 @@ import {setCurrentTask} from 'qwc2/actions/task';
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 
-import './style/GwInfoGraphs.css';
+import './style/GwInfo.css';
 
 import { setIdentifyResult } from '../actions/info';
 
 
-type GwInfoProps = {
-    addLayerFeatures: Function,
-    addMarker: Function,
-    click: any,
-    currentIdentifyTool: string,
-    currentTask: string,
-    dockable: boolean | string,
-    identifyResult: any,
-    initialHeight: number,
-    initialWidth: number,
-    initialX: number,
-    initialY: number,
-    initiallyDocked: boolean,
-    layers: Array<any>,
-    map: any,
-    minHeight: number,
-    onClose: Function,
-    panTo: Function,
-    processFinished: Function,
-    processStarted: Function,
-    refreshLayer: Function,
-    removeLayer: Function,
-    removeMarker: Function,
-    selection: any,
-    setIdentifyResult: Function,
-    theme: any,
-    setCurrentTask: Function
-};
-
-type GwInfoState = {
-    mode: string,
-    identifyResult: any,
-    prevIdentifyResult: any,
-    pendingRequests: boolean,
-    currentTab: any,
-    tableValues: any,
-    filterValues: any,
-    dataValues: any,
-    epaValues: any,
-    widgetsProperties: any
-};
-
-
-class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
+class GwInfo extends React.Component {
     static propTypes = {
         addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
@@ -101,7 +58,8 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         theme: PropTypes.object,
         setCurrentTask: PropTypes.func
     };
-    static defaultProps: Partial<GwInfoProps> = {
+
+    static defaultProps = {
         minHeight: 500,
         initialWidth: 480,
         initialHeight: 600,
@@ -111,7 +69,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         initiallyDocked: false,
         dockable: true
     };
-    static defaultState: GwInfoState = {
+    state = {
         mode: 'Point',
         identifyResult: null,
         prevIdentifyResult: null,
@@ -126,9 +84,9 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
 
     constructor(props) {
         super(props);
-        this.state = GwInfo.defaultState;
+        // this.state = GwInfo.defaultState;
     }
-    componentDidUpdate(prevProps: GwInfoProps, prevState: GwInfoState) {
+    componentDidUpdate(prevProps, prevState) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
             this.clearResults();
         }
@@ -148,7 +106,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             this.getList(this.state.currentTab.tab);
         }
     }
-    onWidgetAction = (action, widget, value?) => {
+    onWidgetAction = (action, widget, value) => {
         let pendingRequests = false;
         switch (action.functionName) {
         case "featureLink":
@@ -179,9 +137,54 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             break;
         }
         case "accept": {
-            console.log("dataValues :>>", this.state.dataValues);
-            const data = {id: this.state.identifyResult.body.feature.id, tableName: "v_edit_arc", fields: this.state.dataValues};
-            this.setFields(data);
+            const feature = this.state.identifyResult.body.feature;
+
+            const dataModified = !isEmpty(this.state.dataValues);
+            const epaModified = !isEmpty(this.state.epaValues);
+
+            if (dataModified) {
+                this.props.processStarted("info_msg_data", "Update feature Data");
+            }
+
+            this.setFields(
+                feature.id,
+                feature.tableName,
+                this.state.dataValues
+            ).then((response) => {
+                const result = response.data;
+                if (dataModified) {
+                    this.props.processFinished("info_msg_data", result.status === "Accepted", result.message.text);
+                }
+                if (epaModified) {
+                    this.props.processStarted("info_msg_epa", "Update feature EPA");
+                }
+                this.setFields(
+                    feature.id,
+                    this.getEpaTableName(this.state.widgetsProperties.epa_type?.value),
+                    this.state.epaValues
+                ).then((response) => {
+                    const result = response.data;
+                    if (epaModified) {
+                        this.props.processFinished("info_msg_epa", result.status === "Accepted", result.message.text);
+                    }
+
+                    if (this.props.theme.tiled) {
+                        // this.refreshTiles()
+                    } else {
+                        this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+                    }
+                    this.clearResults();
+
+                }).catch((e) => {
+                    console.warn(e);
+                    this.props.processFinished("info_msg_epa", false, `Execution failed: ${e}`);
+                });
+
+            }).catch((e) => {
+                console.warn(e);
+                this.props.processFinished("info_msg_data", false, `Execution failed: ${e}`);
+            });
+
             break;
         }
         case "cancel":
@@ -197,11 +200,13 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         }
     };
     onWidgetValueChange = (widget, value) => {
+        // console.log("onWidgetValueChange :>>", widget, value);
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
         }
         columnname = columnname ?? widget.name;
+
         if (widget.property.isfilter === "true") {
             // Get filterSign
             let filterSign = "=";
@@ -216,12 +221,16 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             this.onWidgetAction(widgetFunction, widget, value);
         }
 
+        if (widget.name === "epa_type") {
+            this.loadEpaForm(value);
+        }
+        
         const newDataValue = {};
-        if (widget.containingLayout === "lyt_tab_data") {
+        if (widget.containingLayout === "lyt_tab_data" || widget.name === "epa_type") {
             newDataValue[widget.name] = {value: value, columnname: columnname};
         }
         const newEpaValue = {};
-        if (widget.containingLayout === "lyt_tab_epa") {
+        if (widget.containingLayout === "lyt_epa_data_1") {
             newEpaValue[widget.name] = {value: value, columnname: columnname};
         }
         
@@ -232,12 +241,120 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         }));
     };
     loadWidgetsProperties = (widgetsProperties) => {
-        this.setState({ widgetsProperties: widgetsProperties });
+        this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, ...widgetsProperties } }));
     };
     onTabChanged = (tab, widget) => {
+        if (tab.name === "tab_plan") {
+            if (!this.state.widgetsProperties.form_plan?.value?.form_xml) {
+                this.loadPlanForm();
+            }
+        }
+        else if (tab.name === "tab_epa") {
+            const epaType = this.state.widgetsProperties.epa_type?.value
+            if (!this.state.widgetsProperties.form_epa?.value?.form_xml) {
+                this.loadEpaForm(epaType);
+            }
+        }
+
         this.setState({ currentTab: {tab: tab, widget: widget} });
     };
-    getList = (tab, _tableName?) => {
+
+    getEpaTableName = (epaType) => {
+        const featureType = this.state.identifyResult.body.feature.featureType;
+
+        epaType = epaType.toLowerCase();
+        let tableName = "ve_epa_" + epaType
+
+        if (featureType == 'connec' && epaType == 'junction') {
+            tableName = 've_epa_connec'
+        }
+
+        return tableName;
+    }
+
+    loadEpaForm = (epaType) => {
+        const requestUrl = GwUtils.getServiceUrl("info");
+        if (!isEmpty(requestUrl)) {
+            const params = {
+                theme: this.props.theme.title,
+                id: this.state.identifyResult.body.feature.id,
+                tableName: this.getEpaTableName(epaType), // TODO: Handle weird case with 've_epa_connec'
+                epaType: epaType
+            };
+
+            this.setState((state) => ({
+                widgetsProperties: {
+                    ...state.widgetsProperties,
+                    form_epa: {
+                        value: {
+                            form_xml: "",
+                            loading: true
+                        }
+                    }
+                }
+            }));
+
+            axios.get(requestUrl + "fromid", { params: params }).then((response) => {
+                const result = response.data;
+                this.setState((state) => ({
+                    epaValues: {},
+                    widgetsProperties: {
+                        ...state.widgetsProperties,
+                        form_epa: {
+                            value: {
+                                form_xml: result.form_xml,
+                                loading: false
+                            }
+                        }
+                    }
+                }));
+            });
+        }
+    }
+
+    loadPlanForm = () => {
+        const requestUrl = GwUtils.getServiceUrl("info");
+        if (!isEmpty(requestUrl)) {
+            const feature = this.state.identifyResult.body.feature;
+            const params = {
+                theme: this.props.theme.title,
+                tableName: feature.tableName,
+                featureType: feature.featureType,
+                idName: feature.idName,
+                id: feature.id,
+            };
+            this.setState((state) => ({
+                widgetsProperties: {
+                    ...state.widgetsProperties,
+                    form_plan: {
+                        value: {
+                            form_xml: "",
+                            loading: true
+                        }
+                    }
+                }
+            }));
+
+            axios.get(requestUrl + "getinfoplan", { params: params }).then((response) => {
+                const result = response.data;
+                this.setState((state) => ({
+                    widgetsProperties: {
+                        ...state.widgetsProperties,
+                        form_plan: {
+                            value: {
+                                form_xml: result.form_xml,
+                                loading: false
+                            }
+                        }
+                    }
+                }));
+            }).catch((e) => {
+                console.log(e);
+            });
+        }
+    }
+
+    getList = (tab, _tableName) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("info");
 
@@ -252,7 +369,6 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
             if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
                 return;
             }
-            console.log(this.state.identifyResult)
             const prop = tableWidget.property || {};
             let idName = this.state.identifyResult.body.feature.idName;
             if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
@@ -293,37 +409,27 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
         }
 
     };
-    setFields = (data) => {
-        const id = data.id;
-        const tableName = data.tableName;
-        const fields = data.fields;
-
-        const requestUrl = GwUtils.getServiceUrl("util");
-        if (!isEmpty(requestUrl)) {
-            const params = {
-                theme: this.props.theme.title,
-                id: id,
-                tableName: tableName,
-                fields: JSON.stringify(fields)
-            };
-
-            this.props.processStarted("info_msg", "Update feature");
-            axios.put(requestUrl + "setfields", { ...params }).then((response) => {
-                const result = response.data;
-                this.props.processFinished("info_msg", result.status === "Accepted", result.message.text);
-                // refresh map
-                if (this.props.theme.tiled) {
-                    // this.refreshTiles()
-                } else {
-                    this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+    setFields = (id, tableName, fields) => {
+        if (isEmpty(fields)) {
+            return Promise.resolve({
+                data: {
+                    status: "Accepted",
+                    message: {text: "No fields to update."} 
                 }
-                // close
-                this.clearResults();
-            }).catch((e) => {
-                console.warn(e);
-                this.props.processFinished("info_msg", false, `Execution failed "${e}"`);
             });
         }
+        
+        const params = {
+            theme: this.props.theme.title,
+            id: id,
+            tableName: tableName,
+            fields: JSON.stringify(fields)
+        };
+        
+        console.log("setFields :>>", params);
+        
+        const requestUrl = GwUtils.getServiceUrl("util");
+        return axios.put(requestUrl + "setfields", { ...params })
     };
 
     identifyPoint = (prevProps) => {
@@ -354,7 +460,7 @@ class GwInfo extends React.Component<GwInfoProps, GwInfoState> {
                     zoomRatio: zoomRatio,
                     layers: queryLayers.join(',')
                 };
-                console.log("LAYEERS: ", queryLayers.join(','));
+                // console.log("LAYEERS: ", queryLayers.join(','));
                 pendingRequests = true;
                 axios.get(requestUrl + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
