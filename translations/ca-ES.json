@@ -1,18 +1,14 @@
 {
   "locale": "ca-ES",
   "messages": {
-    "editing": {
-      "select": "Seleccionar"
-    },
-    "fileselector": {
-      "files": ""
-    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distància",
       "height": "Alçada"
     },
     "identify": {
+      "confirmDiscard": "Vols descartar els canvis?",
+      "confirmSave": "Vols desar els canvis?",
       "noresults": "Sense informació disponible sobre el punt seleccionat",
       "querying": "Consultant..."
     },
@@ -27,9 +23,6 @@
       "clickhelpChangeValveStatus": "Fes clic en una o mes valvules per obrir-les o tancar-les en refrescar el Mincut",
       "clickhelpNetwork": "Fes click en un arc per realitzar un Mincut",
       "clickhelpValveUnaccess": "Fes clic en una valvula per fer-la inoperativa"
-    },
-    "qtdesignerform": {
-      "loading": "Carregant..."
     },
     "routing": {
       "addviapoint": "Afegir punt intermedi",

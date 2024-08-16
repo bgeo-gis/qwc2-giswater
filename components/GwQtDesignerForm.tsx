@@ -278,7 +278,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         }
         // const attr = widget.attribute || {};
         const inputConstraints: any = {};
-        inputConstraints.readOnly = this.props.useNew ? widgetProperties.disabled : (
+        inputConstraints.readOnly = this.props.useNew ? (this.props.readOnly || widgetProperties.disabled) : (
             this.props.readOnly 
             || this.props.disabledWidgets.includes(widget.name)
             || prop.readOnly === "true" 
@@ -629,7 +629,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         return {
             value: widget.value,
             props: widget.property || {},
-            disabled: this.props.readOnly || widget.property?.readOnly === "true" || widget.property?.enabled === "false",
+            disabled: widget.property?.readOnly === "true" || widget.property?.enabled === "false",
             hidden: false,
         };
     };

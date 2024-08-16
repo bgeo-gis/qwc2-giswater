@@ -1,18 +1,14 @@
 {
   "locale": "ru-RU",
   "messages": {
-    "editing": {
-      "select": ""
-    },
-    "fileselector": {
-      "files": ""
-    },
     "heightprofile": {
       "asl": "",
       "distance": "",
       "height": ""
     },
     "identify": {
+      "confirmDiscard": "",
+      "confirmSave": "",
       "noresults": "",
       "querying": ""
     },
@@ -27,9 +23,6 @@
       "clickhelpChangeValveStatus": "",
       "clickhelpNetwork": "",
       "clickhelpValveUnaccess": ""
-    },
-    "qtdesignerform": {
-      "loading": ""
     },
     "routing": {
       "addviapoint": "",

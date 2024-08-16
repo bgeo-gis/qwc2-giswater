@@ -41,11 +41,11 @@
     "colorschemes.transparent"
   ],
   "strings": [
-    "editing.select",
-    "fileselector.files",
     "heightprofile.asl",
     "heightprofile.distance",
     "heightprofile.height",
+    "identify.confirmDiscard",
+    "identify.confirmSave",
     "identify.noresults",
     "identify.querying",
     "infotool.clickhelpPoint",
@@ -54,7 +54,6 @@
     "mincut.clickhelpChangeValveStatus",
     "mincut.clickhelpNetwork",
     "mincut.clickhelpValveUnaccess",
-    "qtdesignerform.loading",
     "routing.addviapoint",
     "routing.fromhere",
     "routing.isocenter",
