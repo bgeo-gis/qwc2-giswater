@@ -274,6 +274,7 @@ class GwInfo extends React.Component {
             newEpaValue[widget.name] = {value: value, columnname: columnname};
         }
         
+        // TODO: use setCurrentTaskBlocked to avoid closing the task while saving or reloading the page
         this.setState((state) => ({
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: {value: value} },
             dataValues: {...state.dataValues, ...newDataValue },
@@ -398,56 +399,58 @@ class GwInfo extends React.Component {
         try {
             const requestUrl = GwUtils.getServiceUrl("info");
 
-            let tableWidget = null;
-            let tableName = null;
+            let tableWidgets = [];
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
                 if (widget.class === "QTableView" || widget.class === "QTableWidget") {
-                    tableWidget = widget; // There should only be one
+                    tableWidgets.push(widget); // There should only be one
                 }
             });
-
-            if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
+            
+            if (isEmpty(tableWidgets) || isEmpty(requestUrl)) {
                 return;
             }
-            const prop = tableWidget.property || {};
-            let idName = this.props.identifyResult.body.feature.idName;
-            if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
-                idName = 'feature_id';
-            }
+            
+            for (let tableWidget of tableWidgets) {
+                const prop = tableWidget.property || {};
+                let idName = this.props.identifyResult.body.feature.idName;
+                if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
+                    idName = 'feature_id';
+                }
+                
+                let tableName = null;
+                // TODO: Is this still necessary?
+                if (tab.name === 'tab_visit') {
+                    tableName =  _tableName || this.state.widgetsProperties.visit_class?.value;
+                }
 
-            // TODO: Is this still necessary?
-            if (tab.name === 'tab_visit') {
-                tableName =  _tableName || this.state.widgetsProperties.visit_class?.value;
+                const params = {
+                    theme: this.props.theme.title,
+                    tabName: tab.name,  // tab.name, no? o widget.name?
+                    widgetname: tableWidget.name,  // tabname_ prefix cal?
+                    // "formtype": this.props.formtype,
+                    tableName: tableName || prop.linkedobject,
+                    idName: idName,
+                    id: this.props.identifyResult.body.feature.id,
+                    filterFields: JSON.stringify(this.state.filterValues[this.state.currentTab.tab?.name]),
+                    // "filterSign": action.params.tabName
+                };
+                axios.get(requestUrl + "getlist", { params: params }).then((response) => {
+                    const result = response.data;
+                    this.setState((state) => ({
+                        widgetsProperties: {
+                            ...state.widgetsProperties,
+                            [tableWidget.name]: {
+                                value: result.body?.data.fields?.at(0).value
+                            }
+                        } 
+                    }));
+                }).catch((e) => {
+                    console.log(e);
+                });
             }
-
-            const params = {
-                theme: this.props.theme.title,
-                tabName: tab.name,  // tab.name, no? o widget.name?
-                widgetname: tableWidget.name,  // tabname_ prefix cal?
-                // "formtype": this.props.formtype,
-                tableName: tableName || prop.linkedobject,
-                idName: idName,
-                id: this.props.identifyResult.body.feature.id,
-                filterFields: JSON.stringify(this.state.filterValues[this.state.currentTab.tab?.name]),
-                // "filterSign": action.params.tabName
-            };
-            axios.get(requestUrl + "getlist", { params: params }).then((response) => {
-                const result = response.data;
-                this.setState((state) => ({
-                    widgetsProperties: {
-                        ...state.widgetsProperties,
-                        [tableWidget.name]: {
-                            value: result.body?.data.fields?.at(0).value
-                        }
-                    } 
-                }));
-            }).catch((e) => {
-                console.log(e);
-            });
         } catch (error) {
             console.warn(error);
         }
-
     };
     setFields = (id, tableName, fields) => {
         if (isEmpty(fields)) {
