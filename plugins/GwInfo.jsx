@@ -286,13 +286,15 @@ class GwInfo extends React.Component {
     };
     onTabChanged = (tab, widget) => {
         if (tab.name === "tab_plan") {
-            if (!this.state.widgetsProperties.form_plan?.value?.form_xml) {
+            const formVal = this.state.widgetsProperties.form_plan?.value;
+            if (!formVal?.form_xml && !formVal?.loading) {
                 this.loadPlanForm();
             }
         }
         else if (tab.name === "tab_epa") {
+            const formVal = this.state.widgetsProperties.form_epa?.value;
             const epaType = this.state.widgetsProperties.epa_type?.value
-            if (!this.state.widgetsProperties.form_epa?.value?.form_xml) {
+            if (!formVal?.form_xml && !formVal?.loading) {
                 this.loadEpaForm(epaType);
             }
         }
@@ -457,7 +459,7 @@ class GwInfo extends React.Component {
             return Promise.resolve({
                 data: {
                     status: "Accepted",
-                    message: {text: "No fields to update."} 
+                    message: { text: "No fields to update." }
                 }
             });
         }
