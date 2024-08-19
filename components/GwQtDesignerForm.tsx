@@ -349,7 +349,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
                     onTabChanged={this.props.onTabChanged}
                     onWidgetAction={this.props.onWidgetAction}
                     onWidgetValueChange={this.props.onWidgetValueChange}
-                    readOnly={this.props.readOnly}
+                    readOnly={inputConstraints.readOnly}
                     replaceImageUrls={this.props.replaceImageUrls}
                     useNew={true}
                     widgetsProperties={this.props.widgetsProperties}
@@ -364,16 +364,10 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             }
             
             const { values, form } = value;
-            // if (!values) {
-            //     return (<span>No results found</span>)
-            // }
 
             return (<GwTableWidget onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
-            if (!value) {
-                return null;
-            }
-            return (<GwTableView data={value} />);
+            return (<GwTableView data={value || []} />);
         } else if (widget.class === "QLabel") { // @ts-ignore
             return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);
         } else if (widget.class === "Line") {
