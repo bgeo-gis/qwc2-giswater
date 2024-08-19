@@ -1,0 +1,62 @@
+div.gwtableview-body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+}
+
+div.gwtableview-results-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    background-color: var(--container-bg-color);
+    border-radius: var(--radius-small);
+    padding: 0.25em 0.25em 0.25em 1em;
+    flex: 1 1 50%;
+    overflow: auto;
+}
+
+div.gwtableview-entry span.clickable {
+    cursor: pointer;
+}
+
+div.gwtableview-entry span.active {
+    font-weight: bold;
+}
+
+div.gwtableview-current-result {
+    flex: 1 1 50%;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-small);
+}
+
+div.gwtableview-result-title {
+    background-color: var(--list-section-bg-color);
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.25em;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+div.gwtableview-result-title > span:not(:first-child) {
+    margin-left: 0.5em;
+}
+
+div.gwtableview-result-attributes {
+    overflow: auto;
+}
+
+div.gwtableview-result-attributes > table {
+    width: 100%;
+}
+
+div.gwtableview-result-attributes table td:first-child {
+    padding-left: 0.25em;
+    padding-right: 1em;
+}
+
+div.gwtableview-result-attributes > table > tbody > tr:nth-child(even) {
+    background-color: var(--list-item-bg-color-even);
+}

@@ -16,6 +16,7 @@ import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MiscUtils from 'qwc2/utils/MiscUtils';
 
 import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
+import GwTableView from 'qwc2-giswater/components/GwTableView';
 import 'qwc2/components/style/QtDesignerForm.css';
 import 'qwc2-giswater/components/style/GwQtDesignerForm.css';
 import FileSelector from 'qwc2/components/widgets/FileSelector';
@@ -228,17 +229,32 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
     };
     computeLayoutRows = (items, useIndex = false) => {
         const rows = [];
-        const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line", "QDateTimeEdit", "QDateEdit", "QTimeEdit", "QPushButton", "QComboBox", "QLineEdit"];
+        const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line", "QDateTimeEdit", "QDateEdit", "QTimeEdit", "QPushButton", "QComboBox", "QLineEdit", "QSpinBox", "QDoubleSpinBox", "QSlider"];
+        const expandWidgets = ["QTextEdit", "QTextBrowser", "QPlainTextEdit", "QTableWidget", "QTableView"];
+
+        const isSpacer = (item) => {
+            return item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical";
+        }
+        const isExpand = (item) => {
+            if (item.layout) {
+                return item.layout.item.find(item => isExpand(item));
+            } else if (item.widget) {
+                return expandWidgets.includes(item.widget.class);
+            }
+            return false;
+        }
+
         let index = 0;
         let hasAuto = false;
-        const hasSpacer = items.find(item => (item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical"));
+        const hasSpacer = items.find(item => isSpacer(item));
+        const hasExpand = items.find(item => isExpand(item));
         for (const item of items) {
             const row = useIndex ? index : (parseInt(item.row, 10) || 0);
             const rowSpan = useIndex ? 1 : (parseInt(item.rowspan, 10) || 1);
-            if (!hasSpacer && item.widget && !fitWidgets.includes(item.widget.class) && rowSpan === 1 && item.widget.property?.fit_vertical !== "true") {
+            if (!hasExpand && item.widget && !fitWidgets.includes(item.widget.class) && rowSpan === 1 && item.widget.property?.fit_vertical !== "true") {
                 rows[row] = 'auto';
                 hasAuto = true;
-            } else if (item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical") {
+            } else if ((isExpand(item) && !hasSpacer) || isSpacer(item)) {
                 rows[row] = 'auto';
                 hasAuto = true;
             } else {
@@ -357,29 +373,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             if (!value) {
                 return null;
             }
-
-            return (
-                <div className="qtableview-container">
-                    <table className="qtableview">
-                        <thead className="qtableview-head">
-                            <tr className="qtableview-row">
-                                {Object.keys(value[0]).map((field, i) => (
-                                    <th className="qtableview-header" key={i}>{field}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="qtableview-body">
-                            {value.map((v, i) => (
-                                <tr className="qtableview-row" key={i}>
-                                    {Object.values(v).map((field: string, j) => (
-                                        <td className="qtableview-cell" key={j}>{field}</td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            );
+            return (<GwTableView data={value} />);
         } else if (widget.class === "QLabel") { // @ts-ignore
             return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);
         } else if (widget.class === "Line") {
@@ -738,8 +732,3 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         return message;
     };
 }
-
-export default connect((state) => ({ // @ts-ignore
-    locale: state.locale.current
-}), {
-})(GwQtDesignerForm);
