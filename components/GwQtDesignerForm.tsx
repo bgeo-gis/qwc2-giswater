@@ -55,6 +55,7 @@ type GwQtDesignerFormProps = {
     widgetsProperties: WidgetsProperties,
     loadWidgetsProperties: (widgetsProperties: WidgetsProperties) => void,
     widgetPrefix: string,
+    style: React.CSSProperties,
 };
 
 type GwQtDesignerFormState = {
@@ -65,7 +66,7 @@ type GwQtDesignerFormState = {
     files: any,
 };
 
-class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesignerFormState> {
+export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesignerFormState> {
 
     static defaultProps: Partial<GwQtDesignerFormProps> = {
         onWidgetValueChange: (name, value, initial = false) => { console.log(name, value, initial); },
@@ -82,7 +83,8 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         useNew: false,
         loading: false,
         widgetsProperties: {},
-        loadWidgetsProperties: (widgetsProperties) => {}
+        loadWidgetsProperties: (widgetsProperties) => {},
+        style: {},
     };
     static defaultState: GwQtDesignerFormState = {
         activetabs: {},
@@ -123,7 +125,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         } else if (this.state.formData) {
             const root = this.state.formData.ui.widget;
             return (
-                <div className={"qt-designer-form"}>
+                <div className={"qt-designer-form"} style={this.props.style}>
                     {this.renderLayout(root.layout)}
                 </div>
             );
@@ -135,7 +137,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             return null;
         }
     }
-    renderLayout = (layout, nametransform = (name) => name, visible = true) => {
+    renderLayout = (layout, nametransform = (name) => name, visible = true, disabled = false) => {
         let containerClass = "";
         let itemStyle = (item, idx) => ({});
         let sortKey = (item, idx?) => idx;
@@ -181,9 +183,9 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                 {layout.item.sort((a, b) => (sortKey(a) - sortKey(b))).map((item, idx) => {
                     let child = null;
                     if (item.widget) {
-                        child = this.renderWidget(item.widget, nametransform);
+                        child = this.renderWidget(item.widget, nametransform, disabled);
                     } else if (item.layout) {
-                        child = this.renderLayout(item.layout, nametransform);
+                        child = this.renderLayout(item.layout, nametransform, true, disabled);
                     } else if (item.spacer) {
                         child = (<div />);
                     } else {
@@ -268,7 +270,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             hidden: userProperties.hidden ?? properties.hidden,
         };
     };
-    renderWidget = (widget, nametransform = (name) => name) => {
+    renderWidget = (widget, nametransform = (name) => name, disabled = false) => {
 
         const widgetProperties = this.getWidgetProperties(widget);
 
@@ -278,7 +280,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
         }
         // const attr = widget.attribute || {};
         const inputConstraints: any = {};
-        inputConstraints.readOnly = this.props.useNew ? (this.props.readOnly || widgetProperties.disabled) : (
+        inputConstraints.readOnly = this.props.useNew ? (this.props.readOnly || prop.disabled || disabled) : (
             this.props.readOnly 
             || this.props.disabledWidgets.includes(widget.name)
             || prop.readOnly === "true" 
@@ -322,11 +324,11 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             return (
                 <GwQtDesignerForm
                     form_xml={value?.form_xml}
+                    style={{height: "100%"}}
                     activetabs={this.props.activetabs}
                     autoResetTab={this.props.autoResetTab}
                     files={this.props.files}
                     getInitialValues={this.props.getInitialValues}
-                    locale={this.props.locale}
                     loading={value?.loading}
                     onTabChanged={this.props.onTabChanged}
                     onWidgetAction={this.props.onWidgetAction}
@@ -409,7 +411,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
             return (
                 <div className="qt-designer-form-container">
                     <div className="qt-designer-form-tabbar">
-                        {widget.widget.map(tab => (this.props.useNew ? this.getWidgetProperties(tab.name).hidden : this.props.hiddenWidgets.includes(tab.name)) ? null : (
+                        {widget.widget.map(tab => (this.props.useNew ? this.getWidgetProperties(tab).hidden : this.props.hiddenWidgets.includes(tab.name)) ? null : (
                             <span
                                 className={tab.name === activetab ? "qt-designer-form-tab-active" : ""}
                                 key={tab.name}
@@ -421,7 +423,7 @@ class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesign
                     </div>
                     <div className="qt-designer-form-frame">
                         {widget.widget.filter(child => child.layout).map(child => (
-                            this.renderLayout(child.layout, nametransform, child.name === activetab)
+                            this.renderLayout(child.layout, nametransform, child.name === activetab, this.getWidgetProperties(child).disabled)
                         ))}
                     </div>
                 </div>

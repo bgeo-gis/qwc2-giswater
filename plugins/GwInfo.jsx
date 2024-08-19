@@ -635,13 +635,24 @@ class GwInfo extends React.Component {
                     this.props.processStarted("info_msg", "GwInfo Error!");
                     this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
                 } else if (this.state.mode === "Point") {
+                    let widgetsProperties = {
+                        ...this.state.widgetsProperties,
+                        tab_data: {
+                            disabled: !this.state.editingActive
+                        },
+                        tab_epa: {
+                            disabled: !this.state.editingActive
+                        },
+                    };
+
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
                             <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false}
-                                onTabChanged={this.onTabChanged} readOnly={!this.state.editingActive} onWidgetValueChange={this.onWidgetValueChange}
+                                onTabChanged={this.onTabChanged} onWidgetValueChange={this.onWidgetValueChange}
                                 loadWidgetsProperties={this.loadWidgetsProperties}
-                                widgetsProperties={this.state.widgetsProperties} useNew={true}
+                                style={{height: "100%"}}
+                                widgetsProperties={widgetsProperties} useNew={true}
                             />
                         </div>
                     );
