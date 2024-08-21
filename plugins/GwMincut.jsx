@@ -82,7 +82,6 @@ class GwMincut extends React.Component {
     state = {
         action: 'mincutNetwork',
         mincutState: 0,
-        mincutId: null,
         pendingRequests: false,
         currentTab: {},
         feature_id: null,
@@ -165,7 +164,7 @@ class GwMincut extends React.Component {
                 // "widgetname": tableWidgets[0].widgetname,  // tabname_ prefix cal?
                 // "formtype": this.props.formtype,
                 idName: "result_id",
-                id: this.state.mincutId
+                id: this.props.mincutId
                 // "filterFields": this.state.filters
                 // "filterSign": action.params.tabName
             };
@@ -344,18 +343,21 @@ class GwMincut extends React.Component {
             break;
 
         case "auto_mincut":
+            this.props.setCurrentTask("GwMincut");
             this.setState({ clickEnabled: true, action: 'mincutNetwork' });
             break;
 
         case "custom_mincut":
             // show the taskbar again
             // allow click on map
+            this.props.setCurrentTask("GwMincut");
             this.setState({ clickEnabled: true, action: 'mincutValveUnaccess' }, () => {this.props.refreshLayer(layer => layer.role === LayerRole.THEME);});
             break;
 
         case "change_valve_status":
             // show the taskbar again
             // allow click on map
+            this.props.setCurrentTask("GwMincut");
             this.setState({ clickEnabled: true, action: 'changeValveStatus' });
             break;
 
@@ -443,7 +445,6 @@ class GwMincut extends React.Component {
             pendingRequests: false,
             widgetsProperties: {},
             mincutValues: {},
-            mincutId: null,
             clickEnabled: true,
         });
     };
@@ -474,7 +475,7 @@ class GwMincut extends React.Component {
         clickPoint = clickPoint || [null, null];
         const requestUrl = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(requestUrl)) {
-            const mincutId = this.state.mincutId || this.props.mincutId;
+            const mincutId = this.props.mincutId;
             const epsg = GwUtils.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
             const params = {
@@ -524,7 +525,7 @@ class GwMincut extends React.Component {
         this.props.processStarted("mincut_msg", "Change valve status");
         const requestUrl = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(requestUrl)) {
-            const mincutId = this.state.mincutId;
+            const mincutId = this.props.mincutId;
             const epsg = GwUtils.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
             const params = {
@@ -573,7 +574,7 @@ class GwMincut extends React.Component {
                 ycoord: clickPoint[1],
                 zoomRatio: zoomRatio,
                 action: this.props.action,
-                mincutId: this.state.mincutId || this.props.mincutId,
+                mincutId: this.props.mincutId,
                 usePsectors: this.state.mincutValues.chk_use_planified?.value,
                 fields: fields
             };
@@ -620,7 +621,7 @@ class GwMincut extends React.Component {
         if (!isEmpty(requestUrl)) {
             const params = {
                 theme: this.props.currentTheme.title,
-                mincutId: this.state.mincutId
+                mincutId: this.props.mincutId
             };
 
             this.props.processStarted("mincut_msg", "Cancelar mincut");

@@ -266,17 +266,6 @@ class GwMincutManager extends React.Component {
         }
     };
 
-    getQueryableLayers = () => {
-        if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
-            return [];
-        }
-
-        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
-            // TODO: If there are some wms external layers this would select more than one layer
-            return l.type === "wms";
-        });
-    };
-
     openMincut = (mincutId) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("mincut");
