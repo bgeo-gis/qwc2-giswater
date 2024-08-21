@@ -142,8 +142,9 @@ class GwInfo extends React.Component {
         case "accept": {
             if (this.checkIfDataModified()) {
                 if (confirm(LocaleUtils.tr("identify.confirmSave"))) {
-                    this.saveChanges();
-                    this.clearResults();
+                    this.saveChanges().then(() => {
+                        this.clearResults();
+                    });
                 }
             } else {
                 this.clearResults();
@@ -194,7 +195,7 @@ class GwInfo extends React.Component {
             this.props.processStarted("info_msg_data", "Update feature Data");
         }
 
-        this.setFields(
+        return this.setFields(
             feature.id,
             feature.tableName,
             this.state.dataValues
