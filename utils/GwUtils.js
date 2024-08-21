@@ -47,14 +47,45 @@ const GwUtils = {
         }
         return { layer: null, path };
     },
+
+    getLayoutByName(layoutName, form) {
+        let layout = null;
+        this.forEachElementInForm(form, (element, isLayout) => {
+            if (isLayout && element.name === layoutName) {
+                layout = element;
+            }
+        });
+        return layout;
+    },
+
+    getWidgetsInLayout(layoutName, form) {
+        const layout = this.getLayoutByName(layoutName, form);
+        const widgets = [];
+        this.forEachWidgetInLayout(layout, widget => {
+            widgets.push(widget);
+        });
+        return widgets;
+    },
+
     forEachWidgetInForm(form, func) {
-        this._handleWidget(form.ui.widget, func);
+        this._handleWidget(form.ui.widget, (widget, isLayout) => {
+            if (!isLayout) {
+                func(widget);
+            }
+        });
     },
     forEachWidgetInLayout(layout, func) {
-        this._handleLayout(layout, func);
+        this._handleLayout(layout, (widget, isLayout) => {
+            if (!isLayout) {
+                func(widget);
+            }    
+        });
+    },
+    forEachElementInForm(form, func) {
+        this._handleWidget(form.ui.widget, func);
     },
     _handleWidget(widget, func) {
-        func(widget);
+        func(widget, false);
 
         if (widget.layout) {
             this._handleLayout(widget.layout, func);
@@ -65,6 +96,8 @@ const GwUtils = {
         }
     },
     _handleLayout(layout, func) {
+        func(layout, true);
+
         layout.item.map(item => {
             if (item.layout) {
                 this._handleLayout(item.layout, func);
