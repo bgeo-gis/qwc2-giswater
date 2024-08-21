@@ -55,6 +55,7 @@ type GwQtDesignerFormProps = {
     useNew: boolean,
     widgetsProperties: WidgetsProperties,
     loadWidgetsProperties: (widgetsProperties: WidgetsProperties) => void,
+    loadFormUi: (formUi: any) => void,
     widgetPrefix: string,
     style: React.CSSProperties,
 };
@@ -296,7 +297,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         }
         // const attr = widget.attribute || {};
         const inputConstraints: any = {};
-        inputConstraints.readOnly = this.props.useNew ? (this.props.readOnly || prop.disabled || disabled) : (
+        inputConstraints.readOnly = this.props.useNew ? (this.props.readOnly || widgetProperties.disabled || disabled) : (
             this.props.readOnly 
             || this.props.disabledWidgets.includes(widget.name)
             || prop.readOnly === "true" 
@@ -377,7 +378,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             return (
                 <div className="qt-designer-form-container">
                     <div className="qt-designer-form-frame">
-                        {this.renderLayout(widget.layout, nametransform)}
+                        {this.renderLayout(widget.layout, nametransform, true, inputConstraints.readOnly)}
                     </div>
                 </div>
             );
@@ -387,7 +388,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
                     {/* @ts-ignore */}
                     <div className="qt-designer-form-frame-title" style={fontStyle}>{prop.title}</div>
                     <div className="qt-designer-form-frame">
-                        {this.renderLayout(widget.layout, nametransform)}
+                        {this.renderLayout(widget.layout, nametransform, true, inputConstraints.readOnly)}
                     </div>
                 </div>
             );
@@ -504,13 +505,13 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
                 </span>
             );
         } else if (widget.class === "QWidget") {
-            return this.renderLayout(widget.layout, nametransform);
+            return this.renderLayout(widget.layout, nametransform, true, inputConstraints.readOnly);
         } else if (widget.class === "QPushButton") {
             let text = prop.text;
             if (widgetControls.icon) {
                 text = (<Icon icon={widgetControls.icon} />);
             }
-            return (<button className="button" onClick={() => this.props.onWidgetAction(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
+            return (<button className="button" disabled={inputConstraints.readOnly} onClick={() => this.props.onWidgetAction(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             //const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
@@ -610,6 +611,9 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             this.props.loadWidgetsProperties(widgetsProperties);
             
             // const activetabs = this.filterActiveTabs(json, this.state.activetabs)
+            if (this.props.loadFormUi) {
+                this.props.loadFormUi(json);
+            }
 
             this.setState({ formData: json, loading: false, loadingReqId: null });
             // this.setState({ formData: json, loading: false, loadingReqId: null, activetabs: activetabs });

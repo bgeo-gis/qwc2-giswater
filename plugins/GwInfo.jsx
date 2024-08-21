@@ -107,6 +107,7 @@ class GwInfo extends React.Component {
         }
     }
     onWidgetAction = (action, widget, value) => {
+        console.info(`Action ${action.functionName}`, action);
         let pendingRequests = false;
         switch (action.functionName) {
         case "featureLink":
@@ -404,7 +405,7 @@ class GwInfo extends React.Component {
             let tableWidgets = [];
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
                 if (widget.class === "QTableView" || widget.class === "QTableWidget") {
-                    tableWidgets.push(widget); // There should only be one
+                    tableWidgets.push(widget);
                 }
             });
             

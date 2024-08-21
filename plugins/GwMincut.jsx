@@ -27,6 +27,15 @@ import GwUtils from '../utils/GwUtils';
 
 import {setActiveMincut} from '../actions/mincut';
 
+
+const MincutState = Object.freeze({
+    Planified: 0,
+    InProgress: 1,
+    Finished: 2,
+    Canceled: 3,
+    OnPlaning: 4
+});
+
 class GwMincut extends React.Component {
     static propTypes = {
         action: PropTypes.string,
@@ -69,23 +78,23 @@ class GwMincut extends React.Component {
         initialY: 0,
         mincutResult: null,
     };
-    
+
     state = {
         action: 'mincutNetwork',
         mincutState: 0,
         mincutId: null,
-        mincutResult: null,
-        prevMincutResult: null,
         pendingRequests: false,
         currentTab: {},
         feature_id: null,
         mincutValues: {},
-        disabledWidgets: ['exec_start', 'exec_descript', 'exec_user', 'exec_from_plot', 'exec_depth', 'exec_appropiate', 'exec_end'],
         clickEnabled: true,
         activetabs: {},
-        ogClickPoint: null,
         widgetsProperties: {}
     };
+
+    ogClickPoint = null;
+    formUi = null;
+
     componentDidUpdate(prevProps) {
         if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwMincut") {
             this.onToolClose();
@@ -116,46 +125,15 @@ class GwMincut extends React.Component {
     panToResult = (result) => {
         // TODO: Maybe we should zoom to the result as well
         if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.feature.geometry);
+            const center = GwUtils.getGeometryCenter(result.feature.geometry);
             this.props.panTo(center, this.props.map.projection);
         }
     };
     addMarkerToResult = (result) => {
         if (!isEmpty(result)) {
-            const center = this.getGeometryCenter(result.feature.geometry);
+            const center = GwUtils.getGeometryCenter(result.feature.geometry);
             this.props.addMarker('mincut', center, '', this.props.map.projection);
         }
-    };
-    getGeometryCenter = (geom) => {
-        const geometry = new ol.format.WKT().readGeometry(geom);
-        const type = geometry.getType();
-        let center = null;
-        switch (type) {
-        case "Polygon":
-            center = geometry.getInteriorPoint().getCoordinates();
-            break;
-        case "MultiPolygon":
-            center = geometry.getInteriorPoints().getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-            break;
-        case "Point":
-            center = geometry.getCoordinates();
-            break;
-        case "MultiPoint":
-            center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-            break;
-        case "LineString":
-            center = geometry.getCoordinateAt(0.5);
-            break;
-        case "MultiLineString":
-            center = geometry.getClosestPoint(ol.extent.getCenter(geometry.getExtent()));
-            break;
-        case "Circle":
-            center = geometry.getCenter();
-            break;
-        default:
-            break;
-        }
-        return center;
     };
     setOMLayersVisibility = (layerName, visible = true) => {
         const rootLayer = this.props.layers.find(l => l.type === "wms");
@@ -180,7 +158,6 @@ class GwMincut extends React.Component {
                 return;
             }
 
-
             const params = {
                 theme: this.props.theme.title,
                 tableName: tableWidget.property.linkedobject,
@@ -194,7 +171,9 @@ class GwMincut extends React.Component {
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, [tableWidget.name]: result } }));
+                this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, [tableWidget.name]: { 
+                    value: GwUtils.getListToValue(result)
+                } } }));
             }).catch((e) => {
                 console.warn(e);
                 // this.setState({  });
@@ -317,6 +296,11 @@ class GwMincut extends React.Component {
     };
     // #endregion
     // #region DIALOG
+    loadFormUi = (formUi) => {
+        this.formUi = formUi;
+        this.setDisabledWidgets(MincutState.Planified);
+    };
+
     onWidgetValueChange = (widget, value) => {
         // Get filterSign
         let filterSign = "=";
@@ -349,21 +333,12 @@ class GwMincut extends React.Component {
             break;
 
         case "real_start":
-            this.setMincut(this.state.ogClickPoint, false, "startMincut");
-            // set state 1 'In Progress'
-            this.acceptMincut(1, false);
-            // enable tab_exec widgets
-            // TODO: IMPROVE THIS!
-            disabledWidgets = ["chk_use_planified", "mincut_type", "anl_cause", "received_date", "anl_descript", "forecast_start", "forecast_end", "assigned_to", "id", "mincut_state", "work_order"];
-            this.setState({ disabledWidgets: disabledWidgets });
+            this.setMincut(this.ogClickPoint, false, "startMincut");
+            this.acceptMincut(MincutState.InProgress, false);
             break;
 
         case "real_end":
-            // set state 2 'Finished'
-            this.acceptMincut(2, false);
-            // TODO: IMPROVE THIS!
-            disabledWidgets = ["exec_start", "exec_descript", "exec_user", "exec_from_plot", "exec_depth", "exec_appropiate", "exec_end", "chk_use_planified", "mincut_type", "anl_cause", "received_date", "anl_descript", "forecast_start", "forecast_end", "assigned_to", "id", "mincut_state", "work_order"];
-            this.setState({ disabledWidgets: disabledWidgets });
+            this.acceptMincut(MincutState.Finished, false);
             // show tab log
             this.showTab('tab_log');
             break;
@@ -385,7 +360,7 @@ class GwMincut extends React.Component {
             break;
 
         case "refresh_mincut":
-            this.setMincut(this.state.ogClickPoint, false, 'mincutNetwork');
+            this.setMincut(this.ogClickPoint, false, 'mincutNetwork');
             break;
 
         default:
@@ -413,6 +388,49 @@ class GwMincut extends React.Component {
         const action = actionMap[mode] || 'invalidMode';
         this.setState({ action: action });
     };
+    setDisabledWidgets = (mincutState) => {
+        let tabPlanEnabled = true;
+        const lytExecWidgets = GwUtils.getWidgetsInLayout("lyt_exec_1", this.formUi).map(widget => widget.name);
+        let lytExecEnabled = true;
+        let btnStartEnabled = true;
+        let btnEndEnabled = true;
+        console.log("Setting disabled widgets", mincutState, lytExecWidgets);
+
+        switch (mincutState) {
+        case MincutState.Planified:
+            lytExecEnabled = false;
+            btnEndEnabled = false;
+            break;
+
+        case MincutState.InProgress:
+            tabPlanEnabled = false;
+            btnStartEnabled = false;
+            break;
+
+        case MincutState.Finished:
+            lytExecEnabled = false;
+            btnStartEnabled = false;
+            btnEndEnabled = false;
+            tabPlanEnabled = false;
+            break;
+        }
+
+        this.setState((state) => ({
+            widgetsProperties: {
+                ...state.widgetsProperties,
+                tab_plan: { disabled: !tabPlanEnabled },
+                ...lytExecWidgets.reduce((acc, widget) => {
+                    acc[widget] = {
+                        ...state.widgetsProperties[widget],
+                        disabled: !lytExecEnabled
+                    };
+                    return acc;
+                }, {}),
+                btn_start: { disabled: !btnStartEnabled },
+                btn_end: { disabled: !btnEndEnabled }
+            }
+        }));
+    };
     onToolClose = () => {
         this.props.removeMarker('mincut');
         this.props.removeLayer("mincutselection");
@@ -420,15 +438,13 @@ class GwMincut extends React.Component {
         if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
         }
+        this.ogClickPoint = null;
         this.setState({
-            mincutResult: null,
             pendingRequests: false,
             widgetsProperties: {},
             mincutValues: {},
             mincutId: null,
-            disabledWidgets: ['exec_start', 'exec_descript', 'exec_user', 'exec_from_plot', 'exec_depth', 'exec_appropiate', 'exec_end'],
             clickEnabled: true,
-            ogClickPoint: null
         });
     };
     onDlgClose = () => {
@@ -475,18 +491,19 @@ class GwMincut extends React.Component {
             axios.get(requestUrl + "setmincut", { params: params }).then(response => {
                 const result = response.data;
                 this.manageLayers(result);
-                this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-                const newState = { mincutResult: result, mincutId: result?.body?.data?.mincutId || mincutId, prevMincutResult: null, pendingRequests: false, clickEnabled: false };
-                // if (action === 'mincutNetwork') newState.ogClickPoint = clickPoint;
-                if (updateState) this.setState(newState);
+                // const newState = { mincutResult: result, mincutId: result?.body?.data?.mincutId || mincutId, pendingRequests: false, clickEnabled: false };
+                // if (updateState) this.setState(newState);
                 if (action === 'mincutValveUnaccess'){
                     this.setState({ clickEnabled: false });
                     this.props.processFinished("mincut_msg", true, "Custom mincut executed correctly");
                 }
-                if (action === 'mincutNetwork'){
-                    newState.ogClickPoint = clickPoint;
+                else if (action === 'mincutNetwork'){
+                    this.ogClickPoint = clickPoint;
+                    this.props.setActiveMincut(result, result?.body?.data?.mincutId || mincutId, this.props.keepManagerOpen);
                     this.props.processFinished("mincut_msg", true, "Mincut setted correctly");
                 }  
+                this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+
             }).catch((e) => {
                 console.log(e);
                 if (updateState) this.setState({ pendingRequests: false });
@@ -495,7 +512,11 @@ class GwMincut extends React.Component {
             });
         }
         this.props.addMarker('mincut', clickPoint, '', this.props.map.projection);
-        if (updateState) this.setState({ mincutResult: {}, prevMincutResult: null, pendingRequests: pendingRequests });
+        if (updateState) {
+            // this.props.setActiveMincut(null, null);
+            this.setState({ pendingRequests: pendingRequests });
+        }
+        // if (updateState) this.setState({ mincutResult: {}, pendingRequests: pendingRequests });
     };
 
     changeValveStatus = (clickPoint) => {
@@ -528,12 +549,12 @@ class GwMincut extends React.Component {
         }
         this.props.addMarker('mincut', clickPoint, '', this.props.map.projection);
     };
-    acceptMincut = (state = this.state.mincutState, closeDlg = true) => {
+    acceptMincut = (mincutState = this.state.mincutState, closeDlg = true) => {
         console.log(this.state.mincutValues);
         const ignoreWidgets = ['chk_use_planified', 'txt_infolog'];
         // eslint-disable-next-line
         const fields = Object.entries(this.state.mincutValues).reduce((acc, [key, value]) => {
-            let v = value.columnname === 'mincut_state' ? state : value.value;
+            let v = value.columnname === 'mincut_state' ? mincutState : value.value;
             if (ignoreWidgets.includes(value.columnname)) v = null;
             if (!(v === null || v === undefined)) {
                 acc[value.columnname] = v;
@@ -542,7 +563,7 @@ class GwMincut extends React.Component {
         }, {});
         const requestUrl = GwUtils.getServiceUrl("mincut");
         if (!isEmpty(requestUrl)) {
-            const clickPoint = this.state.ogClickPoint || [null, null];
+            const clickPoint = this.ogClickPoint || [null, null];
             const epsg = GwUtils.crsStrToInt(this.props.map.projection);
             const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
             const params = {
@@ -579,10 +600,11 @@ class GwMincut extends React.Component {
                 this.setState((prevState) => ({
                     ...prevState,
                     widgetsProperties: { ...prevState.widgetsProperties, ...newWidgetsProperties },
-                    mincutState: state,
+                    mincutState: mincutState,
                 }))
+                this.setDisabledWidgets(mincutState);
                 
-                // if (state !== this.state.mincutState) newState = { ...newState, mincutState: state };
+                // if (mincutState !== this.state.mincutState) newState = { ...newState, mincutState: state };
                 // if (newState) this.setState(newState);
                 if (closeDlg) {
                     this.onToolClose();
@@ -633,10 +655,10 @@ class GwMincut extends React.Component {
                 })}
             </TaskBar>
         );
-        if ( !this.state.mincutResult && !this.props.mincutResult) {
+        if (!this.props.mincutResult) {
             return [this.state.clickEnabled ? taskBar : null];
         }
-        const result = this.state.mincutResult || this.props.mincutResult;
+        const result = this.props.mincutResult;
         if (this.state.pendingRequests === true || result !== null) {
             let body = null;
             if (isEmpty(result)) {
@@ -657,9 +679,8 @@ class GwMincut extends React.Component {
                 } else {
                     body = (
                         <div className="mincut-body" role="body">
-                            <GwQtDesignerForm activetabs={this.state.activetabs} autoResetTab={false}
-                                disabledWidgets={this.state.disabledWidgets} onWidgetAction={this.onWidgetAction}
-                                form_xml={result.form_xml} onTabChanged={this.onTabChanged} readOnly={false} useNew={true}
+                            <GwQtDesignerForm activetabs={this.state.activetabs} autoResetTab={false} loadFormUi={this.loadFormUi}
+                                onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} onTabChanged={this.onTabChanged} useNew
                                 onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>
