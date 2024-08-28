@@ -142,7 +142,13 @@ const GwUtils = {
                 crs = feature.crs;
             }
             if (feature.geometry && feature.geometry.coordinates) {
-                feature.geometry.coordinates = feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d);
+                feature = {
+                    ...feature,
+                    geometry: {
+                        ...feature.geometry,
+                        coordinates: feature.geometry.coordinates.map(VectorLayerUtils.convert3dto2d)
+                    }
+                };
             }
             // [[5,6], pointstyle2], [[5,6], pointstyle2]
             const featureId = feature.properties.feature_id;

@@ -10,11 +10,10 @@ ReducerIndex.register("mincut", mincutReducer);
 
 export const SET_ACTIVE_MINCUT = 'SET_ACTIVE_MINCUT';
 
-export function setActiveMincut(mincutResult, mincutId, keepManagerOpen) {
+export function setActiveMincut(mincutResult, keepManagerOpen) {
     return {
         type: SET_ACTIVE_MINCUT,
         mincutResult: mincutResult,
-        mincutId: mincutId,
         keepManagerOpen: keepManagerOpen
     };
 }

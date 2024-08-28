@@ -68,7 +68,6 @@ class GwMincutManager extends React.Component {
         pendingRequests: false,
         currentTab: {},
         feature_id: null,
-        filters: {},
         widgetsProperties: {},
         mincutResult: null,
         selectorResult: null,
@@ -81,10 +80,6 @@ class GwMincutManager extends React.Component {
         if (!this.state.mincutmanagerResult && this.props.currentTask === "GwMincutManager" && this.props.currentTask !== prevProps.currentTask) {
             this.openMincutManager();
         }
-        if (this.state.mincutmanagerResult && this.state.filters !== prevState.filters) {
-            this.getList(this.state.mincutmanagerResult);
-        }
-
     }
 
     openMincutManager = (updateState = true) => {
@@ -107,41 +102,13 @@ class GwMincutManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ mincutmanagerResult: null, pendingRequests: false, filters: {}, mincutResult: null, selectorResult: null, widgetsProperties: {}, mincutId: null});
+        this.setState({ mincutmanagerResult: null, pendingRequests: false, mincutResult: null, selectorResult: null, widgetsProperties: {}, mincutId: null});
     };
 
 
     onWidgetValueChange = (widget, value) => {
-        // Get filterSign
-        let filterSign = "=";
-        let widgetcontrols = {};
-        let filtervalue = value;
-        if (widget.property.widgetcontrols !== "null") {
-            widgetcontrols = JSON.parse(widget.property.widgetcontrols);
-            if (widgetcontrols.filterSign !== undefined) {
-                filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
-            }
-        }
-        let columnname = widget.name;
-        if (widget.property.widgetfunction !== "null") {
-            columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
-        }
-        columnname = columnname ?? widget.name;
-        // Update filters
-        if (widget.name === "spm_next_days") {
-            this.setState((state) => ({ filters: { ...state.filters } }));
-        } else if (widget.class === "QComboBox") {
-            if (widgetcontrols.getIndex !== undefined && widgetcontrols.getIndex === false) {
-                for (const key in widget.item) {
-                    if (widget.item[key].property.value === value) {
-                        filtervalue = widget.item[key].property.text;
-                    }
-                }
-            }
-        }
         this.setState((state) => ({ 
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value }},
-            filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } } 
         }));
 
     };
@@ -194,10 +161,14 @@ class GwMincutManager extends React.Component {
             }
             break;
         case "cancel":
-            action.row.map((row) => {
-                this.cancelMincut(row.original.id);
-            });
-            this.setState( { filters: {mincutId: action.row[0].original.id, action: "cancel"} } );
+            if (confirm(`Are you sure you want to cancel mincuts ${action.row.map((row) => row.original.id).toString()}`)) {
+                const promises = action.row.map((row) => {
+                    return this.cancelMincut(row.original.id);
+                });
+                Promise.all(promises).then(() => {
+                    this.getList(this.state.mincutmanagerResult);
+                });
+            }
             break;
         case "delete": {
             const ids = [];
@@ -205,14 +176,15 @@ class GwMincutManager extends React.Component {
                 ids.push(row.original.id);
             });
             // eslint-disable-next-line
-            if (!confirm(`Are you sure you want to delete these mincuts ${ids.toString()}`)) {
-                break;
+            if (confirm(`Are you sure you want to delete these mincuts ${ids.toString()}`)) {
+                const promises = action.row.map((row) => {
+                    return this.deleteMincut(row.original.id);
+                });
+                action.removeSelectedRow();
+                Promise.all(promises).then(() => {
+                    this.getList(this.state.mincutmanagerResult);
+                });
             }
-            action.row.map((row) => {
-                this.deleteMincut(row.original.id);
-            });
-            action.removeSelectedRow();
-            this.setState( { filters: {mincutId: action.row[0].original.id, action: "delete"} } );
             break;
         }
         case "mincutClose":
@@ -224,6 +196,10 @@ class GwMincutManager extends React.Component {
         case "selectorClose":
             this.setState({ selectorResult: null });
             break;
+        case "refresh":
+            this.getList(this.state.mincutmanagerResult);
+            break;
+
         default:
             console.warn(`Action \`${functionName}\` cannot be handled.`);
             break;
@@ -276,7 +252,8 @@ class GwMincutManager extends React.Component {
             };
             axios.get(requestUrl + "open", { params: params }).then((response) => {
                 const result = response.data;
-                this.props.setActiveMincut(result, mincutId, this.props.keepManagerOpen);
+                this.props.setActiveMincut(result, this.props.keepManagerOpen);
+                this.props.setCurrentTask("GwMincut");
                 this.manageLayers(result);
                 // this.setState( { mincutResult: result, mincutId: mincutId } );
             }).catch((e) => {
@@ -414,11 +391,12 @@ class GwMincutManager extends React.Component {
                 theme: this.props.currentTheme.title,
                 mincutId: mincutId
             };
-            axios.post(requestUrl + "cancel", { ...params }).catch((e) => {
+            return axios.post(requestUrl + "cancel", { ...params }).catch((e) => {
                 console.warn(e);
             });
         } catch (error) {
             console.warn(error);
+            return Promise.reject(error);
         }
     };
 
@@ -430,11 +408,12 @@ class GwMincutManager extends React.Component {
                 theme: this.props.currentTheme.title,
                 mincutId: mincutId
             };
-            axios.delete(requestUrl + "delete", { params }).catch((e) => {
+            return axios.delete(requestUrl + "delete", { params }).catch((e) => {
                 console.warn(e);
             });
         } catch (error) {
             console.warn(error);
+            return Promise.reject(error);
         }
     };
 
