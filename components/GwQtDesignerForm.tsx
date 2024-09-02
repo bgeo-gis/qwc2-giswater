@@ -237,7 +237,11 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         const expandWidgets = ["QTextEdit", "QTextBrowser", "QPlainTextEdit", "QTableWidget", "QTableView"];
 
         const isSpacer = (item) => {
-            return item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical";
+            if (item.layout) {
+                return item.layout.item.find(item => isSpacer(item));
+            } else {
+                return item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical";
+            }
         }
         const isExpand = (item) => {
             if (item.layout) {
