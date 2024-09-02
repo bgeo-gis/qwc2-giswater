@@ -25,7 +25,7 @@ const GwUtils = {
         return {
             values: result.body?.data?.fields?.at(0).value,
             form: result.body?.form
-        }
+        };
     },
     getServiceUrl(service) {
         const requestUrl = ConfigUtils.getConfigProp("giswaterServiceUrl");
@@ -78,7 +78,7 @@ const GwUtils = {
         this._handleLayout(layout, (widget, isLayout) => {
             if (!isLayout) {
                 func(widget);
-            }    
+            }
         });
     },
     forEachElementInForm(form, func) {
@@ -136,7 +136,7 @@ const GwUtils = {
             let crs = defaultCrs;
             if (feature.crs?.properties?.name) {
                 crs = CoordinatesUtils.fromOgcUrnCrs(data.crs.properties.name);
-            } else if (feature.geometry?.crs?.properties?.name){
+            } else if (feature.geometry?.crs?.properties?.name) {
                 crs = CoordinatesUtils.fromOgcUrnCrs(feature.geometry.crs.properties.name);
             } else if (typeof feature.crs === "string") {
                 crs = feature.crs;
@@ -155,7 +155,7 @@ const GwUtils = {
             let featureMatch = false;
             let newStyle = null;
             for (let i = 3; i < arguments.length; i++) {
-                if (arguments[i][0].includes(featureId)){
+                if (arguments[i][0].includes(featureId)) {
                     featureMatch = true;
                     newStyle = arguments[i][1];
                     break;

@@ -107,8 +107,8 @@ class GwMincutManager extends React.Component {
 
 
     onWidgetValueChange = (widget, value) => {
-        this.setState((state) => ({ 
-            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value }},
+        this.setState((state) => ({
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value }}
         }));
 
     };
@@ -135,7 +135,7 @@ class GwMincutManager extends React.Component {
 
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: { 
+                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
                     value: GwUtils.getListToValue(result)
                 } } }));
             }).catch((e) => {
@@ -443,10 +443,10 @@ class GwMincutManager extends React.Component {
                 } else {
                     body = (
                         <div className="manager-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml}
-                                getInitialValues={false}
-                                readOnly={false} theme={this.props.currentTheme.title} useNew={true}
-                                onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.widgetsProperties}
+                            <GwQtDesignerForm form_xml={result.form_xml} getInitialValues={false}
+                                onWidgetAction={this.onWidgetAction}
+                                onWidgetValueChange={this.onWidgetValueChange} readOnly={false} theme={this.props.currentTheme.title}
+                                useNew widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>
                     );
@@ -455,7 +455,7 @@ class GwMincutManager extends React.Component {
             resultWindow = (
                 <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={600} initialWidth= {900}
                     initialX={this.props.initialX} initialY={this.props.initialY}
-                    initiallyDocked={this.props.initiallyDocked} key="GwMincutManagerWindow" minimizeable={true}
+                    initiallyDocked={this.props.initiallyDocked} key="GwMincutManagerWindow" minimizeable
                     onClose={this.onToolClose}
                     scrollable title="Giswater Mincut Manager"
                 >
@@ -508,5 +508,5 @@ export default connect(selector, {
     setCurrentTask: setCurrentTask,
     setActiveMincut: setActiveMincut,
     setActiveSelector: setActiveSelector,
-    zoomToExtent:zoomToExtent 
+    zoomToExtent: zoomToExtent
 })(GwMincutManager);

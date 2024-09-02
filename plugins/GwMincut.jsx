@@ -70,7 +70,7 @@ class GwMincut extends React.Component {
         initialHeight: 600,
         initialX: 0,
         initialY: 0,
-        mincutResult: null,
+        mincutResult: null
     };
 
     state = {
@@ -78,7 +78,7 @@ class GwMincut extends React.Component {
         mincutValues: {},
         activetabs: {},
         widgetsProperties: {},
-        clickMode: "mincutNetwork",
+        clickMode: "mincutNetwork"
     };
 
     ogClickData = null;
@@ -141,11 +141,11 @@ class GwMincut extends React.Component {
                     tableWidget = widget; // There should only be one
                 }
             });
-            
+
             if (isEmpty(tableWidget)) {
                 return;
             }
-            
+
             const params = {
                 theme: this.props.theme.title,
                 tableName: tableWidget.property.linkedobject,
@@ -156,7 +156,7 @@ class GwMincut extends React.Component {
             const requestUrl = GwUtils.getServiceUrl("util");
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, [tableWidget.name]: { 
+                this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, [tableWidget.name]: {
                     value: GwUtils.getListToValue(result)
                 } } }));
             }).catch((e) => {
@@ -281,8 +281,8 @@ class GwMincut extends React.Component {
                 }).then((result) => {
                     this.ogClickData = {
                         point: clickPoint,
-                        zoomRatio: zoomRatio,
-                    }
+                        zoomRatio: zoomRatio
+                    };
                     this.setState({ clickMode: null });
                 });
                 break;
@@ -340,7 +340,7 @@ class GwMincut extends React.Component {
             if (mincutState !== MincutState.OnPlaning && this.checkIfDataModified()) {
                 confirmed = confirm("Do you want to save the changes?");
             }
-        
+
             if (confirmed) {
                 this.setMincutFields().then(() => {
                     if (action.functionName === "accept") {
@@ -357,9 +357,9 @@ class GwMincut extends React.Component {
         case "real_start":
             if (confirm("Do you want to start the mincut?")) {
                 this.setMincutFields().then(() => {
-                    this.setMincut({ 
+                    this.setMincut({
                         action: "startMincut",
-                        mincutId: this.props.mincutResult.body.data.mincutId,
+                        mincutId: this.props.mincutResult.body.data.mincutId
                     });
                 });
             }
@@ -371,7 +371,7 @@ class GwMincut extends React.Component {
                     this.setMincut({
                         action: "endMincut",
                         mincutId: this.props.mincutResult.body.data.mincutId,
-                        usePsectors: false,
+                        usePsectors: false
                     });
                 });
                 this.showTab('tab_log');
@@ -393,7 +393,7 @@ class GwMincut extends React.Component {
                 xcoord: this.ogClickData.point[0],
                 ycoord: this.ogClickData.point[1],
                 zoomRatio: this.ogClickData.zoomRatio
-            })
+            });
             break;
 
         default:
@@ -515,9 +515,9 @@ class GwMincut extends React.Component {
         const requestUrl = GwUtils.getServiceUrl("mincut");
         params = {
             theme: this.props.currentTheme.title,
-            epsg: GwUtils.crsStrToInt(this.props.map.projection),   
-            ...params,
-        }
+            epsg: GwUtils.crsStrToInt(this.props.map.projection),
+            ...params
+        };
         return axios.get(requestUrl + "setmincut", { params: params }).then((response) => {
             const result = response.data;
             this.props.setActiveMincut(result, this.props.keepManagerOpen);
@@ -525,12 +525,12 @@ class GwMincut extends React.Component {
         }).catch((e) => {
             console.warn(e);
         });
-    }
+    };
 
     changeValveStatus = (clickPoint) => {
         this.props.removeLayer("mincutselection");
         this.props.processStarted("mincut_msg", "Change valve status");
-        
+
         const mincutId = this.props.mincutResult.body.data.mincutId;
         const epsg = GwUtils.crsStrToInt(this.props.map.projection);
         const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
@@ -542,7 +542,7 @@ class GwMincut extends React.Component {
             zoomRatio: zoomRatio,
             mincutId: mincutId
         };
-        
+
         const requestUrl = GwUtils.getServiceUrl("mincut");
         axios.get(requestUrl + "changevalvestatus", { params: params }).then(response => {
             this.props.processFinished("mincut_msg", true, "Valve status changed");
@@ -554,7 +554,7 @@ class GwMincut extends React.Component {
 
     checkIfDataModified = () => {
         return !isEmpty(this.state.mincutValues);
-    }
+    };
 
     setMincutFields = () => {
         if (!this.checkIfDataModified() && this.props.mincutResult.body.data.mincutState !== MincutState.OnPlaning) {
@@ -591,7 +591,7 @@ class GwMincut extends React.Component {
             theme: this.props.currentTheme.title,
             mincutId: this.props.mincutResult.body.data.mincutId
         };
-        
+
         const requestUrl = GwUtils.getServiceUrl("mincut");
         return axios.get(requestUrl + "cancel", { params: params }).then(() => {
             // show message
@@ -644,10 +644,10 @@ class GwMincut extends React.Component {
                 } else {
                     body = (
                         <div className="mincut-body" role="body">
-                            <GwQtDesignerForm activetabs={this.state.activetabs} autoResetTab={false} loadFormUi={this.loadFormUi}
-                                onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} onTabChanged={this.onTabChanged} useNew
-                                onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.widgetsProperties}
-                                getInitialValues={false} 
+                            <GwQtDesignerForm activetabs={this.state.activetabs} autoResetTab={false} form_xml={result.form_xml}
+                                loadFormUi={this.loadFormUi} onTabChanged={this.onTabChanged} onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange}
+                                useNew widgetsProperties={this.state.widgetsProperties}
+                                getInitialValues={false}
                                 // loadWidgetsProperties={this.loadWidgetsProperties}
                             />
                         </div>
@@ -658,7 +658,7 @@ class GwMincut extends React.Component {
             resultWindow = (
                 <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.props.initialHeight}
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX} initialY={this.props.initialY}
-                    initiallyDocked={this.props.initiallyDocked} key="GwMincutWindow" minimizeable={true}
+                    initiallyDocked={this.props.initiallyDocked} key="GwMincutWindow" minimizeable
                     onClose={this.onDlgClose} scrollable title="Giswater Mincut"
                 >
                     {body}

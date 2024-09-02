@@ -41,7 +41,6 @@ class GwParcelFilter extends React.Component {
         title: PropTypes.string
     };
     static defaultProps = {
-        replaceImageUrls: true,
         initialWidth: 385,
         initialHeight: 190,
         initialX: 0,
@@ -52,17 +51,17 @@ class GwParcelFilter extends React.Component {
         parcelFilterResult: null,
         pendingRequests: false,
         widgetValues: {
-            "pool_from": {
-                "value": ""
+            pool_from: {
+                value: ""
             },
-            "pool_to": {
-                "value": ""
+            pool_to: {
+                value: ""
             },
-            "garden_from": {
-                "value": ""
+            garden_from: {
+                value: ""
             },
-            "garden_to": {
-                "value": ""
+            garden_to: {
+                value: ""
             }
         }
     };
@@ -120,7 +119,7 @@ class GwParcelFilter extends React.Component {
         this.setState({ parcelFilterResult: null, pendingRequests: false });
         this.props.setCurrentTask(null);
     };
-   
+
     getQueryableLayers = () => {
         if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
             return [];
@@ -145,7 +144,7 @@ class GwParcelFilter extends React.Component {
                 const poolCheckbox = this.state.widgetValues.pool_checkbox.value;
                 const gardenFrom = this.state.widgetValues.garden_from.value;
                 const gardenTo = this.state.widgetValues.garden_to.value;
-                this.filterLayers(poolCheckbox, gardenFrom, gardenTo)
+                this.filterLayers(poolCheckbox, gardenFrom, gardenTo);
             }
             break;
         }
@@ -161,34 +160,34 @@ class GwParcelFilter extends React.Component {
     filterLayers = (hasPool, gardenFrom, gardenTo) => {
         const queryableLayers = this.getQueryableLayers();
         if (!isEmpty(queryableLayers)) {
-            let filter = {};
-            let layerToFilter="LtsHabDia";
-    
+            const filter = {};
+            const layerToFilter = "LtsHabDia";
+
             let filterPool = '';
             if (hasPool) {
-                filterPool = ["m2piscina", ">", "0"]; 
+                filterPool = ["m2piscina", ">", "0"];
             }
-            let filterGarden = this.buildFilterArray("m2garden", gardenFrom, gardenTo); 
+            const filterGarden = this.buildFilterArray("m2garden", gardenFrom, gardenTo);
 
-            //Add expr to filter
-            if (filterPool.length > 0) { 
-                filter[layerToFilter]= [filterPool];
-                if(filterGarden.length > 0){
-                    filter[layerToFilter].push("and",filterGarden);
+            // Add expr to filter
+            if (filterPool.length > 0) {
+                filter[layerToFilter] = [filterPool];
+                if (filterGarden.length > 0) {
+                    filter[layerToFilter].push("and", filterGarden);
                 }
-            }else if (filterGarden.length > 0){
-                filter[layerToFilter]= [filterGarden];
+            } else if (filterGarden.length > 0) {
+                filter[layerToFilter] = [filterGarden];
             }
-            //Set filter
+            // Set filter
             this.props.setFilter(filter);
             // Refresh map
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }
-    }
-    
+    };
+
     buildFilterArray = (fieldName, from, to) => {
-        let filterArray = [];
-    
+        const filterArray = [];
+
         if (from !== '' && to !== '') {
             filterArray.push([fieldName, ">=", from], "and", [fieldName, "<=", to]);
         } else if (from !== '') {
@@ -196,13 +195,13 @@ class GwParcelFilter extends React.Component {
         } else if (to !== '') {
             filterArray.push([fieldName, "<=", to]);
         }
-    
+
         return filterArray;
-    }
+    };
 
     render() {
-        let parcelWindow=null;
-          // Dialog
+        let parcelWindow = null;
+        // Dialog
         if (this.state.pendingRequests === true || this.state.parcelFilterResult !== null) {
             let body = null;
             if (isEmpty(this.state.parcelFilterResult)) {
@@ -216,19 +215,19 @@ class GwParcelFilter extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="parcel-filter-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widgetValues} />
+                            <GwQtDesignerForm form_xml={result.form_xml} onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange} readOnly={false} widgetValues={this.state.widgetValues} />
                         </div>
                     );
                 }
             }
 
             parcelWindow = (
-                <ResizeableWindow 
-                    dockable={false} icon="parcel-filter" id="GwParcelFilter" 
-                    minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
+                <ResizeableWindow
+                    dockable={false} icon="parcel-filter" id="GwParcelFilter"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY}
-                    key="GwParcelFilterWindow" minimizeable={false} maximizeabe={false}
+                    key="GwParcelFilterWindow" maximizeabe={false}
+                    minHeight={this.props.initialHeight} minWidth={this.props.initialWidth} minimizeable={false}
                     onClose={this.onToolClose} onShow={this.onShow} title={this.props.title}
                 >
                     {body}

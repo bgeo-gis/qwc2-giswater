@@ -18,14 +18,14 @@ const defaultState = {
     initNode: null,
     endNode: null,
     epsg: null
-}
+};
 
 export default function profile(state = defaultState, action) {
-    switch (action.type){
-        case CHANGE_PROFILE_STATE: {
-            return {...action.data};
-        }
-        default:
-            return state;
+    switch (action.type) {
+    case CHANGE_PROFILE_STATE: {
+        return {...action.data};
+    }
+    default:
+        return state;
     }
 }

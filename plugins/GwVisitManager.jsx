@@ -175,7 +175,7 @@ class GwVisitManager extends React.Component {
                     widgetsProperties: {...state.widgetsProperties, [tableWidgets[0].columnname]: {
                         value: GwUtils.getListToValue(result)
                     }},
-                    widgetValues: {...state.widgetValues, [tableWidgets[0].columnname]: result} 
+                    widgetValues: {...state.widgetValues, [tableWidgets[0].columnname]: result}
                 }));
             }).catch((e) => {
                 console.log(e);
@@ -297,11 +297,11 @@ class GwVisitManager extends React.Component {
                 } else {
                     body = (
                         <div className="manager-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml}
-                                getInitialValues={false}
-                                readOnly={false} theme={this.props.currentTheme.title} 
-                                onWidgetValueChange={this.onWidgetValueChange} widgetValues={this.state.widgetValues}
-                                widgetsProperties={this.state.widgetsProperties} useNew={true}
+                            <GwQtDesignerForm form_xml={result.form_xml} getInitialValues={false}
+                                onWidgetAction={this.onWidgetAction}
+                                onWidgetValueChange={this.onWidgetValueChange} readOnly={false}
+                                theme={this.props.currentTheme.title} useNew
+                                widgetValues={this.state.widgetValues} widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>
                     );

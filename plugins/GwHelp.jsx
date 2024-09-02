@@ -26,9 +26,9 @@ class GwHelp extends React.Component {
         const { helpLink } = this.props;
 
         if (helpLink.startsWith("https")) {
-            window.open(helpLink, '_blank')
+            window.open(helpLink, '_blank');
         } else {
-            window.open(`assets/pdf/${helpLink}`, '_blank')
+            window.open(`assets/pdf/${helpLink}`, '_blank');
         }
         this.props.setCurrentTask(null);
     };

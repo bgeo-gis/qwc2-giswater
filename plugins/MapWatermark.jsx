@@ -25,10 +25,10 @@ class MapWatermark extends React.Component {
         logoSrc: PropTypes.string,
         /** The hyperlink to open when the logo is clicked. */
         logoUrl: PropTypes.string,
+        marginBottom: PropTypes.string,
         mobile: PropTypes.bool,
         opacity: PropTypes.string,
-        width: PropTypes.string,
-        marginBottom: PropTypes.string
+        width: PropTypes.string
     };
     static defaultProps = {
         logoFormat: "svg",

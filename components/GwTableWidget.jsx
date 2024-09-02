@@ -37,8 +37,8 @@ import * as icons from '@mui/icons-material';
 
 class GwTableWidget extends React.Component {
     static propTypes = {
-        onWidgetAction: PropTypes.func,
         form: PropTypes.object,
+        onWidgetAction: PropTypes.func,
         values: PropTypes.array
     };
     static defaultState = {
@@ -67,7 +67,7 @@ class GwTableWidget extends React.Component {
             rowSelection: {}
         });
     };
-      
+
     render() {
         const data = this.props.values;
         const cols = [];
@@ -172,16 +172,16 @@ class GwTableWidget extends React.Component {
             enableRowActions: tableParams.enableRowActions ?? false,
             initialState: tableParams.initialState ?? {},
             modifyTopToolBar: tableParams.modifyTopToolBar ?? false,
-            exportButtonColor: tableParams.exportButtonColor ?? "#007bff" //blue
+            exportButtonColor: tableParams.exportButtonColor ?? "#007bff" // blue
         };
 
         const exportButtonTheme = createTheme({
             palette: {
                 primary: {
-                  main: inputProps.exportButtonColor
+                    main: inputProps.exportButtonColor
                 }
-              }
-          });
+            }
+        });
 
         if (inputProps.initialState.columnFilters) {
             inputProps.initialState.columnFilters.forEach(filter => {
@@ -329,14 +329,14 @@ class GwTableWidget extends React.Component {
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <ThemeProvider theme={exportButtonTheme}>
                         <Button
-                            disabled={table.getPrePaginationRowModel().rows.length === 0}
+                            color="primary"
                             key={0}
                             // export all rows, including from the next page, (still respects filtering and sorting)
                             // onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
+                            disabled={table.getPrePaginationRowModel().rows.length === 0}
                             onClick={() => {handleExportRows(table.getSortedRowModel().rows);}}
                             startIcon={<FileDownloadIcon />}
                             variant="contained"
-                            color="primary"
                         >
                             Export
                         </Button>

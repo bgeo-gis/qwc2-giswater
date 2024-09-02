@@ -43,8 +43,8 @@ class GwProfileGraph extends React.Component {
     static propTypes = {
         addMarker: PropTypes.func,
         changeProfileState: PropTypes.func,
-        heightProfilePrecision: PropTypes.number,
         height: PropTypes.number,
+        heightProfilePrecision: PropTypes.number,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         profile: PropTypes.object,
@@ -853,9 +853,9 @@ class GwProfileGraph extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="profile-export-body" role="body">
-                            <GwQtDesignerForm 
-                                onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false} useNew={true}
-                                readOnly={false} onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.widgetsProperties}/>
+                            <GwQtDesignerForm
+                                form_xml={result.form_xml} getInitialValues={false} onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange}
+                                readOnly={false} useNew widgetsProperties={this.state.widgetsProperties}/>
                         </div>
                     );
                 }

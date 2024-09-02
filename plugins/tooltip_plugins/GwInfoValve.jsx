@@ -131,7 +131,7 @@ class GwInfoValve extends React.Component {
             axios.put(requestUrl + "setfields", { ...params }).then(() => {
                 // refresh map
                 if (this.props.theme.tiled) {
-                    console.log("VALVE ID: ", id)
+                    console.log("VALVE ID: ", id);
                     this.refreshTiles(id);
                 } else {
                     this.props.refreshLayer(layer => layer.role === LayerRole.THEME);

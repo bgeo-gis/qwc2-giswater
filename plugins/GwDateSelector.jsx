@@ -38,7 +38,6 @@ class GwDateSelector extends React.Component {
         theme: PropTypes.object
     };
     static defaultProps = {
-        replaceImageUrls: true,
         initialWidth: 340,
         initialHeight: 190,
         initialX: 0,
@@ -145,8 +144,8 @@ class GwDateSelector extends React.Component {
                 const dateFrom = result.body.data?.date_from;
                 const dateTo = result.body.data?.date_to;
                 if (updateState) this.setState({ getDatesResult: result, dateSelectorResult: null, filters: { date_from: { value: dateFrom }, date_to: { value: dateTo } } });
-                //this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-                
+                // this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+
             }).catch((e) => {
                 console.log(e);
                 if (updateState) this.setState({});
@@ -237,9 +236,9 @@ class GwDateSelector extends React.Component {
                 if (!isEmpty(result.form_xml)) {
                     body = (
                         <div className="date-selector-body" role="body">
-                            <GwQtDesignerForm 
-                                onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} readOnly={false} 
-                                onWidgetValueChange={this.onWidgetValueChange} widgetsProperties={this.state.filters} useNew={true}
+                            <GwQtDesignerForm
+                                form_xml={result.form_xml} onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange}
+                                readOnly={false} useNew widgetsProperties={this.state.filters}
                             />
                         </div>
                     );
@@ -253,12 +252,12 @@ class GwDateSelector extends React.Component {
 
             }
             datesWindow = (
-                <ResizeableWindow 
-                    dockable={false} icon="date_selector" id="GwDateSelector" 
-                    minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
+                <ResizeableWindow
+                    dockable={false} icon="date_selector" id="GwDateSelector"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY}
-                    key="GwDateSelectorWindow" minimizeable={false}
+                    key="GwDateSelectorWindow" minHeight={this.props.initialHeight}
+                    minWidth={this.props.initialWidth} minimizeable={false}
                     onClose={this.onToolClose} onShow={this.onShow} title="GW Date Selector"
                 >
                     {body}

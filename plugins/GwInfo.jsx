@@ -54,9 +54,9 @@ class GwInfo extends React.Component {
         removeLayer: PropTypes.func,
         removeMarker: PropTypes.func,
         selection: PropTypes.object,
+        setCurrentTask: PropTypes.func,
         setIdentifyResult: PropTypes.func,
-        theme: PropTypes.object,
-        setCurrentTask: PropTypes.func
+        theme: PropTypes.object
     };
 
     static defaultProps = {
@@ -79,7 +79,7 @@ class GwInfo extends React.Component {
         dataValues: {},
         epaValues: {},
         widgetsProperties: {},
-        editingActive: false,
+        editingActive: false
     };
 
     constructor(props) {
@@ -162,8 +162,7 @@ class GwInfo extends React.Component {
                     this.discardChanges();
                     this.clearResults();
                 }
-            }
-            else {
+            } else {
                 this.clearResults();
             }
             break;
@@ -256,17 +255,17 @@ class GwInfo extends React.Component {
                 filterSign = JSON.parse(widget.property.widgetcontrols.replace("$gt", ">").replace("$lt", "<")).filterSign;
             }
             // Update filters
-            let tabName = this.state.currentTab.tab?.name || 'pendingFilters';
-            this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName] : {...state.filterValues[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
+            const tabName = this.state.currentTab.tab?.name || 'pendingFilters';
+            this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName]: {...state.filterValues[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
         } else {
-            let widgetFunction = JSON.parse(widget.property.widgetfunction)
+            const widgetFunction = JSON.parse(widget.property.widgetfunction);
             this.onWidgetAction(widgetFunction, widget, value);
         }
 
         if (widget.name === "epa_type") {
             this.loadEpaForm(value);
         }
-        
+
         const newDataValue = {};
         if (widget.containingLayout === "lyt_tab_data" || widget.name === "epa_type") {
             newDataValue[widget.name] = {value: value, columnname: columnname};
@@ -275,7 +274,7 @@ class GwInfo extends React.Component {
         if (widget.containingLayout === "lyt_epa_data_1") {
             newEpaValue[widget.name] = {value: value, columnname: columnname};
         }
-        
+
         // TODO: use setCurrentTaskBlocked to avoid closing the task while saving or reloading the page
         this.setState((state) => ({
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: {value: value} },
@@ -292,10 +291,9 @@ class GwInfo extends React.Component {
             if (!formVal?.form_xml && !formVal?.loading) {
                 this.loadPlanForm();
             }
-        }
-        else if (tab.name === "tab_epa") {
+        } else if (tab.name === "tab_epa") {
             const formVal = this.state.widgetsProperties.form_epa?.value;
-            const epaType = this.state.widgetsProperties.epa_type?.value
+            const epaType = this.state.widgetsProperties.epa_type?.value;
             if (!formVal?.form_xml && !formVal?.loading) {
                 this.loadEpaForm(epaType);
             }
@@ -308,14 +306,14 @@ class GwInfo extends React.Component {
         const featureType = this.props.identifyResult.body.feature.featureType;
 
         epaType = epaType.toLowerCase();
-        let tableName = "ve_epa_" + epaType
+        let tableName = "ve_epa_" + epaType;
 
         if (featureType == 'connec' && epaType == 'junction') {
-            tableName = 've_epa_connec'
+            tableName = 've_epa_connec';
         }
 
         return tableName;
-    }
+    };
 
     loadEpaForm = (epaType) => {
         const requestUrl = GwUtils.getServiceUrl("info");
@@ -355,7 +353,7 @@ class GwInfo extends React.Component {
                 }));
             });
         }
-    }
+    };
 
     loadPlanForm = () => {
         const requestUrl = GwUtils.getServiceUrl("info");
@@ -366,7 +364,7 @@ class GwInfo extends React.Component {
                 tableName: feature.tableName,
                 featureType: feature.featureType,
                 idName: feature.idName,
-                id: feature.id,
+                id: feature.id
             };
             this.setState((state) => ({
                 widgetsProperties: {
@@ -397,30 +395,30 @@ class GwInfo extends React.Component {
                 console.log(e);
             });
         }
-    }
+    };
 
     getList = (tab, _tableName) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("info");
 
-            let tableWidgets = [];
+            const tableWidgets = [];
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
                 if (widget.class === "QTableView" || widget.class === "QTableWidget") {
                     tableWidgets.push(widget);
                 }
             });
-            
+
             if (isEmpty(tableWidgets) || isEmpty(requestUrl)) {
                 return;
             }
-            
-            for (let tableWidget of tableWidgets) {
+
+            for (const tableWidget of tableWidgets) {
                 const prop = tableWidget.property || {};
                 let idName = this.props.identifyResult.body.feature.idName;
                 if (tab.name === 'tab_hydrometer' || tab.name === 'tab_hydrometer_val') {
                     idName = 'feature_id';
                 }
-                
+
                 let tableName = null;
                 // TODO: Is this still necessary?
                 if (tab.name === 'tab_visit') {
@@ -435,7 +433,7 @@ class GwInfo extends React.Component {
                     tableName: tableName || prop.linkedobject,
                     idName: idName,
                     id: this.props.identifyResult.body.feature.id,
-                    filterFields: JSON.stringify(this.state.filterValues[this.state.currentTab.tab?.name]),
+                    filterFields: JSON.stringify(this.state.filterValues[this.state.currentTab.tab?.name])
                     // "filterSign": action.params.tabName
                 };
                 axios.get(requestUrl + "getlist", { params: params }).then((response) => {
@@ -446,7 +444,7 @@ class GwInfo extends React.Component {
                             [tableWidget.name]: {
                                 value: result.body?.data.fields?.at(0).value
                             }
-                        } 
+                        }
                     }));
                 }).catch((e) => {
                     console.log(e);
@@ -465,18 +463,18 @@ class GwInfo extends React.Component {
                 }
             });
         }
-        
+
         const params = {
             theme: this.props.theme.title,
             id: id,
             tableName: tableName,
             fields: JSON.stringify(fields)
         };
-        
+
         console.log("setFields :>>", params);
-        
+
         const requestUrl = GwUtils.getServiceUrl("util");
-        return axios.put(requestUrl + "setfields", { ...params })
+        return axios.put(requestUrl + "setfields", { ...params });
     };
 
     identifyPoint = (prevProps) => {
@@ -492,7 +490,7 @@ class GwInfo extends React.Component {
             const queryableLayers = IdentifyUtils.getQueryLayers(this.props.layers, this.props.map);
             console.log("this.props.layers :>>", this.props.layers);
             console.log("this.props.map :>>", this.props.map);
-            
+
             console.log("queryableLayers :>>", queryableLayers);
 
             const requestUrl = GwUtils.getServiceUrl("info");
@@ -562,8 +560,7 @@ class GwInfo extends React.Component {
         let center = null;
         if (!isEmpty(result) && result?.body?.clickPoint) {
             center = result.body.clickPoint;
-        }
-        else if (!isEmpty(result) && result?.body?.feature?.geometry) {
+        } else if (!isEmpty(result) && result?.body?.feature?.geometry) {
             center = GwUtils.getGeometryCenter(result.body.feature.geometry.st_astext);
         }
         if (center) {
@@ -626,9 +623,9 @@ class GwInfo extends React.Component {
             if (isEmpty(identifyResult) || !identifyResult.form_xml) {
                 let text;
                 if (this.state.pendingRequests === true) {
-                    text = LocaleUtils.tr("identify.querying")
+                    text = LocaleUtils.tr("identify.querying");
                 } else {
-                    text = LocaleUtils.tr("identify.noresults")
+                    text = LocaleUtils.tr("identify.noresults");
                 }
                 body = (<div className="identify-body" role="body"><span className="identify-body-message">{text}</span></div>);
             } else {
@@ -639,53 +636,53 @@ class GwInfo extends React.Component {
                     this.props.processStarted("info_msg", "GwInfo Error!");
                     this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
                 } else if (this.state.mode === "Point") {
-                    let widgetsProperties = {
+                    const widgetsProperties = {
                         ...this.state.widgetsProperties,
                         tab_data: {
                             disabled: !this.state.editingActive
                         },
                         tab_epa: {
                             disabled: !this.state.editingActive
-                        },
+                        }
                     };
 
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false}
-                                onTabChanged={this.onTabChanged} onWidgetValueChange={this.onWidgetValueChange}
-                                loadWidgetsProperties={this.loadWidgetsProperties}
+                            <GwQtDesignerForm form_xml={result.form_xml} getInitialValues={false} loadWidgetsProperties={this.loadWidgetsProperties}
+                                onTabChanged={this.onTabChanged} onWidgetAction={this.onWidgetAction}
+                                onWidgetValueChange={this.onWidgetValueChange}
                                 style={{height: "100%"}}
-                                widgetsProperties={widgetsProperties} useNew={true}
+                                useNew widgetsProperties={widgetsProperties}
                             />
                         </div>
                     );
                 }
             }
             resultWindow = (
-                <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
-                    initialX={this.props.initialX} initialY={this.props.initialY}
-                    initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight} minimizeable
-                    scrollable={false} title={typeof headerText !== "undefined" ? headerText : "Info"}
-                    onClose={() => {
-                        if (this.checkIfDataModified()) {
-                            if (confirm(LocaleUtils.tr("identify.confirmDiscard"))) {
-                                this.clearResults();
-                            }
-                        } else {
+                <ResizeableWindow dockable={this.props.dockable} extraControls={[
+                    {
+                        active: this.state.editingActive,
+                        icon: "edited",
+                        callback: () => {
+                            this.setEditingActive(!this.state.editingActive);
+                        },
+                        msgid: "Toggle editing mode"
+                    }
+                ]} icon="giswater" initialHeight={this.props.initialHeight}
+                initialWidth={this.props.initialWidth} initialX={this.props.initialX}
+                initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
+                minimizeable onClose={() => {
+                    if (this.checkIfDataModified()) {
+                        if (confirm(LocaleUtils.tr("identify.confirmDiscard"))) {
                             this.clearResults();
                         }
-                    }} 
-                    extraControls={[
-                        {
-                            active: this.state.editingActive,
-                            icon: "edited",
-                            callback: () => {
-                                this.setEditingActive(!this.state.editingActive);
-                            },
-                            msgid: "Toggle editing mode"
-                        }
-                    ]}
+                    } else {
+                        this.clearResults();
+                    }
+                }}
+                scrollable={false}
+                title={typeof headerText !== "undefined" ? headerText : "Info"}
                 >
                     {body}
                 </ResizeableWindow>

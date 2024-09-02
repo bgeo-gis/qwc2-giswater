@@ -14,8 +14,8 @@ import { setCurrentTask } from 'qwc2/actions/task';
 class GwSuperset extends React.Component {
     static propTypes = {
 
-        urlLink: PropTypes.string,
-        setCurrentTask: PropTypes.func
+        setCurrentTask: PropTypes.func,
+        urlLink: PropTypes.string
     };
 
     static defaultProps = {
@@ -26,9 +26,9 @@ class GwSuperset extends React.Component {
         const { urlLink } = this.props;
 
         if (urlLink.startsWith("https") || urlLink.startsWith("http")) {
-            window.open(urlLink, '_blank')
+            window.open(urlLink, '_blank');
         } else {
-            window.open(`assets/pdf/${urlLink}`, '_blank')
+            window.open(`assets/pdf/${urlLink}`, '_blank');
         }
         this.props.setCurrentTask(null);
     };

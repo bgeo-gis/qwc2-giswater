@@ -27,7 +27,6 @@ class GwSelector extends React.Component {
         addLayerFeatures: PropTypes.func,
         changeLayerProperty: PropTypes.func,
         currentTask: PropTypes.string,
-        onWidgetAction: PropTypes.func,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
@@ -36,6 +35,7 @@ class GwSelector extends React.Component {
         layers: PropTypes.array,
         map: PropTypes.object,
         mincutIds: PropTypes.string,
+        onWidgetAction: PropTypes.func,
         refreshLayer: PropTypes.func,
         removeLayer: PropTypes.func,
         selectorResult: PropTypes.object,
@@ -333,8 +333,8 @@ class GwSelector extends React.Component {
             } else {
                 body = (
                     <div className="selector-body" role="body">
-                        <GwQtDesignerForm autoResetTab={false} onWidgetAction={this.onWidgetAction} form_xml={result.form_xml} getInitialValues={false}
-                            readOnly={false} onWidgetValueChange={this.onWidgetValueChange} useNew={true} />
+                        <GwQtDesignerForm autoResetTab={false} form_xml={result.form_xml} getInitialValues={false} onWidgetAction={this.onWidgetAction}
+                            onWidgetValueChange={this.onWidgetValueChange} readOnly={false} useNew />
                     </div>
                 );
             }

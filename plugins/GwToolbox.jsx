@@ -26,6 +26,8 @@ class GwToolbox extends React.Component {
     static propTypes = {
         addLayerFeatures: PropTypes.func,
         currentTask: PropTypes.string,
+        customMargin: PropTypes.string,
+        icon: PropTypes.string,
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
         initialX: PropTypes.number,
@@ -34,17 +36,15 @@ class GwToolbox extends React.Component {
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         removeLayer: PropTypes.func,
+        showOnlyExpandedEntries: PropTypes.bool,
         theme: PropTypes.object,
+        themesCfg: PropTypes.object,
+        title: PropTypes.string,
         toolboxInitialWidth: PropTypes.string,
         toolboxMinWidth: PropTypes.string,
         toolboxResult: PropTypes.object,
-        zoomToLayer: PropTypes.bool,
-        icon: PropTypes.string,
-        title: PropTypes.string,
-        showOnlyExpandedEntries: PropTypes.bool,
-        themesCfg: PropTypes.object,
-        customMargin: PropTypes.string
-    }
+        zoomToLayer: PropTypes.bool
+    };
     static defaultProps = {
         initialWidth: 700,
         initialHeight: 650,
@@ -225,7 +225,7 @@ class GwToolbox extends React.Component {
                 return { ...acc, [val.widgetname]: {value: this.state.toolWidgetValues[val.widgetname].value, isMandatory: val.isMandatory}};
             }, {});
 
-            var params = {
+            const params = {
                 theme: this.props.theme.title,
                 functionname: data.functionname,
                 params: inputs || {}
@@ -239,7 +239,7 @@ class GwToolbox extends React.Component {
 
             this.props.processStarted("process_msg", `Executing "${data.alias}"`);
 
-            //Show message if any empty params
+            // Show message if any empty params
             const emptyParams = Object.keys(params.params).filter(key => params.params[key].isMandatory && isEmpty(params.params[key].value));
 
             if (emptyParams.length > 0) {
@@ -251,15 +251,15 @@ class GwToolbox extends React.Component {
             const newParams = {};
 
             for (const key in params.params) {
-              if (params.params.hasOwnProperty(key) && params.params[key].hasOwnProperty('value')) {
-                newParams[key] = params.params[key].value;
-              }
+                if (params.params.hasOwnProperty(key) && params.params[key].hasOwnProperty('value')) {
+                    newParams[key] = params.params[key].value;
+                }
             }
             params.params = newParams;
             // Send request
             axios.post(requestUrl + "execute_process", {...params}).then(response => {
                 const result = response.data;
-                if (result.status !== 'Accepted'){
+                if (result.status !== 'Accepted') {
                     this.props.processFinished("process_msg", false, result.NOSQLERR || result.SQLERR || result.message?.text || "Check logs");
                     return;
                 }
@@ -279,7 +279,7 @@ class GwToolbox extends React.Component {
                 this.props.removeLayer("temp_polygons.geojson");
 
                 const hiddenWidgets = ["tab_polygon"];
-                const geojson_data = {}
+                const geojson_data = {};
 
                 // Points
                 let allFeatures = [];
@@ -306,29 +306,28 @@ class GwToolbox extends React.Component {
                     }
 
                     const point_params = Object.keys(point.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
-                    geojson_data["point_table"] = {
+                    geojson_data.point_table = {
                         body: {
-                            form: { headers: 
+                            form: { headers:
                                 point_params.map(name => ({
                                     accessorKey: name,
                                     header: name,
                                     id: name
                                 })),
-                                table: {
-                                    initialState: {
-                                        density: 'compact'
-                                    },
-                                    enableTopToolbar: false
-                                }
+                            table: {
+                                initialState: {
+                                    density: 'compact'
+                                },
+                                enableTopToolbar: false
+                            }
                             },
                             data: { fields: [{
                                 value: point.features.map((l) => l.properties)
                             }]}
                         }
-                    }
-                }
-                else {
-                    hiddenWidgets.push("tab_point")
+                    };
+                } else {
+                    hiddenWidgets.push("tab_point");
                 }
 
                 const line = result.body.data.line;
@@ -352,31 +351,30 @@ class GwToolbox extends React.Component {
                             zoomToExtent: this.props.zoomToLayer
                         }, features, true);
                     }
-                    
+
                     const line_params = Object.keys(line.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
-                    geojson_data["line_table"] = {
+                    geojson_data.line_table = {
                         body: {
-                            form: { headers: 
+                            form: { headers:
                                 line_params.map(name => ({
                                     accessorKey: name,
                                     header: name,
                                     id: name
                                 })),
-                                table: {
-                                    initialState: {
-                                        density: 'compact'
-                                    },
-                                    enableTopToolbar: false
-                                }
+                            table: {
+                                initialState: {
+                                    density: 'compact'
+                                },
+                                enableTopToolbar: false
+                            }
                             },
                             data: { fields: [{
                                 value: line.features.map((l) => l.properties)
                             }]}
                         }
-                    }
-                }
-                else {
-                    hiddenWidgets.push("tab_line")
+                    };
+                } else {
+                    hiddenWidgets.push("tab_line");
                 }
 
                 this.setState((prevState) => ({
@@ -422,29 +420,29 @@ class GwToolbox extends React.Component {
         return (expanded || !isEmpty(this.state.toolboxFilter)) ? "identify-layer-expandable identify-layer-expanded" : "identify-layer-expandable";
     }
     renderTab(type, tabName, tools) {
-        if(this.props.showOnlyExpandedEntries){
+        if (this.props.showOnlyExpandedEntries) {
             return (
                 <div className="identify-layer-entries toolbox-tool-list" key={`${type}-${tabName}`}>
                     {tools.map(tool => this.renderTool(type, tool))}
                 </div>
             );
-        }else{
+        } else {
             return (
                 <div className={this.getExpandedTabClass(type, tabName)} key={`${type}-${tabName}`}>
                     <div className="identify-result-entry">
-                        <span className="clickable" 
-                            style={{ userSelect: 'none' }} 
-                            onClick={() => this.toggleTabExpanded(type, tabName)}><b>{tabName}</b> 
+                        <span className="clickable"
+                            onClick={() => this.toggleTabExpanded(type, tabName)}
+                            style={{ userSelect: 'none' }}><b>{tabName}</b>
                         </span>
                     </div>
                     <div className="identify-layer-entries toolbox-tool-list">
                         {tools.map(tool => this.renderTool(type, tool))}
                     </div>
-                    <div className="arrow-clickable" onClick={() => this.toggleTabExpanded(type, tabName)}></div>
+                    <div className="arrow-clickable" onClick={() => this.toggleTabExpanded(type, tabName)} />
                 </div>
             );
         }
-      
+
     }
     renderTool(type, tool) {
         let className = "clickable";
@@ -456,8 +454,8 @@ class GwToolbox extends React.Component {
                 <span
                     className={className}
                     onClick={()=>{this.toolClicked(type, tool);}}
-                    title={`${tool.alias} - ${tool.functionname || ""}`}
                     style={{ userSelect: 'none', margin: this.props.customMargin }}
+                    title={`${tool.alias} - ${tool.functionname || ""}`}
                 >
                     {tool.alias}
                 </span>
@@ -475,8 +473,8 @@ class GwToolbox extends React.Component {
                 } else {
                     body = (<div className="toolbox-body" role="body"><span className="identify-body-message">No result</span></div>); // TODO: TRANSLATION
                 }
-            }else {
-                if (this.props.showOnlyExpandedEntries){
+            } else {
+                if (this.props.showOnlyExpandedEntries) {
                     body = (
                         <div className="toolbox-body" role="body">
                             <div className='toolbox-filter'>
@@ -494,7 +492,7 @@ class GwToolbox extends React.Component {
                             </div>
                         </div>
                     );
-                }else {
+                } else {
                     body = (
                         <div className="toolbox-body" role="body">
                             <div className='toolbox-filter'>
@@ -518,30 +516,30 @@ class GwToolbox extends React.Component {
                         </div>
                     );
                 }
-                
+
             }
         }
 
-        
+
         let toolWindow = null;
         if (this.state.toolResult !== null) {
             const tool = this.state.toolResult;
 
             toolWindow = (
                 <ResizeableWindow icon={this.props.icon}
-                    minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
-                    initialHeight={this.props.initialHeight}
-                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
-                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="ToolManager"
+                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
+                    initialX={this.props.initialX}
+                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
+                    key="ToolManager" minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
                     onClose={this.clearToolManager} title={tool.body.data.alias}
                 >
                     <div className={`tool-manager-body toolbox-${this.state.toolType}`} role='body'>
                         <GwQtDesignerForm
                             activetabs={this.state.toolActiveTabs}
-                            hiddenWidgets={this.state.hiddenWidgets}
-                            onWidgetAction={this.onToolButton}
                             form_xml={tool.form_xml}
+                            hiddenWidgets={this.state.hiddenWidgets}
                             onTabChanged={this.onToolTabChanged}
+                            onWidgetAction={this.onToolButton}
                             onWidgetValueChange={this.toolOnFieldUpdated}
                             widgetValues={this.state.toolWidgetValues}
                         />
@@ -552,8 +550,8 @@ class GwToolbox extends React.Component {
 
         return [toolWindow, (
             <SideBar icon={this.props.icon} id="GwToolbox" key="GwToolboxNull"
-                onShow={this.onShow} title={this.props.title} 
-                minWidth={this.props.toolboxMinWidth}
+                minWidth={this.props.toolboxMinWidth} onShow={this.onShow}
+                title={this.props.title}
                 width={this.props.toolboxInitialWidth} >
                 {body}
             </SideBar>

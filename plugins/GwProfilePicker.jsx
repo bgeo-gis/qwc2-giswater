@@ -82,7 +82,6 @@ class GwProfilePicker extends React.Component {
     };
 
     static defaultProps = {
-        replaceImageUrls: true,
         initialWidth: 240,
         initialHeight: 320,
         initialX: 0,

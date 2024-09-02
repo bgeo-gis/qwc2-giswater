@@ -49,7 +49,6 @@ type GwQtDesignerFormProps = {
     loading: boolean,
     onTabChanged: (tab: any, widget: any) => void,
     readOnly: boolean,
-    replaceImageUrls: boolean,
     onWidgetValueChange: (name: string, value: any, initial?: boolean) => void,
     widgetValues: any,
     useNew: boolean,
@@ -79,7 +78,6 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         disabledWidgets: [],
         hiddenWidgets: [],
         getInitialValues: true,
-        replaceImageUrls: false,
         files: [],
         activetabs: {},
         useNew: false,
@@ -103,6 +101,11 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         this.componentDidUpdate({});
     }
     componentDidUpdate(prevProps) {
+
+        if (this.props.useNew === false) {
+            console.error("GwQtDesignerForm with useNew=false is deprecated. Please use useNew=true");
+        }
+
         // Query form
         if (this.props.form_xml !== prevProps.form_xml) {
             this.setState((state, props) => ({
@@ -351,7 +354,6 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
                     onWidgetAction={this.props.onWidgetAction}
                     onWidgetValueChange={this.props.onWidgetValueChange}
                     readOnly={inputConstraints.readOnly}
-                    replaceImageUrls={this.props.replaceImageUrls}
                     useNew={true}
                     widgetsProperties={this.props.widgetsProperties}
                     loadWidgetsProperties={this.props.loadWidgetsProperties}
@@ -368,7 +370,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
 
             return (<GwTableWidget onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
-            return (<GwTableView data={value || []} />);
+            return (<GwTableView values={value.values || []} form={value.form} />);
         } else if (widget.class === "QLabel") { // @ts-ignore
             return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);
         } else if (widget.class === "Line") {
@@ -562,15 +564,16 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             parts[1] = (parts[1] ?? "").replace(/\.\d+$/, ''); // Strip milliseconds
 
             return parts[1] ? parts[0] + "T" + parts[1] : parts[0];
-        } else if (widget.class === "QTableWidget") {
+        } else if (
+            widget.class === "QTableWidget" ||
+            widget.class === "QTableView"
+        ) {
             const values = this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null);
             const form = this.props.widgetValues[widget.name]?.body?.form ?? (prop.form ? JSON.parse(prop.form) : null);
             return {
                 values: values,
                 form: form
             };
-        } else if (widget.class === "QTableView") {
-            return this.props.widgetValues[widget.name]?.body?.data.fields?.at(0).value ?? (prop.values ? JSON.parse(prop.values) : null);
         }
 
         return null;
