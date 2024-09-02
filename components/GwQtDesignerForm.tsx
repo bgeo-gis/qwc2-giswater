@@ -234,7 +234,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
     computeLayoutRows = (items, useIndex = false) => {
         const rows = [];
         const fitWidgets = ["QLabel", "QCheckBox", "QRadioButton", "Line", "QDateTimeEdit", "QDateEdit", "QTimeEdit", "QPushButton", "QComboBox", "QLineEdit", "QSpinBox", "QDoubleSpinBox", "QSlider"];
-        const expandWidgets = ["QTextEdit", "QTextBrowser", "QPlainTextEdit", "QTableWidget", "QTableView"];
+        const expandWidgets = ["QTextEdit", "QTextBrowser", "QPlainTextEdit", "QTableWidget", "QTableView", "QgsFileWidget"];
 
         const isSpacer = (item) => {
             return item.spacer && (item.spacer.property || {}).orientation === "Qt::Vertical";
