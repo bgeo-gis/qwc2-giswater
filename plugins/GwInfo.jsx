@@ -442,7 +442,7 @@ class GwInfo extends React.Component {
                         widgetsProperties: {
                             ...state.widgetsProperties,
                             [tableWidget.name]: {
-                                value: result.body?.data.fields?.at(0).value
+                                value: GwUtils.getListToValue(result)
                             }
                         }
                     }));
