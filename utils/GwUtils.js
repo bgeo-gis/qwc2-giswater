@@ -11,7 +11,6 @@ import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
 import ol from 'openlayers';
 
-import url from 'url';
 import axios from 'axios';
 import {LayerRole} from 'qwc2/actions/layers';
 import LayerUtils from 'qwc2/utils/LayerUtils';
@@ -21,6 +20,17 @@ import {UrlParams} from 'qwc2/utils/PermaLinkUtils';
 
 const GwUtils = {
 
+    isValidHttpUrl(string) {
+        let url;
+        
+        try {
+            url = new URL(string);
+        } catch (_) {
+            return false;  
+        }
+        
+        return url.protocol === "http:" || url.protocol === "https:";
+    },
     getListToValue(result) {
         return {
             values: result.body?.data?.fields?.at(0).value,

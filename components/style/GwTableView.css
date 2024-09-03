@@ -60,3 +60,7 @@ div.gwtableview-result-attributes table td:first-child {
 div.gwtableview-result-attributes > table > tbody > tr:nth-child(even) {
     background-color: var(--list-item-bg-color-even);
 }
+
+div.gwtableview-result-attributes img {
+    width: 100%;
+}

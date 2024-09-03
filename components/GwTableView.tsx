@@ -2,10 +2,12 @@ import React from 'react';
 
 import Icon from 'qwc2/components/Icon';
 import 'qwc2-giswater/components/style/GwTableView.css';
+import GwUtils from 'qwc2-giswater/utils/GwUtils';
 
 
 type GwTableViewProps = {
-    data: {[key: string]: string}[]
+    values: {[key: string]: string}[],
+    form: any
 };
 
 type GwTableViewState = {
@@ -23,7 +25,9 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
     }
 
     render() {
-        const value = this.props.data;
+        const value = this.props.values;
+        const replaceImgs = this.props.form?.table?.replaceImgs ?? true;
+        const fieldName = value.length === 0 ? null : (this.props.form?.table?.displayField ?? Object.keys(value[0])[0]);
 
         const resultsContainerStyle = {
             maxHeight: this.state.currentResult ? '20%' : 'initial'
@@ -35,18 +39,17 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
                     className="gwtableview-results-container"
                     style={resultsContainerStyle}
                 >
-                    {value.map(result => {
-                        const id = Object.values(result)[0];
+                    {value.map((result, i) => {
                         return (
                             <div
                                 className="gwtableview-entry"
-                                key={id}
+                                key={i}
                             >
                                 <span
                                     className={this.state.currentResult === result ? "active clickable" : "clickable"}
                                     onClick={() => this.setState({ currentResult: result })}
                                 >
-                                    {id}
+                                    {result[fieldName]}
                                 </span>
                             </div>
                         );
@@ -56,17 +59,26 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
                     <div className="gwtableview-current-result">
                         <div className="gwtableview-result-title">
                             <Icon icon="minus" onClick={() => this.setState({ currentResult: null })} />
-                            <span>{`${Object.keys(this.state.currentResult)[0]}: ${Object.values(this.state.currentResult)[0]}`}</span>
+                            <span>{`${fieldName}: ${this.state.currentResult[fieldName]}`}
+                            </span>
                         </div>
                         <div className="gwtableview-result-attributes">
                             <table>
                                 <tbody>
-                                    {Object.entries(this.state.currentResult).map(([key, value], i) => (
-                                        <tr key={i}>
-                                            <td>{key}</td>
-                                            <td>{value}</td>
-                                        </tr>
-                                    ))}
+                                    {Object.entries(this.state.currentResult).map(([key, value], i) => {
+                                        return (
+                                            <tr key={i}>
+                                                <td>{key}</td>
+                                                <td>
+                                                    {
+                                                        replaceImgs && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value) ? 
+                                                            (<a href={value} rel="noreferrer" target="_blank"><img src={value} /></a>)
+                                                            : (GwUtils.isValidHttpUrl(value) ? <a href={value} rel="noreferrer" target="_blank">{value}</a> : value)
+                                                    }
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         </div>
