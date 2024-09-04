@@ -113,7 +113,8 @@ class GwVisit extends React.Component {
                 return {files: files};
             });
             break;
-        case 'set_visit': {
+        case 'apply':
+        case 'accept': {
             const ignoreWidgets = ['txt_visit_id', 'tbl_files', 'mail', 'sendto'];
             // console.log("WIDGETS: ", this.state.widgetValues);
             // eslint-disable-next-line
@@ -200,7 +201,9 @@ class GwVisit extends React.Component {
                 // show message
                 this.props.processFinished("visit_msg", result.status === "Accepted", "DB return:" + (result.SQLERR || result.message?.text || "Check logs"));
                 if (result?.status === "Accepted") {
-                    this.onToolClose();
+                    if (action.functionName === 'accept') {
+                        this.onToolClose();
+                    }
                 }
             }).catch((e) => {
                 console.warn(e);
@@ -209,7 +212,7 @@ class GwVisit extends React.Component {
 
             break;
         }
-        case 'set_previous_form_back':
+        case 'cancel':
             this.clearResults();
             break;
         case 'get_visit': {
