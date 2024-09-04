@@ -71,7 +71,7 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
                                                 <td>{key}</td>
                                                 <td>
                                                     {
-                                                        replaceImgs && /^https?:\/\/.*\.(jpg|jpeg|png|bmp)$/i.exec(value) ? 
+                                                        replaceImgs && /^https?:\/\/.*\.(jpg|jpeg|png|bmp|gif)$/i.exec(value) ? 
                                                             (<a href={value} rel="noreferrer" target="_blank"><img src={value} /></a>)
                                                             : (GwUtils.isValidHttpUrl(value) ? <a href={value} rel="noreferrer" target="_blank">{value}</a> : value)
                                                     }

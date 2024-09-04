@@ -70,9 +70,7 @@ class GwVisitManager extends React.Component {
         feature_id: null,
         tableWidgets: new Set(),
         filters: {},
-        widgetValues: {},
         widgetsProperties: {},
-        visitResult: null
     };
     componentDidUpdate(prevProps, prevState) {
         if (this.props.currentTask !== prevProps.currentTask && prevProps.currentTask === "GwVisitManager") {
@@ -111,9 +109,8 @@ class GwVisitManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ visitmanagerResult: null, pendingRequests: false, filters: {}, visitResult: null, widgetValues: {}, widgetsProperties: {} });
+        this.setState({ visitmanagerResult: null, pendingRequests: false, filters: {}, widgetsProperties: {} });
     };
-
 
     onWidgetValueChange = (widget, value) => {
         // Get filterSign
@@ -145,7 +142,6 @@ class GwVisitManager extends React.Component {
         }
         this.setState((state) => ({
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } },
-            widgetValues: { ...state.widgetValues, [widget.name]: { value: value }},
             filters: { ...state.filters, [columnname]: { value: filtervalue, filterSign: filterSign } }
         }));
     };
@@ -173,8 +169,7 @@ class GwVisitManager extends React.Component {
                 this.setState((state) => ({
                     widgetsProperties: {...state.widgetsProperties, [tableWidgets[0].columnname]: {
                         value: GwUtils.getListToValue(result)
-                    }},
-                    widgetValues: {...state.widgetValues, [tableWidgets[0].columnname]: result}
+                    }}
                 }));
             }).catch((e) => {
                 console.log(e);
@@ -213,11 +208,8 @@ class GwVisitManager extends React.Component {
             this.setState( { filters: {visitId: action.row[0].original.id, action: "delete"} } );
             break;
         }
-        case "visitClose":
-            if (!this.props.keepManagerOpen) {
-                this.setState({ visitResult: null });
-                this.onToolClose();
-            }
+        case "refresh":
+            this.getList(this.state.visitmanagerResult);
             break;
         default:
             console.warn(`Action \`${functionName}\` cannot be handled.`);
@@ -249,7 +241,6 @@ class GwVisitManager extends React.Component {
             axios.get(requestUrl + "getvisit", { params: params }).then((response) => {
                 const result = response.data;
                 this.props.setActiveVisit(result, this.props.keepManagerOpen);
-                // this.setState({ visitResult: result });
             }).catch((e) => {
                 console.log(e);
             });
@@ -305,7 +296,7 @@ class GwVisitManager extends React.Component {
                                 onWidgetAction={this.onWidgetAction}
                                 onWidgetValueChange={this.onWidgetValueChange} readOnly={false}
                                 theme={this.props.currentTheme.title} useNew
-                                widgetValues={this.state.widgetValues} widgetsProperties={this.state.widgetsProperties}
+                                widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>
                     );

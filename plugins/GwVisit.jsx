@@ -134,7 +134,7 @@ class GwVisit extends React.Component {
 
             this.props.processStarted("visit_msg", "Aceptar visita");
 
-            const widgets = this.state.visitResult?.body?.data?.fields || this.props.visitResult?.body?.data?.fields;
+            const widgets = this.props.visitResult?.body?.data?.fields;
 
             if (this.state.widgetValues?.mail?.value) {
                 const email = this.state.widgetValues.sendto.value;
@@ -191,7 +191,7 @@ class GwVisit extends React.Component {
             formData.append("epsg", GwUtils.crsStrToInt(this.props.map.projection));
             formData.append("theme", this.props.theme.title);
             formData.append("tableName", tableWidget.linkedobject);
-            const visitId = this.state.coords[0] ? null : this.state.visitResult?.body?.feature?.visitId || this.props.visitResult?.body?.feature?.visitId;
+            const visitId = this.state.coords[0] ? null : this.props.visitResult?.body?.feature?.visitId;
             formData.append("visitId", visitId || null);
             formData.append("fields", JSON.stringify(fields));
             axios.post(requestUrl + 'setvisit', formData, {
@@ -203,6 +203,8 @@ class GwVisit extends React.Component {
                 if (result?.status === "Accepted") {
                     if (action.functionName === 'accept') {
                         this.onToolClose();
+                    } else {
+                        this.getList(this.state.currentTab.tab);
                     }
                 }
             }).catch((e) => {
@@ -240,7 +242,7 @@ class GwVisit extends React.Component {
                 }, {});
                 if (isEmpty(fields)) return;
                 const epsg = GwUtils.crsStrToInt(this.props.map.projection);
-                const visitId = this.state.visitResult?.body?.feature?.visitId || this.props.visitResult?.body?.feature?.visitId;
+                const visitId = this.props.visitResult?.body?.feature?.visitId;
                 const params = {
                     theme: this.props.theme.title,
                     epsg: epsg,
@@ -252,7 +254,8 @@ class GwVisit extends React.Component {
 
                 axios.put(requestUrl + "getvisit", { ...params }).then(response => {
                     const result = response.data;
-                    this.setState({ visitResult: result, pendingRequests: false, widgetValues: {} });
+                    this.props.setActiveVisit(result);
+                    this.setState({ pendingRequests: false, widgetValues: {} });
                 }).catch((e) => {
                     console.log(e);
                     this.setState({ pendingRequests: false });
@@ -292,7 +295,7 @@ class GwVisit extends React.Component {
         }));
     };
     onTabChanged = (tab, widget) => {
-        this.getList(tab, widget);
+        this.getList(tab);
         this.setState({ currentTab: { tab: tab, widget: widget } });
     };
     getList = (tab) => {
@@ -309,7 +312,7 @@ class GwVisit extends React.Component {
                 return;
             }
 
-            const visitResult = this.state.visitResult || this.props.visitResult;
+            const visitResult = this.props.visitResult;
             const visitId = visitResult?.body?.feature?.visitId;
             const filters = `{"visit_id": {"columnname": "visit_id", "value": ${visitId || -1}}}`;
             const params = {
@@ -333,7 +336,6 @@ class GwVisit extends React.Component {
                 }));
             }).catch((e) => {
                 console.warn(e);
-                // this.setState({  });
             });
         } catch (error) {
             console.error(error);
@@ -370,7 +372,8 @@ class GwVisit extends React.Component {
                 pendingRequests = true;
                 axios.get(requestUrl + "getvisit", { params: params }).then(response => {
                     const result = response.data;
-                    this.setState({ visitResult: result, coords: clickPoint, pendingRequests: false });
+                    this.props.setActiveVisit(result);
+                    this.setState({ coords: clickPoint, pendingRequests: false });
                     this.highlightResult(result);
                 }).catch((e) => {
                     console.log(e);
@@ -378,7 +381,7 @@ class GwVisit extends React.Component {
                 });
             }
             this.props.addMarker('visit', clickPoint, '', this.props.map.projection);
-            this.setState({ visitResult: {}, tableValues: {}, pendingRequests: pendingRequests });
+            this.setState({ tableValues: {}, pendingRequests: pendingRequests });
         }
     };
 
@@ -420,25 +423,20 @@ class GwVisit extends React.Component {
         if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
         }
-        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetsProperties: {}, widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ coords: [null, null], pendingRequests: false, files: [], widgetsProperties: {}, widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     clearResults = () => {
-        if (this.props.visitResult) {
-            this.onToolClose();
-            if (this.props.onWidgetAction) {
-                this.props.onWidgetAction({ widgetfunction: { functionName: "visitClose" } });
-            }
-        }
+        this.onToolClose();
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetsProperties: {}, widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ coords: [null, null], pendingRequests: false, files: [], widgetsProperties: {}, widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     render() {
         let resultWindow = null;
-        if (this.state.pendingRequests === true || this.state.visitResult !== null || this.props.visitResult !== null ) {
-            const result = this.state.visitResult || this.props.visitResult;
+        if (this.state.pendingRequests === true || this.props.visitResult !== null ) {
+            const result = this.props.visitResult;
             let body = null;
             if (isEmpty(result)) {
                 if (this.state.pendingRequests === true) {
@@ -452,10 +450,6 @@ class GwVisit extends React.Component {
                     this.props.processStarted("info_msg", "GwVisit Error!");
                     this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
                 } else {
-                    // const widgetValues = {
-                    //     ...this.state.widgetValues,
-                    //     ...this.state.tableValues
-                    // };
                     body = (
                         <div className="identify-body" role="body">
                             <GwQtDesignerForm files={this.state.files} form_xml={result.form_xml} getInitialValues
@@ -469,7 +463,7 @@ class GwVisit extends React.Component {
                     );
                 }
             }
-            const title = result.body?.data?.form?.headerText || "Visit";
+            const title = result?.body?.data?.form?.headerText || "Visit";
             resultWindow = (
                 <ResizeableWindow dockable={this.props.dockable} icon="giswater"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth} initialX={this.props.initialX}
