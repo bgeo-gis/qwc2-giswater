@@ -189,7 +189,7 @@ class GwVisitManager extends React.Component {
         const functionName = action.widgetfunction.functionName;
         switch (functionName) {
         case "open":
-            this.openvisit(action.row[0].original.id, action.row[0].original.visit_type);
+            this.openVisit(action.row[0].original.id, action.row[0].original.visit_type);
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
             if (!this.props.keepManagerOpen) {
                 this.setState({ visitmanagerResult: null });
@@ -201,9 +201,14 @@ class GwVisitManager extends React.Component {
             if (!confirm(`Are you sure you want to delete these visits ${ids.toString()}`)) {
                 break;
             }
-            action.row.forEach((row) => {
-                this.deletevisit(row.original.id);
+            const promises = action.row.map((row) => {
+                return this.deleteVisit(row.original.id);
             });
+
+            Promise.all(promises).then(() => {
+                this.getList(this.state.visitmanagerResult);
+            });
+
             action.removeSelectedRow();
             this.setState( { filters: {visitId: action.row[0].original.id, action: "delete"} } );
             break;
@@ -232,7 +237,7 @@ class GwVisitManager extends React.Component {
         });
     };
 
-    openvisit = (visitId, visitType) => {
+    openVisit = (visitId, visitType) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("visit");
 
@@ -254,7 +259,7 @@ class GwVisitManager extends React.Component {
     };
 
 
-    deletevisit = (visitId) => {
+    deleteVisit = (visitId) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("visit");
 
@@ -262,12 +267,13 @@ class GwVisitManager extends React.Component {
                 theme: this.props.currentTheme.title,
                 visitId: visitId
             };
-            axios.delete(requestUrl + "delete", { params }).catch((e) => {
+            return axios.delete(requestUrl + "delete", { params }).catch((e) => {
                 console.log(e);
                 // this.setState({  });
             });
         } catch (error) {
             console.warn(error);
+            return Promise.reject(error);
         }
     };
 
