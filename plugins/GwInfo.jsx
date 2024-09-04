@@ -187,7 +187,7 @@ class GwInfo extends React.Component {
         const epaModified = !isEmpty(this.state.epaValues);
 
         if (!dataModified && !epaModified) {
-            return;
+            return Promise.resolve();
         }
 
         if (dataModified) {
@@ -199,9 +199,9 @@ class GwInfo extends React.Component {
             feature.tableName,
             this.state.dataValues
         ).then((response) => {
-            const result = response.data;
+            const dataResult = response.data;
             if (dataModified) {
-                this.props.processFinished("info_msg_data", result.status === "Accepted", result.message.text);
+                this.props.processFinished("info_msg_data", dataResult.status === "Accepted", dataResult.message.text);
             }
             if (epaModified) {
                 this.props.processStarted("info_msg_epa", "Update feature EPA");
@@ -211,9 +211,9 @@ class GwInfo extends React.Component {
                 this.getEpaTableName(this.state.widgetsProperties.epa_type?.value),
                 this.state.epaValues
             ).then((response) => {
-                const result = response.data;
+                const epaResult = response.data;
                 if (epaModified) {
-                    this.props.processFinished("info_msg_epa", result.status === "Accepted", result.message.text);
+                    this.props.processFinished("info_msg_epa", epaResult.status === "Accepted", epaResult.message.text);
                 }
 
                 if (this.props.theme.tiled) {
@@ -308,7 +308,7 @@ class GwInfo extends React.Component {
         epaType = epaType.toLowerCase();
         let tableName = "ve_epa_" + epaType;
 
-        if (featureType == 'connec' && epaType == 'junction') {
+        if (featureType === 'connec' && epaType === 'junction') {
             tableName = 've_epa_connec';
         }
 

@@ -330,10 +330,9 @@ class GwTableWidget extends React.Component {
                     <ThemeProvider theme={exportButtonTheme}>
                         <Button
                             color="primary"
+                            disabled={table.getPrePaginationRowModel().rows.length === 0}
                             key={0}
                             // export all rows, including from the next page, (still respects filtering and sorting)
-                            // onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
-                            disabled={table.getPrePaginationRowModel().rows.length === 0}
                             onClick={() => {handleExportRows(table.getSortedRowModel().rows);}}
                             startIcon={<FileDownloadIcon />}
                             variant="contained"

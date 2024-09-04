@@ -27,10 +27,12 @@ import { setIdentifyResult } from '../../actions/info';
 class GwInfoValve extends React.Component {
     static propTypes = {
         addLayerFeatures: PropTypes.func,
+        closePopup: PropTypes.func,
         displaycrs: PropTypes.string,
         enabled: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
+        point: PropTypes.object,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         refreshLayer: PropTypes.func,
@@ -110,7 +112,7 @@ class GwInfoValve extends React.Component {
                 this.setState({gwInfoResponse: gwInfoResponse, loading: false});
             }
         }).catch((e) => {
-            console.log(e);
+            console.warn(e);
         });
     };
     toggleValveState = (data) => {
@@ -160,7 +162,6 @@ class GwInfoValve extends React.Component {
         // Send request
         axios.get(requestUrl + "update_valve", { params: params }).then(response => {
             this.props.processFinished(processNotificationId, true, "Update successful");
-            const result = response.data;
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }).catch((e) => {
             console.log(e);
@@ -210,8 +211,8 @@ class GwInfoValve extends React.Component {
             role: LayerRole.SELECTION
         };
         const crs = this.props.map.projection;
-        selection.map((values, index) => (
-            (values.ids).map((subValues, index) => {
+        selection.map((values) => (
+            (values.ids).map((subValues) => {
                 const geometry = VectorLayerUtils.wktToGeoJSON(subValues.geometry, crs, crs);
                 const feature = {
                     id: selection.id,
@@ -252,13 +253,13 @@ class GwInfoValve extends React.Component {
                         <div className="hover-dropdown">
                             <button>Features</button>
                             <div className="dropdown-content">
-                                {layernames.map((values, index) => (
-                                    <div className="hover-dropdown-item" key={index}>
-                                        <span className="first-item">{this.getLastWordFromLayer(values.layerName)}</span>
+                                {layernames.map((vals, i) => (
+                                    <div className="hover-dropdown-item" key={i}>
+                                        <span className="first-item">{this.getLastWordFromLayer(vals.layerName)}</span>
                                         <Icon className="item-icon" icon="chevron-right"/>
                                         <div className="dropdown-content">
-                                            {(values.ids).map((subValues, index) => (
-                                                <span key={index} onClick={() => this.showInfo(subValues, values.layerName)} onMouseEnter={() => this.highLightFeature(subValues)}>{subValues.label}</span>
+                                            {(vals.ids).map((subValues, j) => (
+                                                <span key={j} onClick={() => this.showInfo(subValues, vals.layerName)} onMouseEnter={() => this.highLightFeature(subValues)}>{subValues.label}</span>
                                             ))}
                                         </div>
                                     </div>

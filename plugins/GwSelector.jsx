@@ -253,7 +253,7 @@ class GwSelector extends React.Component {
         this.props.removeLayer("temp_lines.geojson");
         this.props.removeLayer("temp_polygons.geojson");
     };
-    onWidgetValueChange = (widget, ev) => {
+    onWidgetValueChange = (widget) => {
         let action;
         try {
             action = JSON.parse(widget.property.action);

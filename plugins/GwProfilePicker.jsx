@@ -163,9 +163,6 @@ class GwProfilePicker extends React.Component {
         let allNodeLength = [];
         this.segmentMarkers = [];
 
-        const queryableLayers = this.getQueryableLayers();
-        const layer = queryableLayers[0];
-
         const data = feature.body.data;
 
         // Get all coordinates of each node
@@ -332,10 +329,10 @@ class GwProfilePicker extends React.Component {
     };
 
     enterTemporaryPickMode = (result) => {
-        const lines_1 = result.body.data.line;
-        const pointFeatures0 = GwUtils.getGeoJSONFeatures("default", lines_1, this.props.standardLinesStyle);
+        const lines = result.body.data.line;
+        const pointFeatures = GwUtils.getGeoJSONFeatures("default", lines, this.props.standardLinesStyle);
 
-        const olLineStrings = pointFeatures0.map(featureGeoJSON => {
+        const olLineStrings = pointFeatures.map(featureGeoJSON => {
             const coordinates = featureGeoJSON.geometry.coordinates.map(coord => [coord[0], coord[1]]);
             const lineString = new LineString(coordinates);
             const feature = new Feature({
@@ -489,7 +486,6 @@ class GwProfilePicker extends React.Component {
         let result;
         if (!isEmpty(queryableLayers) && !isEmpty(requestUrl)) {
             // Get request paramas
-            const layer = queryableLayers[0];
             const epsg = GwUtils.crsStrToInt(this.props.mapObj.projection);
             const params = {
                 theme: this.props.theme.title,

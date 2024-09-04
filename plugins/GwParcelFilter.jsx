@@ -78,8 +78,9 @@ class GwParcelFilter extends React.Component {
                 return l.type === "wms";
             })[0]?.queryLayers;
             // If more/less layers are active, filter again
-            if (prevLayers && curLayers && prevLayers.length !== curLayers.length) {
-            }
+            // if (prevLayers && curLayers && prevLayers.length !== curLayers.length) {
+
+            // }
         }
 
         // Manage open tool

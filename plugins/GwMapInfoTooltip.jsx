@@ -150,7 +150,6 @@ class GwMapInfoTooltip extends React.Component {
         // Send request
         axios.get(requestUrl + "update", { params: params }).then(response => {
             this.props.processFinished(processNotificationId, true, "Update successful");
-            const result = response.data;
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }).catch((e) => {
             console.log(e);

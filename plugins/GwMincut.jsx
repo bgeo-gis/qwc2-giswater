@@ -104,13 +104,13 @@ class GwMincut extends React.Component {
                 }
             }
             // Clear all widgets and set the log
-            this.setState((state) => ({
+            this.setState({
                 mincutValues: {},
                 widgetsProperties: {
                     // chk_use_planified: state.widgetsProperties.chk_use_planified,
                     txt_infolog: { value: messages }
                 }
-            }), () => {
+            }, () => {
                 // If the xml is the same, GwQtDesignerForm won't reload the form and `loadFormUi` won't be called
                 if (this.props.mincutResult && this.props.mincutResult.form_xml === prevProps.mincutResult?.form_xml) {
                     this.setDisabledWidgets(this.props.mincutResult.body.data.mincutState);
@@ -267,7 +267,7 @@ class GwMincut extends React.Component {
         if (clickPoint) {
             switch (this.state.clickMode) {
 
-            case 'mincutNetwork':
+            case 'mincutNetwork': {
                 this.props.addMarker('mincut', clickPoint, '', this.props.map.projection);
 
                 const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
@@ -286,7 +286,7 @@ class GwMincut extends React.Component {
                     this.setState({ clickMode: null });
                 });
                 break;
-
+            }
             case 'changeValveStatus':
                 this.changeValveStatus(clickPoint);
                 break;
@@ -454,6 +454,8 @@ class GwMincut extends React.Component {
             workOrderEnabled = false;
             toolbarEnabled = false;
             break;
+        default:
+            console.warn("Unknown mincut state", mincutState);
         }
 
         this.setState((state) => ({
@@ -645,10 +647,9 @@ class GwMincut extends React.Component {
                     body = (
                         <div className="mincut-body" role="body">
                             <GwQtDesignerForm activetabs={this.state.activetabs} autoResetTab={false} form_xml={result.form_xml}
-                                loadFormUi={this.loadFormUi} onTabChanged={this.onTabChanged} onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange}
-                                useNew widgetsProperties={this.state.widgetsProperties}
-                                getInitialValues={false}
-                                // loadWidgetsProperties={this.loadWidgetsProperties}
+                                getInitialValues={false} loadFormUi={this.loadFormUi} onTabChanged={this.onTabChanged} onWidgetAction={this.onWidgetAction}
+                                onWidgetValueChange={this.onWidgetValueChange} useNew
+                                widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>
                     );

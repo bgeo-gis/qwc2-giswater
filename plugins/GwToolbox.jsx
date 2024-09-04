@@ -279,10 +279,10 @@ class GwToolbox extends React.Component {
                 this.props.removeLayer("temp_polygons.geojson");
 
                 const hiddenWidgets = ["tab_polygon"];
-                const geojson_data = {};
+                const geojsonData = {};
 
                 // Points
-                let allFeatures = [];
+                // let allFeatures = [];
                 const point = result.body.data.point;
                 if (point && !isEmpty(point?.features)) {
                     const pointsStyle = {
@@ -296,7 +296,7 @@ class GwToolbox extends React.Component {
                     };
                     const features = GwUtils.getGeoJSONFeatures('default', point, pointsStyle);
                     if (!isEmpty(features)) {
-                        allFeatures = allFeatures.concat(features);
+                        // allFeatures = allFeatures.concat(features);
                         this.props.addLayerFeatures({
                             id: "temp_points.geojson",
                             name: "temp_points.geojson",
@@ -305,11 +305,11 @@ class GwToolbox extends React.Component {
                         }, features, true);
                     }
 
-                    const point_params = Object.keys(point.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
-                    geojson_data.point_table = {
+                    const pointParams = Object.keys(point.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
+                    geojsonData.point_table = {
                         body: {
                             form: { headers:
-                                point_params.map(name => ({
+                                pointParams.map(name => ({
                                     accessorKey: name,
                                     header: name,
                                     id: name
@@ -343,7 +343,7 @@ class GwToolbox extends React.Component {
                     };
                     const features = GwUtils.getGeoJSONFeatures('default', line, linesStyle);
                     if (!isEmpty(features)) {
-                        allFeatures = allFeatures.concat(features);
+                        // allFeatures = allFeatures.concat(features);
                         this.props.addLayerFeatures({
                             id: "temp_lines.geojson",
                             name: "temp_lines.geojson",
@@ -352,11 +352,11 @@ class GwToolbox extends React.Component {
                         }, features, true);
                     }
 
-                    const line_params = Object.keys(line.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
-                    geojson_data.line_table = {
+                    const lineParams = Object.keys(line.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
+                    geojsonData.line_table = {
                         body: {
                             form: { headers:
-                                line_params.map(name => ({
+                                lineParams.map(name => ({
                                     accessorKey: name,
                                     header: name,
                                     id: name
@@ -380,7 +380,7 @@ class GwToolbox extends React.Component {
                 this.setState((prevState) => ({
                     hiddenWidgets: hiddenWidgets,
                     executionResult: result,
-                    toolWidgetValues: { ...prevState.toolWidgetValues, ...geojson_data, txt_infolog: { value: logText } },
+                    toolWidgetValues: { ...prevState.toolWidgetValues, ...geojsonData, txt_infolog: { value: logText } },
                     toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
                 }));
                 // this.setState({ toolboxResult: result, pendingRequests: false });

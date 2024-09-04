@@ -21,7 +21,6 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
-import GwVisit from './GwVisit';
 
 import {setActiveVisit} from '../actions/visit';
 
@@ -274,7 +273,6 @@ class GwVisitManager extends React.Component {
 
     render() {
         let resultWindow = null;
-        const bodyvisit = null;
         if (this.state.pendingRequests === true || this.state.visitmanagerResult !== null) {
             let body = null;
 
@@ -318,16 +316,6 @@ class GwVisitManager extends React.Component {
                 </ResizeableWindow>
             );
         }
-        /*
-        if (this.state.visitResult) {
-            bodyvisit = (
-                <GwVisit onWidgetAction={this.onWidgetAction} dockable={this.props.visitDockable} initiallyDocked key="visitFromManager" visitResult={this.state.visitResult}/>
-            );
-        }
-
-        if (bodyvisit) {
-            return [resultWindow, bodyvisit];
-        }*/
         return [resultWindow];
     }
 }

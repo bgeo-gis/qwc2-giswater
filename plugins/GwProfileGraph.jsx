@@ -657,7 +657,7 @@ class GwProfileGraph extends React.Component {
             const prevArc = jsonData.arc[i - 1];
 
             if (i === 0) { // FirstNode coordinates
-                if (surfaceType == "TOP") {
+                if (surfaceType === "TOP") {
                     nodesTopCoords.push(
                         { x: x - halfWidth, y: y },
                         { x: x - halfWidth, y: groundY },
@@ -689,7 +689,7 @@ class GwProfileGraph extends React.Component {
                 }
 
             } else if (i < numNodes - 1) { // Mid nodes coordinates
-                if (surfaceType == "TOP") {
+                if (surfaceType === "TOP") {
                     nodesTopCoords.push(
                         { x: x - halfWidth, y: prevArc.elev2 + prevArc.cat_geom1 },
                         { x: x - halfWidth, y: groundY },
@@ -716,7 +716,7 @@ class GwProfileGraph extends React.Component {
                 }
 
             } else { // End Node coordinates
-                if (surfaceType == "TOP") {
+                if (surfaceType === "TOP") {
                     nodesTopCoords.push(
                         { x: x - halfWidth, y: prevArc.elev2 + prevArc.cat_geom1 },
                         { x: x - halfWidth, y: groundY },

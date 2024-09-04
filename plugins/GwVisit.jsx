@@ -25,15 +25,9 @@ import GwUtils from '../utils/GwUtils';
 import { setCurrentTask } from 'qwc2/actions/task';
 
 import { setActiveVisit } from '../actions/visit';
-
-import {generatePermaLink} from 'qwc2/utils/PermaLinkUtils';
-
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
 
 import url from 'url';
-
-import _ from 'lodash';
-
 
 class GwVisit extends React.Component {
     static propTypes = {
@@ -42,7 +36,6 @@ class GwVisit extends React.Component {
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
-        onWidgetAction: PropTypes.func,
         dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         initialHeight: PropTypes.number,
         initialWidth: PropTypes.number,
@@ -52,6 +45,7 @@ class GwVisit extends React.Component {
         keepManagerOpen: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
+        onWidgetAction: PropTypes.func,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         removeLayer: PropTypes.func,
@@ -64,7 +58,6 @@ class GwVisit extends React.Component {
         visitResult: PropTypes.object
     };
     static defaultProps = {
-        replaceImageUrls: true,
         initialWidth: 480,
         initialHeight: 520,
         initialX: 0,
@@ -78,6 +71,7 @@ class GwVisit extends React.Component {
         visitResult: null,
         pendingRequests: false,
         widgetValues: {},
+        widgetsProperties: {},
         mode: 'Visit',
         coords: [null, null],
         identifyResult: null,
@@ -136,83 +130,83 @@ class GwVisit extends React.Component {
                 }
                 return acc;
             }, {});
-            if (!isEmpty(requestUrl)) {
-                this.props.processStarted("visit_msg", "Aceptar visita");
 
-                const widgets = this.state.visitResult?.body?.data?.fields || this.props.visitResult?.body?.data?.fields;
+            this.props.processStarted("visit_msg", "Aceptar visita");
 
-                if (this.state.widgetValues?.mail?.value) {
-                    const email = this.state.widgetValues.sendto.value;
-                    let shareUrl = "";
-                    const posCrs = this.props.state.map.projection;
-                    const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 4 : 0;
-                    const coordinates =  this.state.coords.map(x => x.toFixed(prec)).join(",");
-                    GwUtils.generatePermaLink(this.props.state, coordinates, (permalink => {
-                        shareUrl = permalink;
-                        this.setState({location: permalink});
-                        const urlParts = url.parse(shareUrl, true);
-                        urlParts.query.hc = 1;
-                        if (!urlParts.query.c) {
-                            const posCrs = urlParts.query.crs || this.props.state.map.projection;
-                            const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 20 : 0;
-                            urlParts.query.c = this.state.coords.map(x => x.toFixed(prec)).join(",");
-                            // urlParts.query.c =this.state.coords.map(x => x).join(",");
-                            const url = new URL(window.location.href);
-                            const sValue = url.searchParams.get('s');
-                            urlParts.query.s = sValue;
-                        }
-                        delete urlParts.search;
-                        shareUrl = url.format(urlParts);
-                        const params = {
-                            widgets: widgets,
-                            widgetValues: this.state.widgetValues,
-                            ignoreWidgets: ignoreWidgets,
-                            email: email,
-                            shareUrl: shareUrl
-                        };
-                        axios.post(requestUrl + "getmail", {...params}).then((response) => {
-                            const result = response.data;
-                            window.location.href = result;
-                        }).catch((e) => {
-                            console.warn(e);
-                        });
-                    }));
-                }
+            const widgets = this.state.visitResult?.body?.data?.fields || this.props.visitResult?.body?.data?.fields;
 
-                let tableWidget = null;
-                widgets.forEach(w => {
-                    if (w.widgettype === "tableview") {
-                        tableWidget = w;
+            if (this.state.widgetValues?.mail?.value) {
+                const email = this.state.widgetValues.sendto.value;
+                let shareUrl = "";
+                const posCrs = this.props.state.map.projection;
+                const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 4 : 0;
+                const coordinates =  this.state.coords.map(x => x.toFixed(prec)).join(",");
+                GwUtils.generatePermaLink(this.props.state, coordinates, (permalink => {
+                    shareUrl = permalink;
+                    this.setState({location: permalink});
+                    const urlParts = url.parse(shareUrl, true);
+                    urlParts.query.hc = 1;
+                    if (!urlParts.query.c) {
+                        const posCrs = urlParts.query.crs || this.props.state.map.projection;
+                        const prec = CoordinatesUtils.getUnits(posCrs) === 'degrees' ? 20 : 0;
+                        urlParts.query.c = this.state.coords.map(x => x.toFixed(prec)).join(",");
+                        // urlParts.query.c =this.state.coords.map(x => x).join(",");
+                        const url = new URL(window.location.href);
+                        const sValue = url.searchParams.get('s');
+                        urlParts.query.s = sValue;
                     }
-                });
-
-                const formData = new FormData();
-                for (let i = 0; i < this.state.files.length; i++) {
-                    const file = this.state.files[i];
-                    formData.append('files[]', file);
-                }
-                formData.append("xcoord", this.state.coords[0]);
-                formData.append("ycoord", this.state.coords[1]);
-                formData.append("epsg", GwUtils.crsStrToInt(this.props.map.projection));
-                formData.append("theme", this.props.theme.title);
-                formData.append("tableName", tableWidget.linkedobject);
-                const visitId = this.state.coords[0] ? null : this.state.visitResult?.body?.feature?.visitId || this.props.visitResult?.body?.feature?.visitId;
-                formData.append("visitId", visitId || null);
-                formData.append("fields", JSON.stringify(fields));
-                axios.post(requestUrl + 'setvisit', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                }).then((response) => {
-                    const result = response.data;
-                    // show message
-                    this.props.processFinished("visit_msg", result.status === "Accepted", "DB return:" + (result.SQLERR || result.message?.text || "Check logs"));
-                    if (result?.status === "Accepted") {
-                        this.onToolClose();
-                    }
-                }).catch((e) => {
-                    console.warn(e);
-                    this.props.processFinished("visit_msg", false, "Internal server error!");
-                });
+                    delete urlParts.search;
+                    shareUrl = url.format(urlParts);
+                    const params = {
+                        widgets: widgets,
+                        widgetValues: this.state.widgetValues,
+                        ignoreWidgets: ignoreWidgets,
+                        email: email,
+                        shareUrl: shareUrl
+                    };
+                    axios.post(requestUrl + "getmail", {...params}).then((response) => {
+                        const result = response.data;
+                        window.location.href = result;
+                    }).catch((e) => {
+                        console.warn(e);
+                    });
+                }));
             }
+
+            let tableWidget = null;
+            widgets.forEach(w => {
+                if (w.widgettype === "tableview") {
+                    tableWidget = w;
+                }
+            });
+
+            const formData = new FormData();
+            for (let i = 0; i < this.state.files.length; i++) {
+                const file = this.state.files[i];
+                formData.append('files[]', file);
+            }
+            formData.append("xcoord", this.state.coords[0]);
+            formData.append("ycoord", this.state.coords[1]);
+            formData.append("epsg", GwUtils.crsStrToInt(this.props.map.projection));
+            formData.append("theme", this.props.theme.title);
+            formData.append("tableName", tableWidget.linkedobject);
+            const visitId = this.state.coords[0] ? null : this.state.visitResult?.body?.feature?.visitId || this.props.visitResult?.body?.feature?.visitId;
+            formData.append("visitId", visitId || null);
+            formData.append("fields", JSON.stringify(fields));
+            axios.post(requestUrl + 'setvisit', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            }).then((response) => {
+                const result = response.data;
+                // show message
+                this.props.processFinished("visit_msg", result.status === "Accepted", "DB return:" + (result.SQLERR || result.message?.text || "Check logs"));
+                if (result?.status === "Accepted") {
+                    this.onToolClose();
+                }
+            }).catch((e) => {
+                console.warn(e);
+                this.props.processFinished("visit_msg", false, "Internal server error!");
+            });
+
             break;
         }
         case 'set_previous_form_back':
@@ -289,7 +283,10 @@ class GwVisit extends React.Component {
         }
         columnname = columnname ?? widget.name;
         // Update filters
-        this.setState((state) => ({ widgetValues: { ...state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } } }));
+        this.setState((state) => ({
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } },
+            widgetValues: { ...state.widgetValues, [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } }
+        }));
     };
     onTabChanged = (tab, widget) => {
         this.getList(tab, widget);
@@ -309,8 +306,8 @@ class GwVisit extends React.Component {
                 return;
             }
 
-            const result = this.state.visitResult || this.props.visitResult;
-            const visitId = result?.body?.feature?.visitId;
+            const visitResult = this.state.visitResult || this.props.visitResult;
+            const visitId = visitResult?.body?.feature?.visitId;
             const filters = `{"visit_id": {"columnname": "visit_id", "value": ${visitId || -1}}}`;
             const params = {
                 theme: this.props.theme.title,
@@ -325,7 +322,12 @@ class GwVisit extends React.Component {
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ tableValues: { ...state.tableValues, [tableWidget.name]: result }}));
+                this.setState((state) => ({
+                    tableValues: { ...state.tableValues, [tableWidget.name]: result },
+                    widgetsProperties: { ...state.widgetsProperties, [tableWidget.name]: {
+                        value: GwUtils.getListToValue(result)
+                    } }
+                }));
             }).catch((e) => {
                 console.warn(e);
                 // this.setState({  });
@@ -415,7 +417,7 @@ class GwVisit extends React.Component {
         if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
         }
-        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetsProperties: {}, widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     clearResults = () => {
@@ -427,7 +429,7 @@ class GwVisit extends React.Component {
         }
         this.props.removeMarker('visit');
         this.props.removeLayer("visitselection");
-        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
+        this.setState({ coords: [null, null], visitResult: null, pendingRequests: false, files: [], widgetsProperties: {}, widgetValues: {}, tableValues: {}, hiddenWidgets: ["sendto"] });
     };
 
     render() {
@@ -447,16 +449,18 @@ class GwVisit extends React.Component {
                     this.props.processStarted("info_msg", "GwVisit Error!");
                     this.props.processFinished("info_msg", false, "Couldn't find schema, please check service config.");
                 } else {
-                    const widgetValues = {
-                        ...this.state.widgetValues,
-                        ...this.state.tableValues
-                    };
+                    // const widgetValues = {
+                    //     ...this.state.widgetValues,
+                    //     ...this.state.tableValues
+                    // };
                     body = (
                         <div className="identify-body" role="body">
-                            <GwQtDesignerForm onWidgetAction={this.onWidgetAction} files={this.state.files} form_xml={result.form_xml}
-                                getInitialValues hiddenWidgets={this.state.hiddenWidgets} initiallyDocked={this.props.initiallyDocked}
-                                onTabChanged={this.onTabChanged} readOnly={false} replaceImageUrls
-                                theme={this.state.theme} onWidgetValueChange={this.onWidgetValueChange} widgetValues={widgetValues}
+                            <GwQtDesignerForm files={this.state.files} form_xml={result.form_xml} getInitialValues
+                                intiallyDocked={this.props.initiallyDocked} onTabChanged={this.onTabChanged}
+                                onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange} readOnly={false}
+                                style={{ height: '100%'}}
+                                theme={this.state.theme} useNew
+                                widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>
                     );
@@ -465,7 +469,7 @@ class GwVisit extends React.Component {
             const title = result.body?.data?.form?.headerText || "Visit";
             resultWindow = (
                 <ResizeableWindow dockable={this.props.dockable} icon="giswater"
-                    initialWidth={this.props.initialWidth} initialX={this.props.initialX} initialHeight={this.props.initialHeight}
+                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth} initialX={this.props.initialX}
                     initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minimizeable="true"
                     onClose={this.clearResults}
                     scrollable={this.state.mode === "Dma" ? true : false} title={title}

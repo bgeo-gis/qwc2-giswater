@@ -13,7 +13,6 @@ import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, refreshLayer } from 'qwc2/actions/layers';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import Spinner from 'qwc2/components/Spinner';
-import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import { panTo, zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
@@ -27,7 +26,9 @@ import {setActiveSelector} from '../actions/selector';
 
 class GwMincutManager extends React.Component {
     static propTypes = {
+        addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
+        changeLayerProperty: PropTypes.func,
         click: PropTypes.object,
         currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
@@ -73,7 +74,7 @@ class GwMincutManager extends React.Component {
         selectorResult: null,
         mincutId: null
     };
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (this.props.currentTask !== prevProps.currentTask && prevProps.currentTask === "GwMincutManager") {
             this.onToolClose();
         }
