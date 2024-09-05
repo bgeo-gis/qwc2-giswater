@@ -265,12 +265,15 @@ class GwMincut extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
+            const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
+            this.ogClickData = {
+                point: clickPoint,
+                zoomRatio: zoomRatio
+            };
             switch (this.state.clickMode) {
 
             case 'mincutNetwork': {
                 this.props.addMarker('mincut', clickPoint, '', this.props.map.projection);
-
-                const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
 
                 this.setMincut({
                     action: 'mincutNetwork',
@@ -279,10 +282,6 @@ class GwMincut extends React.Component {
                     zoomRatio: zoomRatio,
                     epsg: GwUtils.crsStrToInt(this.props.map.projection)
                 }).then((result) => {
-                    this.ogClickData = {
-                        point: clickPoint,
-                        zoomRatio: zoomRatio
-                    };
                     this.setState({ clickMode: null });
                 });
                 break;
@@ -300,6 +299,7 @@ class GwMincut extends React.Component {
                     epsg: GwUtils.crsStrToInt(this.props.map.projection),
                     mincutId: this.props.mincutResult.body.data.mincutId
                 });
+                break;
             }
         }
     };
@@ -514,18 +514,22 @@ class GwMincut extends React.Component {
     // #endregion
     // #region MINCUT
     setMincut = (params) => {
+        this.props.processStarted("mincut_msg", "Setting mincut");
         const requestUrl = GwUtils.getServiceUrl("mincut");
         params = {
             theme: this.props.currentTheme.title,
             epsg: GwUtils.crsStrToInt(this.props.map.projection),
             ...params
         };
+        console.log("Setting mincut", params);
         return axios.get(requestUrl + "setmincut", { params: params }).then((response) => {
             const result = response.data;
             this.props.setActiveMincut(result, this.props.keepManagerOpen);
+            this.props.processFinished("mincut_msg", true, "Mincut set successfully.");
             return result;
         }).catch((e) => {
             console.warn(e);
+            this.props.processFinished("mincut_msg", false, e.message || "Error setting mincut");
         });
     };
 
