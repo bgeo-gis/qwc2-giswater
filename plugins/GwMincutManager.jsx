@@ -255,132 +255,11 @@ class GwMincutManager extends React.Component {
                 const result = response.data;
                 this.props.setActiveMincut(result, this.props.keepManagerOpen);
                 this.props.setCurrentTask("GwMincut");
-                this.manageLayers(result);
-                // this.setState( { mincutResult: result, mincutId: mincutId } );
             }).catch((e) => {
                 console.log(e);
             });
         } catch (error) {
             console.warn(error);
-        }
-    };
-
-    manageLayers = (result) => {
-        if (!this.setOMLayersVisibility(result?.body?.data?.mincutLayer, true)) {
-            this.addMincutLayers(result);
-        }
-    };
-
-    setOMLayersVisibility = (layerName, visible = true) => {
-        const rootLayer = this.props.layers.find(l => l.type === "wms");
-        const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
-        if (layer) {
-            this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
-            return true;
-        }
-        return false;
-    };
-
-    removeTempLayers = () => {
-        this.props.removeLayer("temp_points.geojson");
-        this.props.removeLayer("temp_lines.geojson");
-        this.props.removeLayer("temp_polygons.geojson");
-    };
-
-    addMincutLayers = (result) => {
-        if (!result?.body?.data?.mincutArc) {
-            return;
-        }
-
-        this.removeTempLayers();
-        // Arc
-        const arc = result.body.data.mincutArc;
-        const arcStyle = {
-            strokeColor: [255, 206, 128, 1],
-            strokeWidth: 6
-        };
-        const arcFeatures = GwUtils.getGeoJSONFeatures("default", arc, arcStyle);
-
-        const lineFeatures = [].concat(arcFeatures);
-        if (!isEmpty(lineFeatures)) {
-            this.props.addLayerFeatures({
-                id: "temp_lines.geojson",
-                name: "temp_lines.geojson",
-                title: "Temporal Lines",
-                zoomToExtent: true
-            }, lineFeatures, true);
-        }
-
-        // Init
-        const initPoint = result.body.data.mincutInit;
-        const initPointStyle = {
-            strokeColor: [0, 24, 124, 1],
-            strokeWidth: 1,
-            circleRadius: 4,
-            fillColor: [45, 84, 255, 1]
-        };
-        const initpointFeatures = GwUtils.getGeoJSONFeatures("default", initPoint, initPointStyle);
-        // Node
-        const node = result.body.data.mincutNode;
-        const nodeStyle = {
-            strokeColor: [160, 134, 17, 1],
-            strokeWidth: 1,
-            circleRadius: 3,
-            fillColor: [241, 209, 66, 1]
-        };
-        const nodeFeatures = GwUtils.getGeoJSONFeatures("default", node, nodeStyle);
-        // Connec
-        const connec = result.body.data.mincutConnec;
-        const connecStyle = {
-            strokeColor: [102, 46, 25, 1],
-            strokeWidth: 1,
-            circleRadius: 3,
-            fillColor: [176, 123, 103, 1]
-        };
-        const connecFeatures = GwUtils.getGeoJSONFeatures("default", connec, connecStyle);
-        // Valve proposed
-        const valveProposed = result.body.data.mincutProposedValve;
-        const valveProposedStyle = {
-            strokeColor: [134, 13, 13, 1],
-            strokeWidth: 1,
-            circleRadius: 6,
-            fillColor: [237, 55, 58, 1]
-        };
-        const valveProposedFeatures = GwUtils.getGeoJSONFeatures("default", valveProposed, valveProposedStyle);
-        // Valve not proposed
-        const valveNotProposed = result.body.data.mincutNotProposedValve;
-        const valveNotProposedStyle = {
-            strokeColor: [6, 94, 0, 1],
-            strokeWidth: 1,
-            circleRadius: 6,
-            fillColor: [51, 160, 44, 1]
-        };
-        const valveNotProposedFeatures = GwUtils.getGeoJSONFeatures("default", valveNotProposed, valveNotProposedStyle);
-
-        const pointFeatures = [].concat(nodeFeatures, connecFeatures, initpointFeatures, valveProposedFeatures, valveNotProposedFeatures);
-        if (!isEmpty(pointFeatures)) {
-            this.props.addLayerFeatures({
-                id: "temp_points.geojson",
-                name: "temp_points.geojson",
-                title: "Temporal Points",
-                zoomToExtent: true
-            }, pointFeatures, true);
-        }
-        this.panToResult(result);
-    };
-
-    panToResult = (result) => {
-        if (!isEmpty(result) && result.body?.data?.geometry) {
-            const x1 = result.body.data.geometry.x1;
-            const y1 = result.body.data.geometry.y1;
-            const x2 = result.body.data.geometry.x2;
-            const y2 = result.body.data.geometry.y2;
-            console.log("Zoom to:", x1, y1, x2, y2);
-            const extent = [x1, y1, x2, y2];
-            if (extent.includes(undefined)) {
-                return;
-            }
-            this.props.zoomToExtent(extent, this.props.map.projection);
         }
     };
 
@@ -420,8 +299,6 @@ class GwMincutManager extends React.Component {
 
     render() {
         let resultWindow = null;
-        // const bodyMincut = null;
-        // const bodySelector = null;
         if (this.state.pendingRequests === true || this.state.mincutmanagerResult !== null) {
             let body = null;
 
@@ -465,25 +342,8 @@ class GwMincutManager extends React.Component {
             );
 
         }
-        /*
-        if (this.state.mincutResult) {
-            bodyMincut = (
-                <GwMincut onWidgetAction={this.onWidgetAction} key="MincutFromManager" mincutId={this.state.mincutId} mincutResult={this.state.mincutResult}/>
-            );
-        }
-        if (this.state.selectorResult) {
-            bodySelector = (
-                <GwSelector onWidgetAction={this.onWidgetAction} key="SelectorFromManager" selectorResult={this.state.selectorResult}/>
-            );
-        }
 
-        if (bodyMincut) {
-            return [resultWindow, bodyMincut];
-        }
-        if (bodySelector) {
-            return [resultWindow, bodySelector];
-        }*/
-        return [resultWindow];
+        return resultWindow;
     }
 }
 
