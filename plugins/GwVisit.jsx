@@ -74,49 +74,20 @@ class GwVisit extends React.Component {
         widgetsProperties: {},
         mode: 'Visit',
         coords: [null, null],
-        identifyResult: null,
-        prevIdentifyResult: null,
-        theme: null,
         currentTab: {},
-        feature_id: null,
-        showGraph: false,
-        graphJson: null,
-        showVisit: false,
-        visitJson: null,
-        visitWidgetValues: {},
-        tableValues: {},
-        files: [],
-        hiddenWidgets: ['sendto'],
         location: ""
     };
     componentDidUpdate(prevProps) {
-        if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwVisit") {
-            this.clearResults();
-        }
-        if (this.props.currentTask === "GwVisit" || this.props.currentIdentifyTool === "GwVisit") {
+        if (this.props.currentTask === "GwVisit") {
             this.identifyPoint(prevProps);
         }
     }
     onWidgetAction = (action, widget) => {
         const requestUrl = GwUtils.getServiceUrl("visit");
         switch (action.functionName) {
-        case 'upload_file':
-            this.setState((state) => {
-                const files = state.files;
-                if (action.file instanceof FileList) {
-                    for (let i = 0; i < action.file.length; i++) {
-                        files.push(action.file[i]);
-                    }
-                } else {
-                    files.push(action.file);
-                }
-                return {files: files};
-            });
-            break;
         case 'apply':
         case 'accept': {
             const ignoreWidgets = ['txt_visit_id', 'tbl_files', 'mail', 'sendto'];
-            // console.log("WIDGETS: ", this.state.widgetValues);
             // eslint-disable-next-line
             const fields = Object.entries(this.state.widgetValues).reduce((acc, [key, value]) => {
                 // TODO: Did the commented line ever work?
@@ -182,9 +153,17 @@ class GwVisit extends React.Component {
             });
 
             const formData = new FormData();
-            for (let i = 0; i < this.state.files.length; i++) {
-                const file = this.state.files[i];
-                formData.append('files[]', file);
+            const files = this.state.widgetsProperties.addfile?.value;
+            console.log("widgetsProperties: ", this.state.widgetsProperties);
+            console.log("widgetValues: ", this.state.widgetValues);
+            console.log("FILES: ", files);
+            console.log(typeof files);
+            if (files instanceof FileList) {
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files[]', files[i])
+                }
+            } else {
+                formData.append('files[]', files);
             }
             formData.append("xcoord", this.state.coords[0]);
             formData.append("ycoord", this.state.coords[1]);
@@ -192,6 +171,9 @@ class GwVisit extends React.Component {
             formData.append("theme", this.props.theme.title);
             formData.append("tableName", tableWidget.linkedobject);
             const visitId = this.state.coords[0] ? null : this.props.visitResult?.body?.feature?.visitId;
+            console.log("VISIT ID: ", visitId);
+            console.log("FIELDS: ", fields);
+            console.log("visitResult: ", this.props.visitResult);
             formData.append("visitId", visitId || null);
             formData.append("fields", JSON.stringify(fields));
             axios.post(requestUrl + 'setvisit', formData, {
@@ -201,6 +183,12 @@ class GwVisit extends React.Component {
                 // show message
                 this.props.processFinished("visit_msg", result.status === "Accepted", "DB return:" + (result.SQLERR || result.message?.text || "Check logs"));
                 if (result?.status === "Accepted") {
+                    this.setState((state) => ({
+                        widgetsProperties: {
+                            ...state.widgetsProperties,
+                            addfile: { value: null }
+                        },
+                    }));
                     if (action.functionName === 'accept') {
                         this.onToolClose();
                     } else {
@@ -236,7 +224,6 @@ class GwVisit extends React.Component {
                     if (ignoreWidgets.includes(value.columnname)) v = null;
                     if (!(v === null || v === undefined || v === "")) {
                         acc[value.columnname] = v;
-                        // console.log(acc[value.columnname], " : ", v);
                     }
                     return acc;
                 }, {});
@@ -318,13 +305,7 @@ class GwVisit extends React.Component {
             const params = {
                 theme: this.props.theme.title,
                 tableName: tableWidget.property.linkedobject,
-                // "tabName": tab.name,  // tab.name, no? o widget.name?
-                // "widgetname": tableWidgets[0].name,  // tabname_ prefix cal?
-                // "formtype": this.props.formtype,
-                // "idName": this.state.identifyResult.feature.idName,
-                // "id": this.state.identifyResult.feature.id,
                 filterFields: filters // visit id
-                // "filterSign": action.params.tabName
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
@@ -455,8 +436,7 @@ class GwVisit extends React.Component {
                             <GwQtDesignerForm files={this.state.files} form_xml={result.form_xml} getInitialValues
                                 intiallyDocked={this.props.initiallyDocked} onTabChanged={this.onTabChanged}
                                 onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange} readOnly={false}
-                                style={{ height: '100%'}}
-                                theme={this.state.theme} useNew
+                                style={{ height: '100%'}} useNew
                                 widgetsProperties={this.state.widgetsProperties}
                             />
                         </div>

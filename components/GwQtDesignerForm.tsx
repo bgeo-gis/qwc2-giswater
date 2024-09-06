@@ -41,7 +41,6 @@ type GwQtDesignerFormProps = {
     autoResetTab: boolean,
     disabledWidgets: string[],
     onWidgetAction: (action: any, widget?: any) => void,
-    files: any[],
     form_xml: string,
     getInitialValues: boolean,
     hiddenWidgets: string[],
@@ -49,7 +48,7 @@ type GwQtDesignerFormProps = {
     loading: boolean,
     onTabChanged: (tab: any, widget: any) => void,
     readOnly: boolean,
-    onWidgetValueChange: (name: string, value: any, initial?: boolean) => void,
+    onWidgetValueChange: (widget: any, value: any, initial?: boolean) => void,
     widgetValues: any,
     useNew: boolean,
     widgetsProperties: WidgetsProperties,
@@ -64,7 +63,6 @@ type GwQtDesignerFormState = {
     formData: any,
     loading: boolean,
     loadingReqId: string | null,
-    files: any,
 };
 
 export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesignerFormState> {
@@ -78,7 +76,6 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         disabledWidgets: [],
         hiddenWidgets: [],
         getInitialValues: true,
-        files: [],
         activetabs: {},
         useNew: false,
         loading: false,
@@ -91,7 +88,6 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         formData: null,
         loading: false,
         loadingReqId: null,
-        files: null
     };
     constructor(props) {
         super(props);
@@ -351,7 +347,6 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
                     style={{height: "100%"}}
                     activetabs={this.props.activetabs}
                     autoResetTab={this.props.autoResetTab}
-                    files={this.props.files}
                     getInitialValues={this.props.getInitialValues}
                     loading={value?.loading}
                     onTabChanged={this.props.onTabChanged}
@@ -520,8 +515,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             return (<button className="button" disabled={inputConstraints.readOnly} onClick={() => this.props.onWidgetAction(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
-            //const overrideText = this.props.files ? this.props.files.length + " " + LocaleUtils.tr("fileselector.files") : null;
-            return (<FileSelector accept={accept} file={this.state.files} multiple onFilesSelected={this.onFilesSelected} showAllFilenames={false} />);
+            return (<FileSelector accept={accept} file={value} multiple onFilesSelected={(files) => this.props.onWidgetValueChange(widget, files)} showAllFilenames={false} />);
         }
         return null;
     };
@@ -581,11 +575,6 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         }
 
         return null;
-    };
-
-    onFilesSelected = (files) => {
-        this.props.onWidgetAction({ functionName: "upload_file", file: files });
-        this.setState({files});
     };
     groupOrName = (widget) => {
         return widget.attribute && widget.attribute.buttonGroup ? widget.attribute.buttonGroup._ : widget.name;
