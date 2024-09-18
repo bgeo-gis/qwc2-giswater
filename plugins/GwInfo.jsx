@@ -119,9 +119,10 @@ class GwInfo extends React.Component {
 
             const requestUrl = GwUtils.getServiceUrl("info");
             if (!isEmpty(requestUrl)) {
+                const action = JSON.parse(widget.property.action|| "{}");
                 const params = {
                     theme: this.props.theme.title,
-                    id: widget.property.text,
+                    id: action.params.id,
                     tableName: "v_edit_node"
                 };
                 pendingRequests = true;
