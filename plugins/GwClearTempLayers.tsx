@@ -12,6 +12,7 @@ import { removeLayer } from 'qwc2/actions/layers';
 import 'qwc2/plugins/style/Buttons.css';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { LayerRole } from 'qwc2/actions/layers';
+import {changeRedliningState} from 'qwc2/actions/redlining';
 
 type GwClearTempLayersButtonProps = {
     closeTasks: boolean,
@@ -19,7 +20,8 @@ type GwClearTempLayersButtonProps = {
     layers: any[],
     removeLayer: (layerId: any) => void,
     setCurrentTask: (task: any) => void,
-    currentTask: string
+    currentTask: string,
+    changeRedliningState: (task: any) => void
 };
 
 class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonProps> {
@@ -36,6 +38,8 @@ class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonPro
     }
 
     componentDidUpdate(prevProps) {
+        console.log("PREV TASK: ", prevProps.currentTask);
+        console.log("CURRENT TASK: ", this.props.currentTask);
         if (prevProps.currentTask === "Redlining" && this.props.currentTask !== "Redlining" && this.redliningOpen) {
             this.redliningOpen = false;
             this.clearLayers();
@@ -43,7 +47,7 @@ class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonPro
     }
 
     clearLayers() {
-        this.props.layers.forEach(layer => {
+        [...this.props.layers].reverse().forEach(layer => {
             if (layer.role === LayerRole.USERLAYER) {
                 this.props.removeLayer(layer.id);
             }
@@ -56,6 +60,7 @@ class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonPro
 
     btnClicked(){
         if (this.props.currentTask === "Redlining"){
+            this.props.changeRedliningState({action: null, geomType: null, numericInput: false});
             this.props.setCurrentTask(null);
             this.redliningOpen = true
         }
@@ -82,5 +87,6 @@ export default connect(state => ({ // @ts-ignore
     currentTask: state.task.id
 }), {
     removeLayer: removeLayer,
-    setCurrentTask: setCurrentTask
+    setCurrentTask: setCurrentTask,
+    changeRedliningState: changeRedliningState
 })(GwClearTempLayersButton);
