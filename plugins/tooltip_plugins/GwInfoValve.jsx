@@ -129,8 +129,14 @@ class GwInfoValve extends React.Component {
                 tableName: tableName,
                 fields: JSON.stringify(fields)
             };
+            this.props.processStarted("Change valve state", "Updating valve");
+            axios.put(requestUrl + "setfields", { ...params }).then(response => {
+                const result = response.data;
 
-            axios.put(requestUrl + "setfields", { ...params }).then(() => {
+                if (result.status !== "Accepted") {
+                    this.props.processFinished("Change valve state", false, `Update failed: ${result.message.text}`);
+                    return;
+                }
                 // refresh map
                 if (this.props.theme.tiled) {
                     console.log("VALVE ID: ", id);
@@ -138,11 +144,13 @@ class GwInfoValve extends React.Component {
                 } else {
                     this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 }
+                this.props.processFinished("Change valve state", true, "Update successful");
                 // close
                 this.clear();
                 this.props.closePopup();
             }).catch((e) => {
                 console.log(e);
+                this.props.processFinished("Change valve state", false, `Update failed: ${e}`);
             });
         }
     };
