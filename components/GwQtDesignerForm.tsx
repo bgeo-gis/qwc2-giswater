@@ -56,6 +56,7 @@ type GwQtDesignerFormProps = {
     loadFormUi: (formUi: any) => void,
     widgetPrefix: string,
     style: React.CSSProperties,
+    buttonAlwaysActive: boolean,
 };
 
 type GwQtDesignerFormState = {
@@ -82,6 +83,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         widgetsProperties: {},
         loadWidgetsProperties: (widgetsProperties) => {},
         style: {},
+        buttonAlwaysActive: false
     };
     static defaultState: GwQtDesignerFormState = {
         activetabs: {},
@@ -180,7 +182,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             containerStyle.height = '100%';
         }
         return ( // @ts-ignore
-            <div className={containerClass} key={layout.name} name={layout.name} style={containerStyle}>  
+            <div className={containerClass} key={layout.name} name={layout.name} style={containerStyle}>
                 {layout.item.sort((a, b) => (sortKey(a) - sortKey(b))).map((item, idx) => {
                     let child = null;
                     if (item.widget) {
@@ -301,9 +303,9 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         // const attr = widget.attribute || {};
         const inputConstraints: any = {};
         inputConstraints.readOnly = this.props.useNew ? (this.props.readOnly || widgetProperties.disabled || disabled) : (
-            this.props.readOnly 
+            this.props.readOnly
             || this.props.disabledWidgets.includes(widget.name)
-            || prop.readOnly === "true" 
+            || prop.readOnly === "true"
             || prop.enabled === "false"
         );
         const tmpName = (widget.name).replace("_label", "");
@@ -364,7 +366,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             if (!value || !value.values) {
                 return null;
             }
-            
+
             const { values, form } = value;
 
             return (<GwTableWidget onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
@@ -512,7 +514,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             if (widgetControls.icon) {
                 text = (<Icon icon={widgetControls.icon} />);
             }
-            return (<button className="button" disabled={inputConstraints.readOnly} onClick={() => this.props.onWidgetAction(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
+            return (<button className="button" disabled={inputConstraints.readOnly && !this.props.buttonAlwaysActive} onClick={() => this.props.onWidgetAction(JSON.parse(widgetFunction), widget)} title={prop.toolTip} type="button">{text}</button>);
         } else if (widget.class === "QgsFileWidget") {
             const accept = "image/*";
             return (<FileSelector accept={accept} file={value} multiple onFilesSelected={(files) => this.props.onWidgetValueChange(widget, files)} showAllFilenames={false} />);
@@ -605,7 +607,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             this.reformatWidget(json.ui.widget, currentLayout, widgetsProperties, counters);
 
             this.props.loadWidgetsProperties(widgetsProperties);
-            
+
             // const activetabs = this.filterActiveTabs(json, this.state.activetabs)
             if (this.props.loadFormUi) {
                 this.props.loadFormUi(json);

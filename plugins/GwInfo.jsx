@@ -649,7 +649,7 @@ class GwInfo extends React.Component {
                     body = (
                         <div className="identify-body" role="body">
                             {prevResultButton}
-                            <GwQtDesignerForm form_xml={result.form_xml} getInitialValues={false} loadWidgetsProperties={this.loadWidgetsProperties}
+                            <GwQtDesignerForm buttonAlwaysActive form_xml={result.form_xml} getInitialValues={false} loadWidgetsProperties={this.loadWidgetsProperties}
                                 onTabChanged={this.onTabChanged} onWidgetAction={this.onWidgetAction}
                                 onWidgetValueChange={this.onWidgetValueChange}
                                 style={{height: "100%"}}
