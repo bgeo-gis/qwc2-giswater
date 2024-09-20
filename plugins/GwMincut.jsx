@@ -553,6 +553,21 @@ class GwMincut extends React.Component {
         const requestUrl = GwUtils.getServiceUrl("mincut");
         axios.get(requestUrl + "changevalvestatus", { params: params }).then(response => {
             this.props.processFinished("mincut_msg", true, "Valve status changed");
+            const result = response.data;
+
+            if (result.status === 'Failed'){
+                this.props.processFinished("mincut_msg", false, "Error changing valve status: " + result?.NOSQLERR || "unknown error", true);
+                return;
+            }
+             // Refresh mincut after changing valve status
+            this.setMincut({
+                action: 'mincutNetwork',
+                mincutId: this.props.mincutResult.body.data.mincutId,
+                xcoord: this.ogClickData.point[0],
+                ycoord: this.ogClickData.point[1],
+                zoomRatio: this.ogClickData.zoomRatio
+            });
+
         }).catch((e) => {
             this.props.processFinished("mincut_msg", false, "Error changing valve status");
             console.log(e);
