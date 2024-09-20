@@ -265,15 +265,12 @@ class GwMincut extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
-            const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
-            this.ogClickData = {
-                point: clickPoint,
-                zoomRatio: zoomRatio
-            };
+
             switch (this.state.clickMode) {
 
             case 'mincutNetwork': {
                 this.props.addMarker('mincut', clickPoint, '', this.props.map.projection);
+                const zoomRatio = MapUtils.computeForZoom(this.props.map.scales, this.props.map.zoom);
 
                 this.setMincut({
                     action: 'mincutNetwork',
@@ -282,6 +279,10 @@ class GwMincut extends React.Component {
                     zoomRatio: zoomRatio,
                     epsg: GwUtils.crsStrToInt(this.props.map.projection)
                 }).then((result) => {
+                    this.ogClickData = {
+                        point: clickPoint,
+                        zoomRatio: zoomRatio
+                    };
                     this.setState({ clickMode: null });
                 });
                 break;
