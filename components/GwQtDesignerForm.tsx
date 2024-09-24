@@ -286,16 +286,15 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             value: userProperties.value ?? properties.value,
             props: {
                 ...properties.props,
-                ...userProperties.props
+                ...userProperties.props,
+                suggestions: userProperties.props?.suggestions || []  // Retrieve suggestions from widget properties (typeahead)
             },
             disabled: userProperties.disabled ?? properties.disabled,
             hidden: userProperties.hidden ?? properties.hidden,
         };
     };
     renderWidget = (widget, nametransform = (name) => name, disabled = false) => {
-
         const widgetProperties = this.getWidgetProperties(widget);
-
         const prop = this.props.useNew ? widgetProperties.props : (widget.property || {});
         if (prop.visible === "false") {
             return null;
@@ -423,7 +422,46 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         } else if (widget.class === "QTextEdit" || widget.class === "QTextBrowser" || widget.class === "QPlainTextEdit") {
             return (<textarea name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} style={fontStyle} title={prop.toolTip} value={value} />);
         } else if (widget.class === "QLineEdit") {
-            return (<input name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} title={prop.toolTip} type="text" value={value} />);
+            // If QLineEdit is typeahead
+            if (widget.property.isTypeahead === 'true') {
+                const suggestions = widgetProperties.props?.suggestions || [];
+                return (
+                    <div key={widget.name} style={{ position: 'relative', width: '100%' }}>
+                        <input name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} size={5} style={{ ...fontStyle, width: '100%' }} title={prop.toolTip} type="text" value={value} />
+
+                        {suggestions.length > 0 && (
+                            <div style={{
+                                position: 'absolute',
+                                backgroundColor: 'white',
+                                border: '1px solid #ccc',
+                                zIndex: 1000,
+                                width: '100%',
+                                maxHeight: '150px',
+                                overflowY: 'auto'
+                            }}>
+                                {suggestions.map((suggestion, idx) => (
+                                    <div
+                                        key={idx}
+                                        onClick={() => this.props.onWidgetValueChange(widget, suggestion)}  // Handle suggestion click
+                                        style={{
+                                            padding: '5px',
+                                            cursor: 'pointer',
+                                            backgroundColor: '#f9f9f9',
+                                            borderBottom: '1px solid #ddd'
+                                        }}
+                                    >
+                                        {suggestion}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+            // If QLineEdit is not typeahead
+            else{
+                return (<input name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} size={5} style={fontStyle} title={prop.toolTip} type="text" value={value} />);
+            }
         } else if (widget.class === "QCheckBox" || widget.class === "QRadioButton") {
             const type = widget.class === "QCheckBox" ? "checkbox" : "radio";
 

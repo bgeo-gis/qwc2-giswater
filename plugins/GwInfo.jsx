@@ -242,7 +242,6 @@ class GwInfo extends React.Component {
     };
 
     onWidgetValueChange = (widget, value) => {
-        // console.log("onWidgetValueChange :>>", widget, value);
         let columnname = widget.name;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
@@ -274,6 +273,59 @@ class GwInfo extends React.Component {
         const newEpaValue = {};
         if (widget.containingLayout === "lyt_epa_data_1") {
             newEpaValue[widget.name] = {value: value, columnname: columnname};
+        }
+
+        if (widget.property.isTypeahead === 'true' && widget.property.queryText) {
+            let queryText = widget.property.queryText;
+            let queryTextFilter;
+            let parentId = widget.property.parentId;
+            let textToSearch = value;
+
+            if (widget.property.queryTextFilter) {
+                queryTextFilter = widget.property.queryTextFilter;
+            }
+
+            const requestUrl = GwUtils.getServiceUrl("info");
+            if (!isEmpty(requestUrl)) {
+                const epsg = GwUtils.crsStrToInt(this.props.map.projection);
+                const params = {
+                    theme: this.props.theme.title,
+                    epsg: epsg,
+                    queryText: queryText,
+                    queryTextFilter: queryTextFilter,
+                    parentId: parentId,
+                    textToSearch: textToSearch
+                };
+
+                console.log("params::::", params);
+
+                axios.get(requestUrl + "gettypeahead", { params: params }).then((response) => {
+                    const result = response.data;
+                    const list = [];
+                    if (result.status === "Accepted" && result.body.data) {
+                        result.body.data.forEach((element) => {
+                            list.push(element.idval);
+                        });
+                    }
+
+                   // Update widgetProperties with the new list of suggestions
+                   this.setState((state) => ({
+                    widgetsProperties: {
+                        ...state.widgetsProperties,
+                        [widget.name]: {
+                            ...state.widgetsProperties[widget.name],
+                            value: value,  // update value
+                            props: {
+                                ...state.widgetsProperties[widget.name]?.props,
+                                suggestions: list
+                            }
+                        }
+                    }
+                }));
+                }).catch((e) => {
+                    console.log(e);
+                });
+            }
         }
 
         // TODO: use setCurrentTaskBlocked to avoid closing the task while saving or reloading the page
