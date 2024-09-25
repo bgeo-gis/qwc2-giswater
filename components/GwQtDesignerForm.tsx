@@ -425,11 +425,12 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             // If QLineEdit is typeahead
             if (widget.property.isTypeahead === 'true') {
                 const suggestions = widgetProperties.props?.suggestions || [];
+                const showSuggestionsList = suggestions.length > 0 && !(suggestions.length === 1 && suggestions[0] === value);
                 return (
                     <div key={widget.name} style={{ position: 'relative', width: '100%' }}>
                         <input name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} size={5} style={{ ...fontStyle, width: '100%' }} title={prop.toolTip} type="text" value={value} />
 
-                        {suggestions.length > 0 && (
+                        {showSuggestionsList && (
                             <div style={{
                                 position: 'absolute',
                                 backgroundColor: 'white',
