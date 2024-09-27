@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import proj4 from 'proj4';
 
+import './style/StreetViewButton.css';
+
 class StreetViewButton extends React.Component {
     static propTypes = {
         point: PropTypes.object.isRequired,
@@ -48,9 +50,11 @@ class StreetViewButton extends React.Component {
 
     render() {
         return (
-            <button className="button" onClick={this.openStreetView}>
-                Street View
-            </button>
+            <div className='mapinfotooltip-body-streetview'>
+                <button className="button" onClick={this.openStreetView}>
+                    Street View
+                </button>
+            </div>
         );
     }
 }

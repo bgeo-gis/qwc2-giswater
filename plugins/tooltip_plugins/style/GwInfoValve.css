@@ -1,0 +1,107 @@
+.mapinfotooltip-body-gwinfo button {
+    width: 100%;
+}
+
+.mapinfotooltip-body-gwinfo > div {
+    padding: .25em;
+    padding-bottom: 0;
+}
+
+.mapinfotooltip-body-gwinfo .valve-toggle > button {
+    padding: 1em;
+}
+
+/* Estilos para el contenedor principal */
+.mapinfotooltip-body-gwinfo .hover-dropdown {
+    position: relative;
+}
+
+.mapinfotooltip-body-gwinfo .hover-dropdown > button {
+    min-width: 160px;
+    border: 1px solid #bbb;
+    background-color: #e9e9e9;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding: 8px 16px;
+}
+
+.mapinfotooltip-body-gwinfo .hover-dropdown:hover > button {
+    background-color: #bbb;
+}
+
+/* Estilos para el menú desplegable principal */
+.mapinfotooltip-body-gwinfo .hover-dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background-color: white;
+    min-width: 160px;
+    /*border: 1px solid #000;*/
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0px 0px 5px rgba(136, 136, 136, 1);
+}
+
+/* Mostrar el menú desplegable principal cuando el cursor está sobre el elemento principal */
+.mapinfotooltip-body-gwinfo .hover-dropdown:hover > .dropdown-content {
+    display: block;
+}
+
+/* Estilos para los elementos internos del menú desplegable */
+.mapinfotooltip-body-gwinfo .hover-dropdown-item {
+    position: relative;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+}
+
+.mapinfotooltip-body-gwinfo .hover-dropdown-item .item-icon {
+    padding: 0px 0px !important;
+    margin-left: auto;
+}
+
+.mapinfotooltip-body-gwinfo .hover-dropdown .dropdown-content > hr{
+    margin: 0;
+}
+
+.mapinfotooltip-body-gwinfo .hover-dropdown-item:hover {
+    background-color: #dcdcdc;
+}
+
+/* Estilos para los menús desplegables internos */
+.mapinfotooltip-body-gwinfo .hover-dropdown-item .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background-color: white;
+    min-width: 160px;
+    /*border: 1px solid #000;*/
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0px 0px 5px rgba(136, 136, 136, 1);
+}
+
+/* Mostrar el menú desplegable interno cuando el cursor está sobre el elemento interno */
+.mapinfotooltip-body-gwinfo .hover-dropdown-item:hover > .dropdown-content {
+    display: block;
+}
+
+
+/* Ajustar la posición de los elementos <span> para que aparezcan uno debajo del otro */
+.mapinfotooltip-body-gwinfo .hover-dropdown .dropdown-content > span {
+    display: block;
+    padding: 8px 16px !important;
+}
+
+/* Cambiar el color de fondo de los elementos internos al hacer hover */
+.mapinfotooltip-body-gwinfo .hover-dropdown-item .dropdown-content span:hover {
+    background-color: #dcdcdc;
+}

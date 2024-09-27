@@ -24,6 +24,8 @@ import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 
 import { setIdentifyResult } from '../../actions/info';
 
+import './style/GwInfoValve.css';
+
 class GwInfoValve extends React.Component {
     static propTypes = {
         addLayerFeatures: PropTypes.func,
@@ -249,49 +251,41 @@ class GwInfoValve extends React.Component {
             let values = null;
             if (gwInfoResponse.body?.data?.valve) {
                 valveButton = (
-                    <td>
+                    <div className='valve-toggle'>
                         <button className="button" onClick={() => this.toggleValveState(gwInfoResponse.body.data.valve)}>{gwInfoResponse.body.data.valve.text}</button>
-                    </td>
+                    </div>
                 );
             }
             if (gwInfoResponse.body?.data?.layersNames) {
                 const layernames = gwInfoResponse.body?.data?.layersNames;
                 values = (
-                    <td>
-                        <div className="hover-dropdown">
-                            <button>Features</button>
-                            <div className="dropdown-content">
-                                {layernames.map((vals, i) => (
-                                    <div className="hover-dropdown-item" key={i}>
-                                        <span className="first-item">{this.getLastWordFromLayer(vals.layerName)}</span>
-                                        <Icon className="item-icon" icon="chevron-right"/>
-                                        <div className="dropdown-content">
-                                            {(vals.ids).map((subValues, j) => (
-                                                <span key={j} onClick={() => this.showInfo(subValues, vals.layerName)} onMouseEnter={() => this.highLightFeature(subValues)}>{subValues.label}</span>
-                                            ))}
-                                        </div>
+                    <div className="hover-dropdown">
+                        <button>Features</button>
+                        <div className="dropdown-content">
+                            {layernames.map((vals, i) => (
+                                <div className="hover-dropdown-item" key={i}>
+                                    <span className="first-item">{this.getLastWordFromLayer(vals.layerName)}</span>
+                                    <Icon className="item-icon" icon="chevron-right"/>
+                                    <div className="dropdown-content">
+                                        {(vals.ids).map((subValues, j) => (
+                                            <span key={j} onClick={() => this.showInfo(subValues, vals.layerName)} onMouseEnter={() => this.highLightFeature(subValues)}>{subValues.label}</span>
+                                        ))}
                                     </div>
-                                ))}
-                                <hr/>
-                                <div className="hover-dropdown-item" onMouseEnter={() => this.highLightMultipleFeatures(layernames)}>
-                                    Identify All ({layernames.reduce((partialSum, component) => partialSum + (component.ids).length, 0)})
                                 </div>
+                            ))}
+                            <hr/>
+                            <div className="hover-dropdown-item" onMouseEnter={() => this.highLightMultipleFeatures(layernames)}>
+                                Identify All ({layernames.reduce((partialSum, component) => partialSum + (component.ids).length, 0)})
                             </div>
                         </div>
-                    </td>
+                    </div>
                 );
             }
             infoButtons = (
-                <table className="mapinfotooltip-body-gwinfo">
-                    <tbody>
-                        <tr>
-                            {values}
-                        </tr>
-                        <tr>
-                            {valveButton}
-                        </tr>
-                    </tbody>
-                </table>
+                <div className="mapinfotooltip-body-gwinfo">
+                    {values}
+                    {valveButton}
+                </div>
             );
         }
 
