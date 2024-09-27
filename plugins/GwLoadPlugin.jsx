@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import GwUtils from '../utils/GwUtils';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
+import { LayerRole, setLayers } from 'qwc2/actions/layers';
 
 
 class GwLoadPlugin extends React.Component {
@@ -19,9 +20,10 @@ class GwLoadPlugin extends React.Component {
         currentTask: PropTypes.string,
         layers: PropTypes.array,
         map: PropTypes.object,
-        theme: PropTypes.object,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
+        setLayers: PropTypes.func,
+        theme: PropTypes.object
     };
 
     state = {
@@ -32,9 +34,33 @@ class GwLoadPlugin extends React.Component {
         super(props);
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
             this.makeRequest();
+
+            console.log("Layers: ", this.props.layers);
+
+            const layers = this.props.layers.map((layer) => {
+                if (layer.role === LayerRole.THEME) {
+
+                    const externalLayerMap = Object.entries(layer.externalLayerMap).reduce((acc, [layerName, externalLayer]) => {
+                        // externalLayer.queryLayers = [layerName];
+                        acc[layerName] = {
+                            ...externalLayer,
+                            queryLayers: [layerName]
+                        };
+                        return acc;
+                    }, {});
+                    return {
+                        ...layer,
+                        externalLayerMap: externalLayerMap
+                    };
+                } else {
+                    return layer;
+                }
+            });
+
+            this.props.setLayers(layers);
         }
     }
 
@@ -47,10 +73,10 @@ class GwLoadPlugin extends React.Component {
                 theme: this.props.theme.title,
                 epsg: epsg
             };
-            
-            axios.post(requestUrl + "setinitproject", { ...params }).then(response => {   
+
+            axios.post(requestUrl + "setinitproject", { ...params }).then(response => {
                 const result = response.data;
-                if (result.status !=='Accepted') {
+                if (result.status !== 'Accepted') {
                     this.props.processStarted("loadplugin_msg", `Loading plugin`);
                     this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`, 4000);
                 }
@@ -81,5 +107,6 @@ const loadplugin = (state) => ({
 
 export default connect(loadplugin, {
     processFinished: processFinished,
-    processStarted: processStarted
+    processStarted: processStarted,
+    setLayers: setLayers
 })(GwLoadPlugin);
