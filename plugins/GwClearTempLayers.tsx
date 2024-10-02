@@ -38,8 +38,6 @@ class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonPro
     }
 
     componentDidUpdate(prevProps) {
-        console.log("PREV TASK: ", prevProps.currentTask);
-        console.log("CURRENT TASK: ", this.props.currentTask);
         if (prevProps.currentTask === "Redlining" && this.props.currentTask !== "Redlining" && this.redliningOpen) {
             this.redliningOpen = false;
             this.clearLayers();
