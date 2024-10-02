@@ -1026,15 +1026,19 @@ class GwProfileGraph extends React.Component {
             const heightStr = LocaleUtils.tr("heightprofile.height");
             const aslStr = LocaleUtils.tr("heightprofile.asl");
             const heightProfilePrecision = this.props.heightProfilePrecision;
-            const distance = Math.round(x * Math.pow(10, heightProfilePrecision)) / Math.pow(10, heightProfilePrecision);
-            const height = Math.round(y * Math.pow(10, heightProfilePrecision)) / Math.pow(10, heightProfilePrecision);
+
+            // Distance and height with 2 decimals
+            const distance = x.toFixed(2);
+            const height = y.toFixed(2);
+
             this.marker.style.visibility = this.tooltip.style.visibility = 'visible';
             this.marker.style.left = this.tooltip.style.left = plotPos + 'px';
             this.marker.style.bottom = '30px';
             this.marker.style.height = (this.props.height - 30) + 'px';
             this.tooltip.style.bottom = this.props.height + 'px';
+
             this.tooltip.innerHTML = "<b>" + distanceStr + ":</b> " + distance + " m<br />" +
-                                    "<b>" + heightStr + ":</b> " + height + " m " + aslStr;
+                         "<b>" + heightStr + ":</b> " + height + " m " + aslStr;
         }
     };
 
