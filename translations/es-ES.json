@@ -17,7 +17,7 @@
     },
     "mapinfotooltip": {
       "elevation": "Elevacion",
-      "title": ""
+      "title": "Posición"
     },
     "mincut": {
       "clickhelpChangeValveStatus": "Haga click en una o mas valvulas para abrirlas o cerrarlas al refrescar el Mincut",
