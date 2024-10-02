@@ -680,7 +680,8 @@ class GwMincut extends React.Component {
                 <ResizeableWindow dockable={this.props.dockable} icon="giswater" initialHeight={this.props.initialHeight}
                     initialWidth={this.props.initialWidth} initialX={this.props.initialX} initialY={this.props.initialY}
                     initiallyDocked={this.props.initiallyDocked} key="GwMincutWindow" minimizeable
-                    onClose={this.onDlgClose} scrollable title="Giswater Mincut"
+                    onClose={this.onDlgClose} scrollable title="Giswater Mincut" splitScreenWhenDocked
+                    splitTopAndBottomBar
                 >
                     {body}
                 </ResizeableWindow>

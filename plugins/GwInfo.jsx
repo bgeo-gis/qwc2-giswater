@@ -736,6 +736,8 @@ class GwInfo extends React.Component {
                 }}
                 scrollable={false}
                 title={typeof headerText !== "undefined" ? headerText : "Info"}
+                splitScreenWhenDocked
+                splitTopAndBottomBar
                 >
                     {body}
                 </ResizeableWindow>
