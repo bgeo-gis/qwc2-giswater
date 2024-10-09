@@ -217,7 +217,7 @@ class GwInfo extends React.Component {
                     this.props.processFinished("info_msg_epa", epaResult.status === "Accepted", epaResult.message.text);
                 }
 
-                if (this.props.theme.tiled) {
+                if (this.props.projectData.tiled) {
                     // this.refreshTiles()
                 } else {
                     this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
@@ -566,7 +566,7 @@ class GwInfo extends React.Component {
                 pendingRequests = true;
                 axios.get(requestUrl + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
-                    if ((isEmpty(result) || !result.form_xml) && !this.props.theme.tiled) {
+                    if ((isEmpty(result) || !result.form_xml) && !this.props.projectData.tiled) {
                         this.onToolClose();
                         this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});
                         return;
@@ -761,7 +761,8 @@ const selector = (state) => ({
     map: state.map,
     selection: state.selection,
     theme: state.theme.current,
-    identifyResult: state.info.identifyResult
+    identifyResult: state.info.identifyResult,
+    projectData: state.project
 });
 
 export default connect(selector, {
