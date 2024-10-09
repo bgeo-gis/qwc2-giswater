@@ -332,7 +332,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
 
         const elname = nametransform(widget.name);
         const widgetFunction = prop.widgetfunction || "{}";
-        const widgetControls = JSON.parse(prop.widgetcontrols || "{}");
+        const widgetControls = JSON.parse(prop.widgetcontrols || "{}") ?? {};
 
         // TODO: This should be removed (make sure it's ok)
         if (this.props.widgetValues[widget.name.replace("lbl_", "")]?.visible === false) {
