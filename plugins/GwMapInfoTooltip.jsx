@@ -123,7 +123,7 @@ class GwMapInfoTooltip extends React.Component {
 
             axios.put(requestUrl + "setfields", { ...params }).then(() => {
                 // refresh map
-                if (this.props.theme.tiled) {
+                if (this.props.projectData.tiled) {
                     this.refreshTiles();
                 } else {
                     this.props.refreshLayer(layer => layer.role === LayerRole.THEME);

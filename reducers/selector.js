@@ -7,7 +7,10 @@
 import {SET_ACTIVE_SELECTOR} from '../actions/selector';
 
 // optional state
-const defaultState = {};
+const defaultState = {
+    selectorResult: null,
+    mincutIds: []
+};
 
 export default function selector(state = defaultState, action) {
     switch (action.type) {

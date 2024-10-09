@@ -13,6 +13,7 @@ import isEmpty from 'lodash.isempty';
 import GwUtils from '../utils/GwUtils';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 import { LayerRole, setLayers } from 'qwc2/actions/layers';
+import { setProjectData } from '../actions/project';
 
 
 class GwLoadPlugin extends React.Component {
@@ -23,6 +24,7 @@ class GwLoadPlugin extends React.Component {
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         setLayers: PropTypes.func,
+        setProjectData: PropTypes.func,
         theme: PropTypes.object
     };
 
@@ -79,8 +81,10 @@ class GwLoadPlugin extends React.Component {
                 if (result.status !== 'Accepted') {
                     this.props.processStarted("loadplugin_msg", `Loading plugin`);
                     this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`, 4000);
+                    return;
+                    
                 }
-                console.log("Load plugin: ", result);
+                this.props.setProjectData(result.tiled);
                 this.setState({pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
@@ -108,5 +112,6 @@ const loadplugin = (state) => ({
 export default connect(loadplugin, {
     processFinished: processFinished,
     processStarted: processStarted,
-    setLayers: setLayers
+    setLayers: setLayers,
+    setProjectData: setProjectData
 })(GwLoadPlugin);

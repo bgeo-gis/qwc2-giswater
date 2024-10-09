@@ -7,7 +7,9 @@
 import {SET_IDENTIFY_RESULT} from '../actions/info';
 
 // optional state
-const defaultState = {};
+const defaultState = {
+    identifyResult: null
+};
 
 export default function info(state = defaultState, action) {
     switch (action.type) {

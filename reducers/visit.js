@@ -7,7 +7,10 @@
 import {SET_ACTIVE_VISIT} from '../actions/visit';
 
 // optional state
-const defaultState = {};
+const defaultState = {
+    visitResult: null,
+    keepManagerOpen: false
+};
 
 export default function visit(state = defaultState, action) {
     switch (action.type) {
