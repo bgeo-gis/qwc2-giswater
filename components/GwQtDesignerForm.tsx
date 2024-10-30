@@ -29,7 +29,7 @@ type Properties = {
     props: {[name: string]: any},
     disabled: boolean,
     hidden: boolean,
-    // items: any, // For comboboxes, but needs to be implemented
+    items: any[], // For comboboxes, but needs to be implemented
 };
 
 type WidgetsProperties = {
@@ -291,6 +291,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             },
             disabled: userProperties.disabled ?? properties.disabled,
             hidden: userProperties.hidden ?? properties.hidden,
+            items: userProperties.items || properties.items || [] // Items for combobox, default to empty if not provided
         };
     };
     renderWidget = (widget, nametransform = (name) => name, disabled = false) => {
@@ -474,7 +475,12 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
                 </label>
             );
         } else if (widget.class === "QComboBox") {
-            let items = widget.item;
+            let items = this.props.widgetsProperties[widget.name]?.items;
+
+            // Fallback to widget.item if items is an empty array or undefined
+            if (!items || items.length === 0) {
+                items = widget.item;
+            }
             if (!Array.isArray(widget.item) && items !== undefined) {
                 items = [widget.item];
             }
@@ -569,7 +575,12 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             const checked = (this.props.widgetValues[widget.name]?.value ?? prop.checked);
             return checked === true || checked === "true" || checked === "True";
         } else if (widget.class === "QComboBox") {
-            let items = widget.item;
+            let items = this.props.widgetsProperties[widget.name]?.items;
+
+            // Fallback to widget.item if items is an empty array or undefined
+            if (!items || items.length === 0) {
+                items = widget.item;
+            }
             if (!Array.isArray(widget.item) && items !== undefined) {
                 items = [widget.item];
             }
@@ -662,6 +673,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             props: widget.property || {},
             disabled: widget.property?.readOnly === "true" || widget.property?.enabled === "false",
             hidden: false,
+            items: widget.class === "QComboBox" && widget.item ? MiscUtils.ensureArray(widget.item) : [] // Items for combos
         };
     };
     reformatWidget = (widget, currentLayout: string, widgetsProperties: WidgetsProperties, counters) => {

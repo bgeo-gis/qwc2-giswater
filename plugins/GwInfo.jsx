@@ -110,70 +110,70 @@ class GwInfo extends React.Component {
         console.info(`Action ${action.functionName}`, action);
         let pendingRequests = false;
         switch (action.functionName) {
-        case "featureLink":
-        case "get_info_node": {
-            this.props.removeLayer("searchselection");
+            case "featureLink":
+            case "get_info_node": {
+                this.props.removeLayer("searchselection");
 
-            this.setState({ prevIdentifyResult: this.props.identifyResult, pendingRequests: pendingRequests });
-            this.props.setIdentifyResult({});
+                this.setState({ prevIdentifyResult: this.props.identifyResult, pendingRequests: pendingRequests });
+                this.props.setIdentifyResult({});
 
-            const requestUrl = GwUtils.getServiceUrl("info");
-            if (!isEmpty(requestUrl)) {
-                const action = JSON.parse(widget.property.action|| "{}");
-                const params = {
-                    theme: this.props.theme.title,
-                    id: action.params.id,
-                    tableName: "v_edit_node"
-                };
-                pendingRequests = true;
-                axios.get(requestUrl + "fromid", { params: params }).then((response) => {
-                    const result = response.data;
-                    this.props.setIdentifyResult(result);
-                    this.setState({ pendingRequests: false });
-                    this.panToResult(result);
-                    this.highlightResult(result);
-                    this.addMarkerToResult(result);
-                }).catch((e) => {
-                    console.log(e);
-                    this.setState({ pendingRequests: false });
-                });
-            }
-            break;
-        }
-        case "accept": {
-            if (this.checkIfDataModified()) {
-                if (confirm(LocaleUtils.tr("identify.confirmSave"))) {
-                    this.saveChanges().then(() => {
-                        this.clearResults();
+                const requestUrl = GwUtils.getServiceUrl("info");
+                if (!isEmpty(requestUrl)) {
+                    const action = JSON.parse(widget.property.action || "{}");
+                    const params = {
+                        theme: this.props.theme.title,
+                        id: action.params.id,
+                        tableName: "v_edit_node"
+                    };
+                    pendingRequests = true;
+                    axios.get(requestUrl + "fromid", { params: params }).then((response) => {
+                        const result = response.data;
+                        this.props.setIdentifyResult(result);
+                        this.setState({ pendingRequests: false });
+                        this.panToResult(result);
+                        this.highlightResult(result);
+                        this.addMarkerToResult(result);
+                    }).catch((e) => {
+                        console.log(e);
+                        this.setState({ pendingRequests: false });
                     });
                 }
-            } else {
-                this.clearResults();
+                break;
             }
-            break;
-        }
-        case "apply":
-            if (this.checkIfDataModified() && confirm(LocaleUtils.tr("identify.confirmSave"))) {
-                this.saveChanges();
-            }
-            break;
-        case "cancel":
-            if (this.checkIfDataModified()) {
-                if (confirm(LocaleUtils.tr("identify.confirmDiscard"))) {
-                    this.discardChanges();
+            case "accept": {
+                if (this.checkIfDataModified()) {
+                    if (confirm(LocaleUtils.tr("identify.confirmSave"))) {
+                        this.saveChanges().then(() => {
+                            this.clearResults();
+                        });
+                    }
+                } else {
                     this.clearResults();
                 }
-            } else {
-                this.clearResults();
+                break;
             }
-            break;
-        case "manage_visit_class":
-            this.getList(this.state.currentTab.tab, value);
-            break;
+            case "apply":
+                if (this.checkIfDataModified() && confirm(LocaleUtils.tr("identify.confirmSave"))) {
+                    this.saveChanges();
+                }
+                break;
+            case "cancel":
+                if (this.checkIfDataModified()) {
+                    if (confirm(LocaleUtils.tr("identify.confirmDiscard"))) {
+                        this.discardChanges();
+                        this.clearResults();
+                    }
+                } else {
+                    this.clearResults();
+                }
+                break;
+            case "manage_visit_class":
+                this.getList(this.state.currentTab.tab, value);
+                break;
 
-        default:
-            console.warn(`Action \`${action.functionName}\` cannot be handled.`, action);
-            break;
+            default:
+                console.warn(`Action \`${action.functionName}\` cannot be handled.`, action);
+                break;
         }
     };
 
@@ -256,7 +256,7 @@ class GwInfo extends React.Component {
             }
             // Update filters
             const tabName = this.state.currentTab.tab?.name || 'pendingFilters';
-            this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName]: {...state.filterValues[tabName], [widget.name]: {columnname: columnname, value: value, filterSign: filterSign}}}}));
+            this.setState((state) => ({ filterValues: { ...state.filterValues, [tabName]: { ...state.filterValues[tabName], [widget.name]: { columnname: columnname, value: value, filterSign: filterSign } } } }));
         } else {
             const widgetFunction = JSON.parse(widget.property.widgetfunction);
             this.onWidgetAction(widgetFunction, widget, value);
@@ -268,11 +268,11 @@ class GwInfo extends React.Component {
 
         const newDataValue = {};
         if (widget.containingLayout === "lyt_tab_data" || widget.name === "epa_type") {
-            newDataValue[widget.name] = {value: value, columnname: columnname};
+            newDataValue[widget.name] = { value: value, columnname: columnname };
         }
         const newEpaValue = {};
         if (widget.containingLayout === "lyt_epa_data_1") {
-            newEpaValue[widget.name] = {value: value, columnname: columnname};
+            newEpaValue[widget.name] = { value: value, columnname: columnname };
         }
 
         if (widget.property.isTypeahead === 'true' && widget.property.queryText) {
@@ -308,20 +308,20 @@ class GwInfo extends React.Component {
                         });
                     }
 
-                   // Update widgetProperties with the new list of suggestions
-                   this.setState((state) => ({
-                    widgetsProperties: {
-                        ...state.widgetsProperties,
-                        [widget.name]: {
-                            ...state.widgetsProperties[widget.name],
-                            value: value,  // update value
-                            props: {
-                                ...state.widgetsProperties[widget.name]?.props,
-                                suggestions: list
+                    // Update widgetProperties with the new list of suggestions
+                    this.setState((state) => ({
+                        widgetsProperties: {
+                            ...state.widgetsProperties,
+                            [widget.name]: {
+                                ...state.widgetsProperties[widget.name],
+                                value: value,  // update value
+                                props: {
+                                    ...state.widgetsProperties[widget.name]?.props,
+                                    suggestions: list
+                                }
                             }
                         }
-                    }
-                }));
+                    }));
                 }).catch((e) => {
                     console.log(e);
                 });
@@ -330,9 +330,9 @@ class GwInfo extends React.Component {
 
         // TODO: use setCurrentTaskBlocked to avoid closing the task while saving or reloading the page
         this.setState((state) => ({
-            widgetsProperties: { ...state.widgetsProperties, [widget.name]: {value: value} },
-            dataValues: {...state.dataValues, ...newDataValue },
-            epaValues: {...state.epaValues, ...newEpaValue }
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } },
+            dataValues: { ...state.dataValues, ...newDataValue },
+            epaValues: { ...state.epaValues, ...newEpaValue }
         }));
     };
     loadWidgetsProperties = (widgetsProperties) => {
@@ -352,7 +352,7 @@ class GwInfo extends React.Component {
             }
         }
 
-        this.setState({ currentTab: {tab: tab, widget: widget} });
+        this.setState({ currentTab: { tab: tab, widget: widget } });
     };
 
     getEpaTableName = (epaType) => {
@@ -475,7 +475,7 @@ class GwInfo extends React.Component {
                 let tableName = null;
                 // TODO: Is this still necessary?
                 if (tab.name === 'tab_visit') {
-                    tableName =  _tableName || this.state.widgetsProperties.visit_class?.value;
+                    tableName = _tableName || this.state.widgetsProperties.visit_class?.value;
                 }
 
                 const params = {
@@ -568,7 +568,7 @@ class GwInfo extends React.Component {
                     const result = response.data;
                     if ((isEmpty(result) || !result.form_xml) && !this.props.projectData.tiled) {
                         this.onToolClose();
-                        this.props.setCurrentTask("Identify", 'Point', null, {pos: clickPoint, exitTaskOnResultsClose: true});
+                        this.props.setCurrentTask("Identify", 'Point', null, { pos: clickPoint, exitTaskOnResultsClose: true });
                         return;
                     }
                     result.body.clickPoint = clickPoint;
@@ -633,7 +633,7 @@ class GwInfo extends React.Component {
     };
     onShow = (mode) => {
         this.clearResults();
-        this.setState({mode: mode || 'Point'});
+        this.setState({ mode: mode || 'Point' });
     };
     onToolClose = () => {
         this.props.removeMarker('identify');
@@ -671,7 +671,7 @@ class GwInfo extends React.Component {
         let resultWindow = null;
         const identifyResult = this.props.identifyResult;
         const headerText = identifyResult?.body?.form?.headerText;
-        if (this.state.pendingRequests === true || identifyResult  !== null) {
+        if (this.state.pendingRequests === true || identifyResult !== null) {
             let body = null;
             if (isEmpty(identifyResult) || !identifyResult.form_xml) {
                 let text;
@@ -705,7 +705,7 @@ class GwInfo extends React.Component {
                             <GwQtDesignerForm buttonAlwaysActive form_xml={result.form_xml} getInitialValues={false} loadWidgetsProperties={this.loadWidgetsProperties}
                                 onTabChanged={this.onTabChanged} onWidgetAction={this.onWidgetAction}
                                 onWidgetValueChange={this.onWidgetValueChange}
-                                style={{height: "100%"}}
+                                style={{ height: "100%" }}
                                 useNew widgetsProperties={widgetsProperties}
                             />
                         </div>
@@ -723,21 +723,21 @@ class GwInfo extends React.Component {
                         msgid: "Toggle editing mode"
                     }
                 ]} icon="giswater" initialHeight={this.props.initialHeight}
-                initialWidth={this.props.initialWidth} initialX={this.props.initialX}
-                initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
-                minimizeable onClose={() => {
-                    if (this.checkIfDataModified()) {
-                        if (confirm(LocaleUtils.tr("identify.confirmDiscard"))) {
+                    initialWidth={this.props.initialWidth} initialX={this.props.initialX}
+                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minHeight={this.props.minHeight}
+                    minimizeable onClose={() => {
+                        if (this.checkIfDataModified()) {
+                            if (confirm(LocaleUtils.tr("identify.confirmDiscard"))) {
+                                this.clearResults();
+                            }
+                        } else {
                             this.clearResults();
                         }
-                    } else {
-                        this.clearResults();
-                    }
-                }}
-                scrollable={false}
-                title={typeof headerText !== "undefined" ? headerText : "Info"}
-                splitScreenWhenDocked
-                splitTopAndBottomBar
+                    }}
+                    scrollable={false}
+                    title={typeof headerText !== "undefined" ? headerText : "Info"}
+                    splitScreenWhenDocked
+                    splitTopAndBottomBar
                 >
                     {body}
                 </ResizeableWindow>

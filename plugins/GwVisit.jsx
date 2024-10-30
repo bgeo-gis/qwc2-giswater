@@ -433,7 +433,7 @@ class GwVisit extends React.Component {
                 } else {
                     body = (
                         <div className="identify-body" role="body">
-                            <GwQtDesignerForm files={this.state.files} form_xml={result.form_xml} getInitialValues
+                            <GwQtDesignerForm files={this.state.files} form_xml={result.form_xml} getInitialValues={false}
                                 intiallyDocked={this.props.initiallyDocked} onTabChanged={this.onTabChanged}
                                 onWidgetAction={this.onWidgetAction} onWidgetValueChange={this.onWidgetValueChange} readOnly={false}
                                 style={{ height: '100%'}} useNew
@@ -447,7 +447,7 @@ class GwVisit extends React.Component {
             resultWindow = (
                 <ResizeableWindow dockable={this.props.dockable} icon="giswater"
                     initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth} initialX={this.props.initialX}
-                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minimizeable="true"
+                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked} key="GwInfoWindow" minimizeable
                     onClose={this.clearResults}
                     scrollable={this.state.mode === "Dma" ? true : false} title={title}
                 >
