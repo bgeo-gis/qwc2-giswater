@@ -5,52 +5,53 @@
     "author": "BGEO",
     "license": "BSD-2-Clause",
     "repository": "git@github.com:bgeo-gis/qwc2-giswater.git",
-    "dependencies": {
-        "@emotion/react": "^11.10.5",
-        "@emotion/styled": "^11.10.5",
-        "@mui/icons-material": "^5.11.0",
-        "@mui/material": "^5.11.7",
-        "@mui/x-date-pickers": "^5.0.17",
-        "@types/jest": "^29.5.12",
-        "@types/node": "^20.14.11",
-        "@types/react": "^18.3.3",
-        "@types/react-dom": "^18.3.0",
-        "buffer": "^6.0.3",
-        "chartist": "https://github.com/bgeo-gis/qwc2-chartiist-js",
-        "chartist-plugin-axistitle": "^0.0.7",
-        "chartist-plugin-pointlabels": "https://github.com/bgeo-gis/qwc2-chartist-plugin-pointlabels",
-        "chartist-plugin-zoom": "https://github.com/bgeo-gis/qwc2-chartist-plugin-zoom",
-        "export-to-csv-fix-source-map": "^0.2.1",
-        "material-react-table": "^1.6.5",
-        "process": "^0.11.10",
-        "react-chartist": "^0.14.4",
-        "react-datepicker": "^4.14.0",
-        "react-widgets": "3.5.0",
-        "stream-browserify": "^3.0.0",
-        "timers-browserify": "^2.0.12",
-        "xml2js": "^0.6.2"
-    },
-    "peerDependencies": {
-        "react": "^18.2.0",
-        "react-redux": "^8.0.5"
-    },
-    "devDependencies": {
-        "@babel/plugin-proposal-class-properties": "^7.18.6",
-        "@babel/plugin-proposal-object-rest-spread": "^7.20.7"
-    },
-    "babel": {
-        "plugins": [
+        "dependencies": {
+          "@emotion/react": "^11.10.5",
+          "@emotion/styled": "^11.10.5",
+          "@mui/icons-material": "^6.0.0",
+          "@mui/material": "^6.0.0",
+          "@mui/x-date-pickers": "^6.0.0",
+          "@types/jest": "^29.5.12",
+          "@types/node": "^20.14.11",
+          "@types/react": "^18.3.3",
+          "@types/react-dom": "^18.3.0",
+          "buffer": "^6.0.3",
+          "chartist": "https://github.com/bgeo-gis/qwc2-chartiist-js",
+          "chartist-plugin-axistitle": "^0.0.7",
+          "chartist-plugin-pointlabels": "https://github.com/bgeo-gis/qwc2-chartist-plugin-pointlabels",
+          "chartist-plugin-zoom": "https://github.com/bgeo-gis/qwc2-chartist-plugin-zoom",
+          "export-to-csv-fix-source-map": "^0.2.1",
+          "material-react-table": "^3.0.0",
+          "@tanstack/react-table": "^8.8.7",
+          "process": "^0.11.10",
+          "react-chartist": "^0.14.4",
+          "react-datepicker": "^4.14.0",
+          "react-widgets": "3.5.0",
+          "stream-browserify": "^3.0.0",
+          "timers-browserify": "^2.0.12",
+          "xml2js": "^0.6.2"
+        },
+        "peerDependencies": {
+          "react": "^18.2.0",
+          "react-redux": "^8.0.5"
+        },
+        "devDependencies": {
+          "@babel/plugin-proposal-class-properties": "^7.18.6",
+          "@babel/plugin-proposal-object-rest-spread": "^7.20.7"
+        },
+        "babel": {
+          "plugins": [
             "@babel/plugin-proposal-class-properties",
             "@babel/plugin-proposal-object-rest-spread"
-        ],
-        "presets": [
+          ],
+          "presets": [
             [
-                "@babel/preset-env",
-                {
-                    "modules": false
-                }
+              "@babel/preset-env",
+              {
+                "modules": false
+              }
             ],
             "@babel/preset-react"
-        ]
-    }
-}
+          ]
+        }
+      }

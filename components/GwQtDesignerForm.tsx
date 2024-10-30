@@ -15,7 +15,7 @@ import Spinner from 'qwc2/components/Spinner';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MiscUtils from 'qwc2/utils/MiscUtils';
 
-import GwTableWidget from 'qwc2-giswater/components/GwTableWidget';
+import GwTableWidgetV3 from 'qwc2-giswater/components/GwTableWidgetV3';
 import GwTableView from 'qwc2-giswater/components/GwTableView';
 import 'qwc2/components/style/QtDesignerForm.css';
 import 'qwc2-giswater/components/style/GwQtDesignerForm.css';
@@ -368,7 +368,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
 
             const { values, form } = value;
 
-            return (<GwTableWidget onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
+            return (<GwTableWidgetV3 onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
             return (<GwTableView values={value.values || []} form={value.form} />);
         } else if (widget.class === "QLabel") { // @ts-ignore
