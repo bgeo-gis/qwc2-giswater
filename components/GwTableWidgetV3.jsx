@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FilterAltOff from '@mui/icons-material/FilterAltOff';
-import { ExportToCsv } from 'export-to-csv-fix-source-map'; // or use your library of choice here
+import { ExportToCsv } from 'export-to-csv-fix-source-map';
 
 import * as icons from '@mui/icons-material';
 
@@ -79,19 +79,10 @@ class GwTableWidgetV3 extends React.Component {
             for (let i = 0; i < headers.length; i++) {
                 const header = headers[i];
 
-                // Add custom logic for boolean columns
-                // if (header.dataType === 'boolean') {
-                //     header.Cell = ({ cell }) => {
-                //         const value = cell.getValue();
-                //         return value ? 'Yes' : 'No';  // You can use icons or any other representation
-                //     };
-                // }
                 if (header !== undefined && header.filterVariant !== undefined) {
                     if (header.filterVariant === 'datetime') {
                         header.accessorFn = (row) => {
-                            // const date = new Date(new Date(row[header.accessorKey]).toDateString());
-                            // return date;
-                            const date = dayjs(row[header.accessorKey]);  // Asegúrate de convertir a Day.js
+                            const date = dayjs(row[header.accessorKey]);
                             return date.isValid() ? date : null;
                         };
                         header.Cell = ({ cell }) => {
@@ -109,10 +100,10 @@ class GwTableWidgetV3 extends React.Component {
                         header.Filter = ({ column }) => (
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
-                                    value={column.getFilterValue() ? dayjs(column.getFilterValue()) : null} // Convertir valor a Day.js
+                                    value={column.getFilterValue() ? dayjs(column.getFilterValue()) : null}
                                     onChange={(newValue) => {
                                         const dayJsValue = dayjs(newValue);
-                                        column.setFilterValue(dayJsValue.isValid() ? dayJsValue : undefined);  // Validar el valor
+                                        column.setFilterValue(dayJsValue.isValid() ? dayJsValue : undefined);
                                     }}
                                     renderInput={(params) => (
                                         <TextField
@@ -123,20 +114,6 @@ class GwTableWidgetV3 extends React.Component {
                                         />
                                     )}
                                 />
-                                {/* <DatePicker
-                                    inputFormat="DD/MM/YYYY"
-                                    onChange={(newValue) => {
-                                        newValue = new Date(new Date(newValue).toDateString());
-                                        column.setFilterValue(newValue);
-                                    }}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            helperText={'Filter Mode: ' + column.getFilterFn().name}
-                                            sx={{ minWidth: '120px' }}
-                                            variant="standard" />
-                                    )}
-                                    value={column.getFilterValue()} /> */}
                             </LocalizationProvider>
                         );
                         /* eslint-enable */
