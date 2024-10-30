@@ -241,6 +241,14 @@ const GwUtils = {
         axios.post(ConfigUtils.getConfigProp("permalinkServiceUrl").replace(/\/$/, '') + "/" + route, permalinkState)
             .then(response => callback(response.data.permalink || fullUrl))
             .catch(() => callback(fullUrl));
+    },
+
+    openHelp(helpUrl) {
+        //TODO: Get helpUrl from DB
+        if (!helpUrl) {
+            helpUrl = "https://giswater.gitbook.io/giswater-manual";
+        window.open(helpUrl, '_blank');
+        }
     }
 };
 
