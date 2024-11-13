@@ -4,28 +4,28 @@ import Icon from 'qwc2/components/Icon';
 import 'qwc2-giswater/components/style/GwTableView.css';
 import GwUtils from 'qwc2-giswater/utils/GwUtils';
 
-
 type GwTableViewProps = {
-    values: {[key: string]: string}[],
-    form: any
+    values: { [key: string]: string }[],
+    form: any,
+    style?: string
 };
 
 type GwTableViewState = {
-    currentResult?: {[key: string]: string}
+    currentResult?: { [key: string]: string }
 };
 
 export default class GwTableView extends React.Component<GwTableViewProps, GwTableViewState> {
     static defaultState: GwTableViewState = {
         currentResult: null,
     };
-    
+
     constructor(props: GwTableViewProps) {
         super(props);
         this.state = GwTableView.defaultState;
     }
 
     render() {
-        const value = this.props.values;
+        const value = this.props.values || [];
         const replaceImgs = this.props.form?.table?.replaceImgs ?? true;
         const fieldName = value.length === 0 ? null : (this.props.form?.table?.displayField ?? Object.keys(value[0])[0]);
 
@@ -33,6 +33,42 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
             maxHeight: this.state.currentResult ? '20%' : 'initial'
         };
 
+        // Show regular table if style is regular
+        if (this.props.style === 'regular') {
+            return (
+                <div className="qtableview-container">
+                    <table className="qtableview">
+                        <thead className="qtableview-head">
+                            <tr className="qtableview-row">
+                                {fieldName && <th className="qtableview-header">{fieldName}</th>}
+                                {value.length > 0 && Object.keys(value[0]).map((key, i) => (
+                                    key !== fieldName && <th className="qtableview-header" key={i}>{key}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="qtableview-body">
+                            {value.map((result, i) => (
+                                <tr className="qtableview-row" key={i}>
+                                    {fieldName && <td className="qtableview-cell">{result[fieldName]}</td>}
+                                    {Object.entries(result).map(([key, val], j) => (
+                                        key !== fieldName && (
+                                            <td className="qtableview-cell" key={j}>
+                                                {
+                                                    replaceImgs && /^https?:\/\/.*\.(jpg|jpeg|png|bmp|gif)$/i.exec(val) ?
+                                                        (<a href={val} rel="noreferrer" target="_blank"><img src={val} /></a>)
+                                                        : (GwUtils.isValidHttpUrl(val) ? <a href={val} rel="noreferrer" target="_blank">{val}</a> : val)
+                                                }
+                                            </td>
+                                        )
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
+        // Default style
         return (
             <div className="gwtableview-body">
                 <div
@@ -71,7 +107,7 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
                                                 <td>{key}</td>
                                                 <td>
                                                     {
-                                                        replaceImgs && /^https?:\/\/.*\.(jpg|jpeg|png|bmp|gif)$/i.exec(value) ? 
+                                                        replaceImgs && /^https?:\/\/.*\.(jpg|jpeg|png|bmp|gif)$/i.exec(value) ?
                                                             (<a href={value} rel="noreferrer" target="_blank"><img src={value} /></a>)
                                                             : (GwUtils.isValidHttpUrl(value) ? <a href={value} rel="noreferrer" target="_blank">{value}</a> : value)
                                                     }
@@ -86,29 +122,5 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
                 ) : null}
             </div>
         );
-
-        return (
-            <div className="qtableview-container">
-                <table className="qtableview">
-                    <thead className="qtableview-head">
-                        <tr className="qtableview-row">
-                            {Object.keys(value[0]).map((field, i) => (
-                                <th className="qtableview-header" key={i}>{field}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="qtableview-body">
-                        {value.map((v, i) => (
-                            <tr className="qtableview-row" key={i}>
-                                {Object.values(v).map((field, j) => (
-                                    <td className="qtableview-cell" key={j}>{field}</td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
-
     }
 }

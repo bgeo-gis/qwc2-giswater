@@ -371,7 +371,11 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
 
             return (<GwTableWidgetV3 onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
-            return (<GwTableView values={value.values || []} form={value.form} />);
+            // Check if there is style specified in widgetcontrols
+            const widgetControls = JSON.parse(widget.property.widgetcontrols);
+            let style = widgetControls.style || "";
+
+            return (<GwTableView values={value.values || []} form={value.form} style={style} />);
         } else if (widget.class === "QLabel") { // @ts-ignore
             return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);
         } else if (widget.class === "Line") {
