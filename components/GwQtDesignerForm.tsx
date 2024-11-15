@@ -485,8 +485,8 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             if (!items || items.length === 0) {
                 items = widget.item;
             }
-            if (!Array.isArray(widget.item) && items !== undefined) {
-                items = [widget.item];
+            if (!Array.isArray(items) && items !== undefined) {
+                items = [items];
             }
             const haveEmpty = (items || []).map((item) => (item.property.value || item.property.text) === "");
             return (
@@ -585,8 +585,8 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             if (!items || items.length === 0) {
                 items = widget.item;
             }
-            if (!Array.isArray(widget.item) && items !== undefined) {
-                items = [widget.item];
+            if (!Array.isArray(items) && items !== undefined) {
+                items = [items];
             }
 
             const optObj = (items || []).find(obj => obj.property.value === prop.value);
