@@ -56,7 +56,8 @@
         "NetCDFExplorer": "",
         "GwHelp": "",
         "GwParcelFilter": "",
-        "GwSuperset": ""
+        "GwSuperset": "",
+        "GwNonVisualObjectsManager": ""
       }
     },
     "colorschemes": {

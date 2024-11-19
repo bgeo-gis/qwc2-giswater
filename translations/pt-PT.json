@@ -56,7 +56,8 @@
         "NetCDFExplorer": "Visualizador NetCDF (Beta)",
         "GwHelp": "Ajuda",
         "GwParcelFilter": "",
-        "GwSuperset": ""
+        "GwSuperset": "",
+        "GwNonVisualObjectsManager": ""
       }
     },
     "colorschemes": {

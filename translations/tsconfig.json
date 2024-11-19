@@ -36,6 +36,7 @@
     "appmenu.items.GwHelp",
     "appmenu.items.GwParcelFilter",
     "appmenu.items.GwSuperset",
+    "appmenu.items.GwNonVisualObjectsManager",
     "colorschemes.giswater",
     "colorschemes.white",
     "colorschemes.transparent"
