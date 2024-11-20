@@ -57,7 +57,8 @@
         "GwHelp": "Ajuda",
         "GwParcelFilter": "",
         "GwSuperset": "",
-        "GwNonVisualObjectsManager": ""
+        "GwNonVisualObjectsManager": "",
+        "GwEpaSelector": ""
       }
     },
     "colorschemes": {

@@ -57,7 +57,8 @@
         "GwHelp": "Ajuda",
         "GwParcelFilter": "Filtra parcel·les",
         "GwSuperset": "Quadre de comandament",
-        "GwNonVisualObjectsManager": "Gestor d'objectes no visuals"
+        "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
+        "GwEpaSelector": "Selector EPA"
       }
     },
     "colorschemes": {
