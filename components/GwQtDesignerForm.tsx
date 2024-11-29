@@ -376,8 +376,27 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             let style = widgetControls.style || "";
 
             return (<GwTableView values={value.values || []} form={value.form} style={style} />);
-        } else if (widget.class === "QLabel") { // @ts-ignore
-            return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);
+        } else if (widget.class === "QLabel") {
+            if (widget.name.startsWith("img_")) {
+                // Get value
+                let value =this.props.widgetsProperties[widget.name]?.value
+                // Check if the value is a SVG
+                const isSvg = value?.trim().startsWith('<svg');
+
+                // Print svg or image with URL
+                return isSvg ? (
+                    <div className="qt-designer-form-image" dangerouslySetInnerHTML={{ __html: value }} />
+                ) : (
+                    // URL
+                    <div className="qt-designer-form-image">
+                        <a href={value} rel="noreferrer" target="_blank">
+                            <img src={value} alt="QLabel Image" />
+                        </a>
+                    </div>
+                );
+            } else {// @ts-ignore
+                return (<div hidden={inputConstraints.hidden} style={fontStyle} title={prop.toolTip}>{prop.text}</div>);// @ts-ignore
+            }
         } else if (widget.class === "Line") {
             const linetype = prop.orientation === "Qt::Vertical" ? "vline" : "hline";
             return (<div className={"qt-designer-form-" + linetype} />);
