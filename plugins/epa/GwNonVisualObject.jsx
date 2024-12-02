@@ -97,7 +97,7 @@ class GwNonVisualObject extends React.Component {
                 // TODO: Manage different plot types (curve, patterns, etc)
                 const resultToPlot = {
                     ...result,
-                    curve_type: this.state.widgetsProperties.curve_type?.value || "LINE"
+                    curve_type: this.state.widgetsProperties.curve_type?.value || "None"
                 };
 
                 this.getplot(resultToPlot, nonvisualobjectResult);

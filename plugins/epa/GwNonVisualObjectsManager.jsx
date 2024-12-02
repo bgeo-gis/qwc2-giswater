@@ -204,6 +204,7 @@ class GwNonVisualObjectsManager extends React.Component {
             break;
         case "openPatterns":
             console.log("Opening patterns...");
+            this.openNonVisualObject("lyt_nvo_patterns","nvo_patterns", "v_edit_inp_pattern", "pattern_id", action.row[0].original.pattern_id, "pattern_id");
             break;
         case "openTimeseries":
             console.log("Opening tiemseries...");
