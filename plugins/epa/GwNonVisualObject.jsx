@@ -80,7 +80,6 @@ class GwNonVisualObject extends React.Component {
             widgets.forEach(widget => {
                 if (widget.widgettype == "tableview" || widget.widgettype === "tablewidget") {
                     tableWidget = widget;
-
                 }
             });
 
@@ -94,6 +93,14 @@ class GwNonVisualObject extends React.Component {
 
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
+
+                // TODO: Manage different plot types (curve, patterns, etc)
+                const resultToPlot = {
+                    ...result,
+                    curve_type: this.state.widgetsProperties.curve_type?.value || "LINE"
+                };
+
+                this.getplot(resultToPlot, nonvisualobjectResult);
                 this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
                     value: GwUtils.getListToValue(result)
                 } } }));
@@ -105,8 +112,47 @@ class GwNonVisualObject extends React.Component {
         }
     };
 
+
+    getplot = (table, nonvisualobjectResult) => {
+        try {
+            const requestUrl = GwUtils.getServiceUrl("nonvisual");
+            const widgets = nonvisualobjectResult.body.data.fields;
+            let plotwidget = null;
+
+            //Get widget
+            widgets.forEach(widget => {
+                if (widget.widgettype == "label" ) {
+                    plotwidget = widget;
+                }
+            });
+
+            axios.post(requestUrl + "plot", table)
+                .then((response) => {
+                    let result = response.data;
+
+                    // Remove xml and doctype tags
+                    if (typeof result === 'string') {
+                        result = result.replace(/^<\?xml[\s\S]*?\?>/, '')
+                                       .replace(/<!DOCTYPE[\s\S]*?>/, '')
+                                       .trim();
+                    }
+                    // Set SVG to widget
+                    this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [plotwidget.columnname]: {
+                        value: (result)
+                    } } }));
+                })
+                .catch((e) => {
+                    console.error("Error generating plot:", e);
+                });
+        } catch (error) {
+            console.warn("Error in getplot:", error);
+        }
+    };
+
+
     onToolClose = () => {
         this.props.setActiveNonVisualObject(null, null);
+        this.setState({ widgetsProperties: {}, widgetValues: {} });
         if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
         }
@@ -122,6 +168,14 @@ class GwNonVisualObject extends React.Component {
             break;
         }
     };
+    onWidgetValueChange = (widget, value) => {
+        this.setState((state) => ({
+            widgetValues: { ...state.widgetValues, [widget.name]: value },
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } }
+
+        }));
+    };
+
 
     render() {
         let window = null;
