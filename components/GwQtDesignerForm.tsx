@@ -30,6 +30,7 @@ type Properties = {
     disabled: boolean,
     hidden: boolean,
     items: any[], // For comboboxes, but needs to be implemented
+    buttonsToDisable: string[]
 };
 
 type WidgetsProperties = {
@@ -291,7 +292,8 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             },
             disabled: userProperties.disabled ?? properties.disabled,
             hidden: userProperties.hidden ?? properties.hidden,
-            items: userProperties.items || properties.items || [] // Items for combobox, default to empty if not provided
+            items: userProperties.items || properties.items || [], // Items for combobox, default to empty if not provided
+            buttonsToDisable: userProperties.buttonsToDisable || []
         };
     };
     renderWidget = (widget, nametransform = (name) => name, disabled = false) => {
@@ -368,8 +370,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             }
 
             const { values, form } = value;
-
-            return (<GwTableWidgetV3 onWidgetAction={this.props.onWidgetAction} form={form} values={values}/>);
+            return (<GwTableWidgetV3 onWidgetAction={this.props.onWidgetAction} buttonsToDisable={widgetProperties.buttonsToDisable} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
             // Check if there is style specified in widgetcontrols
             const widgetControls = JSON.parse(widget.property.widgetcontrols);
@@ -696,7 +697,8 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             props: widget.property || {},
             disabled: widget.property?.readOnly === "true" || widget.property?.enabled === "false",
             hidden: false,
-            items: widget.class === "QComboBox" && widget.item ? MiscUtils.ensureArray(widget.item) : [] // Items for combos
+            items: widget.class === "QComboBox" && widget.item ? MiscUtils.ensureArray(widget.item) : [], // Items for combos
+            buttonsToDisable: []
         };
     };
     reformatWidget = (widget, currentLayout: string, widgetsProperties: WidgetsProperties, counters) => {
