@@ -113,12 +113,12 @@ class GwEpaSelector extends React.Component {
             axios.put(requestUrl + "dialog", { theme: this.props.theme.title, combos: combos, comboChilds:comboChilds }).then(response => {
                 const { body } = response.data;
                 Object.keys(body).forEach(key => {
-                    const listItems = body[key].length > 0 ? body[key].map(value => ({
+                    const listItems = body[key].values.length > 0 ? body[key].values.map(value => ({
                         property: { text: value, value: value }
                     })): [{ property: { text: "", value: "" }}];
 
                     this.setState((state) => ({
-                        widgetsProperties: { ...state.widgetsProperties, [key]: { items: listItems, value: listItems[0].property.value }}
+                        widgetsProperties: { ...state.widgetsProperties, [key]: { items: listItems, value: body[key].selectedValue }}
                     }));
                 });
             })
