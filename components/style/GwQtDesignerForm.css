@@ -71,6 +71,19 @@
     resize: none;
 }
 
+.epa-manager-body  div.MuiTableContainer-root{
+    max-width: 870px;
+    max-height: 120px;
+}
+
+.epa-manager-body div.css-10gei56{
+    height: 100px;
+}
+
+.epa-manager-body textarea{
+    resize: none;
+    min-width: 250px;
+}
 
 
 .manager-body div.qt-designer-layout-grid,
