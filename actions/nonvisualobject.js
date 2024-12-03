@@ -10,11 +10,12 @@ ReducerIndex.register("nonvisualobject", nonvisualobjectReducer);
 
 export const SET_ACTIVE_NONVISUALOBJECT = 'SET_ACTIVE_NONVISUALOBJECT';
 
-export function setActiveNonvisualobject(nonvisualobjectResult, keepManagerOpen, filterFields) {
+export function setActiveNonvisualobject(nonvisualobjectResult, keepManagerOpen, filterFields, dialogParams) {
     return {
         type: SET_ACTIVE_NONVISUALOBJECT,
         nonvisualobjectResult: nonvisualobjectResult,
         keepManagerOpen: keepManagerOpen,
         filterFields: filterFields,
+        dialogParams: dialogParams
     };
 }

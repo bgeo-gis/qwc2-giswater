@@ -40,10 +40,12 @@ class GwNonVisualObject extends React.Component {
         title: PropTypes.string,
         nonvisualobjectResult: PropTypes.object,
         filterFields: PropTypes.object,
+        dialogParams: PropTypes.object,
     };
     static defaultProps = {
         nonvisualobjectResult: null,
         filterFields: null,
+        dialogParams: null,
         title: 'Non Visual Object',
         initialHeight: 400,
         initialWidth: 300,
@@ -60,7 +62,7 @@ class GwNonVisualObject extends React.Component {
     };
 
     componentDidUpdate(prevProps) {
-        if (prevProps.nonvisualobjectResult !== this.props.nonvisualobjectResult) {
+        if (prevProps.nonvisualobjectResult !== this.props.nonvisualobjectResult && this.props.nonvisualobjectResult !== null) {
             // Get list in case of table in form
             this.getList(this.props.nonvisualobjectResult);
         }
@@ -83,30 +85,33 @@ class GwNonVisualObject extends React.Component {
                 }
             });
 
-            const params = {
-                theme: this.props.theme.title,
-                tabName: tableWidget.tabname,
-                widgetname: tableWidget.columnname,
-                tableName: tableWidget.linkedobject,
-                filterFields: JSON.stringify(this.props.filterFields)
-            };
-
-            axios.get(requestUrl + "getlist", { params: params }).then((response) => {
-                const result = response.data;
-
-                // TODO: Manage different plot types (curve, patterns, etc)
-                const resultToPlot = {
-                    ...result,
-                    curve_type: this.state.widgetsProperties.curve_type?.value || "None"
+            if(tableWidget){
+                const params = {
+                    theme: this.props.theme.title,
+                    tabName: tableWidget.tabname,
+                    widgetname: tableWidget.columnname,
+                    tableName: tableWidget.linkedobject,
+                    filterFields: JSON.stringify(this.props.filterFields)
                 };
 
-                this.getplot(resultToPlot, nonvisualobjectResult);
-                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
-                    value: GwUtils.getListToValue(result)
-                } } }));
-            }).catch((e) => {
-                console.log(e);
-            });
+                axios.get(requestUrl + "getlist", { params: params }).then((response) => {
+                    const result = response.data;
+
+                    // TODO: Manage different plot types (curve, patterns, etc)
+                    const resultToPlot = {
+                        ...result,
+                        curve_type: this.state.widgetsProperties.curve_type?.value || "None"
+                    };
+
+                    this.getplot(resultToPlot, nonvisualobjectResult);
+                    this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
+                        value: GwUtils.getListToValue(result)
+                    } } }));
+                }).catch((e) => {
+                    console.log(e);
+                });
+            }
+
         } catch (error) {
             console.warn(error);
         }
@@ -179,7 +184,7 @@ class GwNonVisualObject extends React.Component {
 
     render() {
         let window = null;
-        if (this.props.nonvisualobjectResult !== null) {
+        if (this.props.nonvisualobjectResult !== null && this.props.dialogParams !== null) {
             let body = null;
             if (isEmpty(this.props.nonvisualobjectResult)) {
                 if (this.state.pendingRequests === true) {
@@ -203,11 +208,11 @@ class GwNonVisualObject extends React.Component {
             window = (
                 <ResizeableWindow
                     dockable={false} icon="giswater" id="GwNonVisualObject"
-                    initialHeight={this.props.initialHeight} initialWidth= {this.props.initialWidth}
+                    initialHeight={this.props.dialogParams.initialHeight} initialWidth= {this.props.dialogParams.initialWidth}
                     initialX={this.props.initialX} initialY={this.props.initialY}
-                    key="GwNonVisualObjectWindow" maximizeabe={false}
-                    minHeight={this.props.initialHeight} minWidth={this.props.initialWidth} minimizeable={true}
-                    onClose={this.onToolClose} onShow={this.onShow} title={this.props.title}
+                    key="GwNonVisualObjectWindow" maximizeabe={true}
+                    minHeight={this.props.dialogParams.minHeight} minWidth={this.props.dialogParams.minWidth} minimizeable={false}
+                    onClose={this.onToolClose} onShow={this.onShow} title={this.props.dialogParams.title}
                 >
                     {body}
                 </ResizeableWindow>
@@ -226,6 +231,7 @@ const selector = (state) => ({
     nonvisualobjectResult: state.nonvisualobject.nonvisualobjectResult,
     keepManagerOpen: state.nonvisualobject.keepManagerOpen,
     filterFields: state.nonvisualobject.filterFields,
+    dialogParams: state.nonvisualobject.dialogParams
 });
 
 export default connect(selector, {

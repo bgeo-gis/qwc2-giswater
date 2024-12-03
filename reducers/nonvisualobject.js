@@ -10,7 +10,8 @@ import {SET_ACTIVE_NONVISUALOBJECT} from '../actions/nonvisualobject';
 const defaultState = {
     nonvisualobjectResult: null,
     keepManagerOpen: false,
-    filterFields: null
+    filterFields: null,
+    dialogParams: null,
 };
 
 export default function nonvisualobject(state = defaultState, action) {
@@ -18,7 +19,8 @@ export default function nonvisualobject(state = defaultState, action) {
     case SET_ACTIVE_NONVISUALOBJECT: {
         return {...state, nonvisualobjectResult: action.nonvisualobjectResult,
                 keepManagerOpen: action.keepManagerOpen,
-                filterFields: action.filterFields};
+                filterFields: action.filterFields,
+                dialogParams: action.dialogParams};
     }
     default:
         return state;

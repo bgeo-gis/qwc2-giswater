@@ -77,7 +77,6 @@ class GwNonVisualObjectsManager extends React.Component {
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } }
 
         }));
-        console.log("WIDGETPROPERTIES", this.state.widgetsProperties);
     };
 
     onTabChanged = (tab, widget) => {
@@ -193,29 +192,30 @@ class GwNonVisualObjectsManager extends React.Component {
 
     onWidgetAction = (action) => {
         let functionName = action.functionName ? action.functionName : action.widgetfunction.functionName;
+        let dialogParams = action.widgetfunction?.params;
         switch (functionName) {
         case "openRoughness":
-            console.log("Opening roughness...");
-            this.openNonVisualObject("lyt_nvo_roughness","nvo_roughness", "cat_mat_roughness", "id", action.row[0].original.id);
+            console.log("Opening roughness..., ",action.params);
+            this.openNonVisualObject("lyt_nvo_roughness","nvo_roughness", "cat_mat_roughness", "id", action.row[0].original.id, dialogParams);
             break;
         case "openCurves":
             console.log("Opening curves...");
-            this.openNonVisualObject("lyt_nvo_curves","nvo_curves", "v_edit_inp_curve", "id", action.row[0].original.id, "curve_id");
+            this.openNonVisualObject("lyt_nvo_curves","nvo_curves", "v_edit_inp_curve", "id", action.row[0].original.id, dialogParams, "curve_id");
             break;
         case "openPatterns":
             console.log("Opening patterns...");
-            this.openNonVisualObject("lyt_nvo_patterns","nvo_patterns", "v_edit_inp_pattern", "pattern_id", action.row[0].original.pattern_id, "pattern_id");
+            this.openNonVisualObject("lyt_nvo_patterns","nvo_patterns", "v_edit_inp_pattern", "pattern_id", action.row[0].original.pattern_id, dialogParams, "pattern_id");
             break;
         case "openTimeseries":
             console.log("Opening tiemseries...");
             break;
         case "openControls":
             console.log("Opening controls...");
-            this.openNonVisualObject("lyt_nvo_controls","nvo_controls", "v_edit_inp_controls", "id", action.row[0].original.id);
+            this.openNonVisualObject("lyt_nvo_controls","nvo_controls", "v_edit_inp_controls", "id", action.row[0].original.id, dialogParams);
             break;
         case "openRules":
             console.log("Opening rules...");
-            this.openNonVisualObject("lyt_nvo_rules","nvo_rules", "v_edit_inp_rules", "id", action.row[0].original.id);
+            this.openNonVisualObject("lyt_nvo_rules","nvo_rules", "v_edit_inp_rules", "id", action.row[0].original.id, dialogParams);
             break;
         case "openLIDS":
             console.log("Opening LIDS...");
@@ -229,7 +229,7 @@ class GwNonVisualObjectsManager extends React.Component {
     };
 
     // Open specific non visual object
-    openNonVisualObject = (layoutName, formType, tableName, id, idVal, filterColumn=null) => {
+    openNonVisualObject = (layoutName, formType, tableName, id, idVal, dialogParams, filterColumn=null,) => {
         if (!this.props.keepManagerOpen) {
             this.setState({ managerResult: null });
         }
@@ -252,7 +252,7 @@ class GwNonVisualObjectsManager extends React.Component {
                     const filterFields = { [filterColumn]: idVal };
 
                     //Open non visual object dialog
-                    this.props.setActiveNonVisualObject(result, this.props.keepManagerOpen, filterFields);
+                    this.props.setActiveNonVisualObject(result, this.props.keepManagerOpen, filterFields, dialogParams);
                     this.props.setCurrentTask("GwNonVisualObject");
                 }).catch((e) => {
                     console.log("FAILED: ",e);
