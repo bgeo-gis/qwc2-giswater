@@ -204,6 +204,9 @@ class GwNonVisualObjectsManager extends React.Component {
             break;
         case "openPatterns":
             console.log("Opening patterns...");
+            if (action.row[0].original.pattern_type) {
+                dialogParams = { ...dialogParams, pattern_type: action.row[0].original.pattern_type };
+            }
             this.openNonVisualObject("lyt_nvo_patterns","nvo_patterns", "v_edit_inp_pattern", "pattern_id", action.row[0].original.pattern_id, dialogParams, "pattern_id");
             break;
         case "openTimeseries":
@@ -229,7 +232,7 @@ class GwNonVisualObjectsManager extends React.Component {
     };
 
     // Open specific non visual object
-    openNonVisualObject = (layoutName, formType, tableName, id, idVal, dialogParams, filterColumn=null,) => {
+    openNonVisualObject = (layoutName, formType, tableName, id, idVal, dialogParams, filterColumn=null) => {
         if (!this.props.keepManagerOpen) {
             this.setState({ managerResult: null });
         }

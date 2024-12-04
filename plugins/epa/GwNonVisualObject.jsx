@@ -78,12 +78,24 @@ class GwNonVisualObject extends React.Component {
             const widgets = nonvisualobjectResult.body.data.fields;
             let tableWidget = null;
 
-            //Get widget
-            widgets.forEach(widget => {
-                if (widget.widgettype == "tableview" || widget.widgettype === "tablewidget") {
-                    tableWidget = widget;
-                }
-            });
+            if (this.props.dialogParams && this.props.dialogParams.pattern_type) {
+                const patternType = this.props.dialogParams.pattern_type.toLowerCase();
+                const linkedObjectName = 'tbl_nvo_patterns_' + patternType;
+
+                // Get correct pattern tablewidget
+                widgets.forEach(widget => {
+                    if ((widget.widgettype == "tableview" || widget.widgettype === "tablewidget") && widget.linkedobject === linkedObjectName) {
+                        console.log("table widget::::::::", widget);
+                        tableWidget = widget;
+                    }
+                });
+            } else {
+                widgets.forEach(widget => {
+                    if (widget.widgettype == "tableview" || widget.widgettype === "tablewidget") {
+                        tableWidget = widget;
+                    }
+                });
+            }
 
             if(tableWidget){
                 const params = {
@@ -97,7 +109,6 @@ class GwNonVisualObject extends React.Component {
                 axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                     const result = response.data;
 
-                    // TODO: Manage different plot types (curve, patterns, etc)
                     const resultToPlot = {
                         ...result,
                         curve_type: this.state.widgetsProperties.curve_type?.value || "None"
