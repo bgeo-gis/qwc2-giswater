@@ -136,7 +136,7 @@ class GwEpaSelector extends React.Component {
     onWidgetAction = (action, widget, value) => {
         // Do an action depending of the function name
         switch (action.functionName) {
-            case "closeDlg":
+            case "close_dlg":
                 this.onClose();
                 break;
             case "accept":
@@ -145,7 +145,7 @@ class GwEpaSelector extends React.Component {
             case "help":
                 GwUtils.openHelp();
                 break;
-            case "setComboValues":
+            case "set_combo_values":
                 if (Object.keys(this.state.widgetsProperties).length > 0) {
                     this.setComboValues({ [widget.name]: { value: value } }, action.parameters.cmbListToChange)
                 }
