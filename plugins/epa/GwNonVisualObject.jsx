@@ -101,21 +101,20 @@ class GwNonVisualObject extends React.Component {
                 const params = {
                     theme: this.props.theme.title,
                     tabName: tableWidget.tabname,
-                    widgetname: tableWidget.columnname,
+                    widgetname: tableWidget.widgetname,
                     tableName: tableWidget.linkedobject,
                     filterFields: JSON.stringify(this.props.filterFields)
                 };
 
                 axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                     const result = response.data;
-
                     const resultToPlot = {
                         ...result,
-                        curve_type: this.state.widgetsProperties.curve_type?.value || "None"
+                        curve_type: this.props.dialogParams?.curve_type || "None"
                     };
 
                     this.getplot(resultToPlot, nonvisualobjectResult);
-                    this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
+                    this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.widgetname]: {
                         value: GwUtils.getListToValue(result)
                     } } }));
                 }).catch((e) => {
@@ -153,7 +152,7 @@ class GwNonVisualObject extends React.Component {
                                        .trim();
                     }
                     // Set SVG to widget
-                    this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [plotwidget.columnname]: {
+                    this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [plotwidget.widgetname]: {
                         value: (result)
                     } } }));
                 })
