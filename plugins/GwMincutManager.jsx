@@ -23,6 +23,7 @@ import GwUtils from '../utils/GwUtils';
 
 import {setActiveMincut} from '../actions/mincut';
 import {setActiveSelector} from '../actions/selector';
+import { ConstructionOutlined } from '@mui/icons-material';
 
 class GwMincutManager extends React.Component {
     static propTypes = {
@@ -129,14 +130,14 @@ class GwMincutManager extends React.Component {
             const params = {
                 theme: this.props.currentTheme.title,
                 tabName: tableWidget.tabname,
-                widgetname: tableWidget.columnname,
+                widgetname: tableWidget.widgetname,
                 tableName: tableWidget.linkedobject,
                 filterFields: {}
             };
 
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
+                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.widgetname]: {
                     value: GwUtils.getListToValue(result)
                 } } }));
             }).catch((e) => {
@@ -158,6 +159,8 @@ class GwMincutManager extends React.Component {
             this.openMincut(action.row[0].original.id);
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
             if (!this.props.keepManagerOpen) {
+                console.log("this.props.keepManagerOpen", this.props.keepManagerOpen);
+                console.log("!!!!!! Closing mincut manager");
                 this.setState({ mincutmanagerResult: null });
             }
             break;
