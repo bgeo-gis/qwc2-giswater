@@ -107,7 +107,7 @@ class GwEpaSelector extends React.Component {
                     return updatedWidgetsProperties[key] !== undefined ? { [key]: updatedWidgetsProperties[key].value } : combo;
                 })
                 // Filter only the required combos
-                .filter(combo => ["result_name_show", "result_name_compare", "selector_date", "compare_date"].includes(Object.keys(combo)[0]));
+                .filter(combo => ["tab_result_result_name_show", "tab_result_result_name_compare", "tab_time_selector_date", "tab_time_compare_date"].includes(Object.keys(combo)[0]));
 
             // Get new values of combos
             axios.put(requestUrl + "dialog", { theme: this.props.theme.title, combos: combos, comboChilds:comboChilds }).then(response => {
@@ -118,7 +118,7 @@ class GwEpaSelector extends React.Component {
                     })): [{ property: { text: "", value: "" }}];
 
                     this.setState((state) => ({
-                        widgetsProperties: { ...state.widgetsProperties, [key]: { items: listItems, value: body[key].selectedValue }}
+                        widgetsProperties: { ...state.widgetsProperties, ["tab_time_"+key]: { items: listItems, value: body[key].selectedValue }}
                     }));
                 });
             })
@@ -178,11 +178,12 @@ class GwEpaSelector extends React.Component {
             // Call 'accept' backend call
             axios.put(requestUrl + "accept", { theme: this.props.theme.title, combos:combos }).then(() => {
                 // Reload layers if there is a result name show selected
-                if (!isEmpty(this.state.widgetsProperties["result_name_show"]["value"])) {
+                console.log("Widgets properties: ", this.state.widgetsProperties)
+                if (!isEmpty(this.state.widgetsProperties["tab_result_result_name_show"]["value"])) {
                     this.manageLayers()
                 }
                 // Open 'Compare Theme' in new window if there is a result name compare selected
-                if (!isEmpty(this.state.widgetsProperties["result_name_compare"]["value"])) {
+                if (!isEmpty(this.state.widgetsProperties["tab_result_result_name_compare"]["value"])) {
                     this.openCompareTheme()
                 }
                 this.onClose()
