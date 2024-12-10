@@ -64,6 +64,7 @@ class GwNonVisualObject extends React.Component {
     componentDidUpdate(prevProps) {
         if (prevProps.nonvisualobjectResult !== this.props.nonvisualobjectResult && this.props.nonvisualobjectResult !== null) {
             // Get list in case of table in form
+            this.manageLIDS(this.props.nonvisualobjectResult);
             this.getList(this.props.nonvisualobjectResult);
         }
         // Manage close tool
@@ -164,6 +165,22 @@ class GwNonVisualObject extends React.Component {
         }
     };
 
+    manageLIDS = (nonvisualobjectResult) => {
+        const widgets = nonvisualobjectResult.body.data.fields;
+        let lidco_type = this.props.dialogParams?.lidco_type;
+
+        if (lidco_type) {
+            //Get widget
+            widgets.forEach(widget => {
+                if (widget.widgettype == "label" && widget.widgetname.includes("img_")) {
+                    const imagePath = `assets/resources/ud_lid_${lidco_type}.png`;
+                    this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [widget.widgetname]: {
+                        value: (imagePath)
+                    } } }));
+                }
+            });
+        }
+    };
 
     onToolClose = () => {
         this.props.setActiveNonVisualObject(null, null);
@@ -183,6 +200,7 @@ class GwNonVisualObject extends React.Component {
             break;
         }
     };
+
     onWidgetValueChange = (widget, value) => {
         this.setState((state) => ({
             widgetValues: { ...state.widgetValues, [widget.name]: value },
