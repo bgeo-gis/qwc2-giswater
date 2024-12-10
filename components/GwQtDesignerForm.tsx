@@ -378,7 +378,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
 
             return (<GwTableView values={value.values || []} form={value.form} style={style} />);
         } else if (widget.class === "QLabel") {
-            if (widget.name.startsWith("img_")) {
+            if (widget.name.includes("img_")) {
                 // Get value
                 let value =this.props.widgetsProperties[widget.name]?.value
                 // Check if the value is a SVG
