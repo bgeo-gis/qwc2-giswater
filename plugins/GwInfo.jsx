@@ -209,7 +209,7 @@ class GwInfo extends React.Component {
             }
             this.setFields(
                 feature.id,
-                this.getEpaTableName(this.state.widgetsProperties.epa_type?.value),
+                this.getEpaTableName(this.state.widgetsProperties.tab_data_epa_type?.value),
                 this.state.epaValues
             ).then((response) => {
                 const epaResult = response.data;
@@ -242,11 +242,11 @@ class GwInfo extends React.Component {
     };
 
     onWidgetValueChange = (widget, value) => {
-        let columnname = widget.name;
+        let columnname = widget.property.columnname;
         if (widget.property.widgetfunction !== "null") {
             columnname = JSON.parse(widget.property.widgetfunction)?.parameters?.columnfind;
         }
-        columnname = columnname ?? widget.name;
+        columnname = columnname || widget.property.columnname || widget.name;
 
         if (widget.property.isfilter === "true") {
             // Get filterSign
@@ -346,7 +346,7 @@ class GwInfo extends React.Component {
             }
         } else if (tab.name === "tab_epa") {
             const formVal = this.state.widgetsProperties.form_epa?.value;
-            const epaType = this.state.widgetsProperties.epa_type?.value;
+            const epaType = this.state.widgetsProperties.tab_data_epa_type?.value;
             if (!formVal?.form_xml && !formVal?.loading) {
                 this.loadEpaForm(epaType);
             }
@@ -475,7 +475,7 @@ class GwInfo extends React.Component {
                 let tableName = null;
                 // TODO: Is this still necessary?
                 if (tab.name === 'tab_visit') {
-                    tableName = _tableName || this.state.widgetsProperties.visit_class?.value;
+                    tableName = _tableName || this.state.widgetsProperties.tab_visit_visit_class?.value;
                 }
 
                 const params = {
