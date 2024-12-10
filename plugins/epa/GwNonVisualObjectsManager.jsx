@@ -146,14 +146,14 @@ class GwNonVisualObjectsManager extends React.Component {
             const params = {
                 theme: this.props.theme.title,
                 tabName: tableWidget.tabname,
-                widgetname: tableWidget.columnname,
+                widgetname: tableWidget.widgetname,
                 tableName: tableWidget.linkedobject,
                 filterFields: {}
             };
 
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
+                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.widgetname]: {
                     value: GwUtils.getListToValue(result)
                 } } }));
             }).catch((e) => {
@@ -200,6 +200,9 @@ class GwNonVisualObjectsManager extends React.Component {
             break;
         case "openCurves":
             console.log("Opening curves...");
+            if (action.row[0].original.curve_type) {
+                dialogParams = { ...dialogParams, curve_type: action.row[0].original.curve_type };
+            }
             this.openNonVisualObject("lyt_nvo_curves","nvo_curves", "v_edit_inp_curve", "id", action.row[0].original.id, dialogParams, "curve_id");
             break;
         case "openPatterns":
@@ -211,6 +214,7 @@ class GwNonVisualObjectsManager extends React.Component {
             break;
         case "openTimeseries":
             console.log("Opening tiemseries...");
+            this.openNonVisualObject("lyt_nvo_timeseries","nvo_timeseries", "v_edit_inp_timeseries", "id", action.row[0].original.id, dialogParams, "timser_id");
             break;
         case "openControls":
             console.log("Opening controls...");
@@ -220,8 +224,12 @@ class GwNonVisualObjectsManager extends React.Component {
             console.log("Opening rules...");
             this.openNonVisualObject("lyt_nvo_rules","nvo_rules", "v_edit_inp_rules", "id", action.row[0].original.id, dialogParams);
             break;
-        case "openLIDS":
+        case "openLids":
             console.log("Opening LIDS...");
+            if (action.row[0].original.lidco_type) {
+                dialogParams = { ...dialogParams, lidco_type: action.row[0].original.lidco_type };
+            }
+            this.openLid("lyt_nvo_lids", action.row[0].original.lidco_type, "inp_lid", "lidco_id", action.row[0].original.lidco_id, dialogParams);
             break;
         case "closeDlg": this.onClose(); break;
         case "help":     GwUtils.openHelp();    break;
@@ -232,7 +240,7 @@ class GwNonVisualObjectsManager extends React.Component {
     };
 
     // Open specific non visual object
-    openNonVisualObject = (layoutName, formType, tableName, id, idVal, dialogParams, filterColumn=null) => {
+    openNonVisualObject = (layoutName, formType, tableName, idname, id, dialogParams, filterColumn=null) => {
         if (!this.props.keepManagerOpen) {
             this.setState({ managerResult: null });
         }
@@ -246,13 +254,47 @@ class GwNonVisualObjectsManager extends React.Component {
                     formType: formType,
                     layoutName:layoutName,
                     tableName: tableName,
-                    id: id,
-                    idVal: idVal
+                    idname: idname,
+                    id: id
                 };
 
                 axios.get(requestUrl + "getnonvisualobject", { params: params }).then(response => {
                     const result = response.data;
-                    const filterFields = { [filterColumn]: idVal };
+                    const filterFields = { [filterColumn]: id };
+
+                    //Open non visual object dialog
+                    this.props.setActiveNonVisualObject(result, this.props.keepManagerOpen, filterFields, dialogParams);
+                    this.props.setCurrentTask("GwNonVisualObject");
+                }).catch((e) => {
+                    console.log("FAILED: ",e);
+                });
+            }
+        } catch (error) {
+            console.warn("ERROR:", error);
+        }
+    }
+
+    openLid = (layoutName, formName, tableName, idname, id, dialogParams, filterColumn=null) => {
+        if (!this.props.keepManagerOpen) {
+            this.setState({ managerResult: null });
+        }
+        try{
+            const requestUrl = GwUtils.getServiceUrl("nonvisual");
+            if (!isEmpty(requestUrl)) {
+                // Send request
+                console.log("Requesting dialog...");
+                const params = {
+                    theme: this.props.theme.title,
+                    formName: formName,
+                    layoutName:layoutName,
+                    tableName: tableName,
+                    idname: idname,
+                    id: id
+                };
+
+                axios.get(requestUrl + "getlid", { params: params }).then(response => {
+                    const result = response.data;
+                    const filterFields = { [filterColumn]: id };
 
                     //Open non visual object dialog
                     this.props.setActiveNonVisualObject(result, this.props.keepManagerOpen, filterFields, dialogParams);
