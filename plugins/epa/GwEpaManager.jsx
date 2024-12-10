@@ -232,7 +232,7 @@ class GwEpaManager extends React.Component {
         }
 
         this.setState((state) => ({
-            widgetsProperties: { ...state.widgetsProperties, ["table_view"]: { ...state.widgetsProperties["table_view"], buttonsToDisable: buttonsToDisable } }
+            widgetsProperties: { ...state.widgetsProperties, ["tab_none_table_view"]: { ...state.widgetsProperties["tab_none_table_view"], buttonsToDisable: buttonsToDisable } }
         }));
 
     }
@@ -279,7 +279,7 @@ class GwEpaManager extends React.Component {
         }
 
         this.setState((state) => ({
-            widgetsProperties: { ...state.widgetsProperties, ["txt_info"]: { value: msg } }
+            widgetsProperties: { ...state.widgetsProperties, ["tab_none_txt_info"]: { value: msg } }
         }));
     };
 
@@ -395,14 +395,14 @@ class GwEpaManager extends React.Component {
             const params = {
                 theme: this.props.theme.title,
                 tabName: tableWidget.tabname,
-                widgetname: tableWidget.columnname,
+                widgetname: tableWidget.widgetname,
                 tableName: tableWidget.linkedobject,
                 filterFields: {}
             };
 
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
-                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.columnname]: {
+                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.widgetname]: {
                     value: GwUtils.getListToValue(result)
                 } } }));
             }).catch((e) => {
