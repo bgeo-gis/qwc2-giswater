@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
-import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
+import { removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
@@ -40,7 +40,7 @@ class GwEpaManager extends React.Component {
 
     static defaultProps = {
         title: 'Epa result manager',
-        initialWidth: 1200,
+        initialWidth: 1103,
         initialHeight: 375
     };
 
@@ -283,7 +283,7 @@ class GwEpaManager extends React.Component {
         }));
     };
 
-    deleteEpa = (epaId) => {
+    deleteEpa = async (epaId) => {
         // Manage delete selected epa results
         try {
             const requestUrl = GwUtils.getServiceUrl("epamanager");
@@ -291,16 +291,18 @@ class GwEpaManager extends React.Component {
                 theme: this.props.theme.title,
                 epaId: epaId
             };
-            return axios.delete(requestUrl + "delete", { params }).catch((e) => {
+            try {
+                return await axios.delete(requestUrl + "delete", { params });
+            } catch (e) {
                 console.log(e);
-            });
+            }
         } catch (error) {
             console.warn(error);
             return Promise.reject(error);
         }
     };
 
-    editEpaDescript = (resultId, newDescript) => {
+    editEpaDescript = async (resultId, newDescript) => {
         // Edit epa description
         try {
             const requestUrl = GwUtils.getServiceUrl("epamanager");
@@ -309,16 +311,18 @@ class GwEpaManager extends React.Component {
                 resultId: resultId,
                 newDescript: newDescript
             };
-            return axios.get(requestUrl + "editdescript", { params }).catch((e) => {
+            try {
+                return await axios.get(requestUrl + "editdescript", { params });
+            } catch (e) {
                 console.log(e);
-            });
+            }
         } catch (error) {
             console.warn(error);
             return Promise.reject(error);
         }
     };
 
-    showInpData = (resultIds) => {
+    showInpData = async (resultIds) => {
         // Get inp data from epa result id's
         try {
             const requestUrl = GwUtils.getServiceUrl("epamanager");
@@ -326,16 +330,18 @@ class GwEpaManager extends React.Component {
                 theme: this.props.theme.title,
                 resultIds: resultIds
             };
-            return axios.put(requestUrl + "showinpdata", data).catch((e) => {
+            try {
+                return await axios.put(requestUrl + "showinpdata", data);
+            } catch (e) {
                 console.log(e);
-            });
+            }
         } catch (error) {
             console.warn(error);
             return Promise.reject(error);
         }
     };
 
-    toggleArchive = (resultId,status) => {
+    toggleArchive = async (resultId,status) => {
         // Archive selected epa
         try {
             const requestUrl = GwUtils.getServiceUrl("epamanager");
@@ -344,16 +350,18 @@ class GwEpaManager extends React.Component {
                 resultId: resultId,
                 status:status
             };
-            return axios.get(requestUrl + "togglerptarchived", { params }).catch((e) => {
+            try {
+                return await axios.get(requestUrl + "togglerptarchived", { params });
+            } catch (e) {
                 console.log(e);
-            });
+            }
         } catch (error) {
             console.warn(error);
             return Promise.reject(error);
         }
     };
 
-    toggleCorporate = (resultId,isCorporate) => {
+    toggleCorporate = async (resultId,isCorporate) => {
         // Set epa corporate
         try {
             const requestUrl = GwUtils.getServiceUrl("epamanager");
@@ -362,9 +370,11 @@ class GwEpaManager extends React.Component {
                 resultId: resultId,
                 isCorporate:isCorporate
             };
-            return axios.get(requestUrl + "togglecorporate", { params }).catch((e) => {
+            try {
+                return await axios.get(requestUrl + "togglecorporate", { params });
+            } catch (e) {
                 console.log(e);
-            });
+            }
         } catch (error) {
             console.warn(error);
             return Promise.reject(error);
