@@ -51,7 +51,7 @@ class GwDscenario extends React.Component {
     componentDidUpdate(prevProps,prevState) {
         // Open the dialog when dscenario data changes
         if (prevProps.dscenarioResult !== this.props.dscenarioResult) {
-            this.openDialog(this.props.dscenarioResult,this.props.dscenarioId);
+            this.openDialog(this.props.dscenarioResult);
         }
 
         // Close the dialog when the task is reset
@@ -65,11 +65,21 @@ class GwDscenario extends React.Component {
         }
     }
 
+    openDialog = (dscenarioResult) => {
+        // Initialize form values and properties based on the fetched dscenario data
+        this.setState({
+            widgetValues: dscenarioResult?.values || {},
+            widgetsProperties: dscenarioResult?.fields || {}
+        });
+        this.getListInitial(dscenarioResult);
+    };
+
     getList = (tab) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("util");
             let tableWidget = null;
 
+            console.log(tab)
             //Get widget
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
                 if (widget.class === "QTableView" || widget.class === "QTableWidget") {
@@ -104,14 +114,49 @@ class GwDscenario extends React.Component {
         }
     };
 
-    openDialog = (dscenarioResult, dscenarioId) => {
-        // Initialize form values and properties based on the fetched dscenario data
-        this.setState({
-            widgetValues: dscenarioResult?.values || {},
-            widgetsProperties: dscenarioResult?.fields || {}
-        });
+    getListInitial = (result) => {
+        try {
+            const requestUrl = GwUtils.getServiceUrl("util");
+            const widgets = result.body.data.fields;
+            let firstTab = null;
+            let tableWidget = null;
 
-        console.log("dscenarioId --> ", dscenarioId)
+            //Get first tab form tabWidget
+            widgets.forEach(widget => {
+                if (widget.widgettype === "tabwidget") {
+                    firstTab = widget.tabs[0];
+                }
+
+            });
+            // Get the tablewidget from the first tab
+            widgets.forEach(widget => {
+                if (firstTab && widget.tabname === firstTab.tabName) {
+                    tableWidget = widget;
+                }
+            });
+
+
+            let filters = { dscenario_id : { value : this.props.dscenarioId, filterSign : "=" } };
+
+            const params = {
+                theme: this.props.theme.title,
+                tabName: tableWidget.tabname,
+                widgetname: tableWidget.widgetname,
+                tableName: tableWidget.linkedobject,
+                filterFields: JSON.stringify(filters)
+            };
+
+            axios.get(requestUrl + "getlist", { params: params }).then((response) => {
+                const result = response.data;
+                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.widgetname]: {
+                    value: GwUtils.getListToValue(result)
+                } } }));
+            }).catch((e) => {
+                console.log(e);
+            });
+        } catch (error) {
+            console.warn(error);
+        }
     };
 
     onWidgetValueChange = (widget, value) => {
@@ -158,7 +203,7 @@ class GwDscenario extends React.Component {
                 body = <div role="body"><span>No result</span></div>;
             } else {
                 body = (
-                    <div role="body">
+                    <div role="body" className="dscenario-manager-body">
                         <GwQtDesignerForm
                             form_xml={this.props.dscenarioResult.form_xml}
                             onWidgetAction={this.onWidgetAction}

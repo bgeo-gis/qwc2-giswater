@@ -14,13 +14,15 @@ import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import GwUtils from '../utils/GwUtils';
 import { refreshLayer, addLayerFeatures, removeLayer } from 'qwc2/actions/layers';
-import InputContainer from 'qwc2/components/InputContainer';
+import InputContainer from 'qwc2/components/widgets/InputContainer';
 import Icon from 'qwc2/components/Icon';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import 'qwc2-giswater/plugins/style/GwToolbox.css';
 import 'qwc2/components/style/IdentifyViewer.css';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
+
+import { openToolBoxProcess } from '../actions/toolbox';
 
 class GwToolbox extends React.Component {
     static propTypes = {
@@ -43,7 +45,9 @@ class GwToolbox extends React.Component {
         toolboxInitialWidth: PropTypes.string,
         toolboxMinWidth: PropTypes.string,
         toolboxResult: PropTypes.object,
-        zoomToLayer: PropTypes.bool
+        zoomToLayer: PropTypes.bool,
+        openToolBoxProcess: PropTypes.func,
+        processId: PropTypes.number
     };
     static defaultProps = {
         initialWidth: 700,
@@ -57,7 +61,8 @@ class GwToolbox extends React.Component {
         icon: 'giswater',
         title: 'GW Toolbox',
         showOnlyExpandedEntries: false,
-        customMargin: '0'
+        customMargin: '0',
+        processId: null
     };
     constructor(props) {
         super(props);
@@ -70,12 +75,23 @@ class GwToolbox extends React.Component {
         hiddenWidgets: ["tab_line", "tab_point", "tab_polygon"],
         executionResult: null,
         toolWidgetValues: {},
-
+        widgetsProperties: {},
         expandedTabs: {},
         toolboxResult: null,
         pendingRequests: false,
         toolboxFilter: ""
     };
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.processId !== this.props.processId && this.props.processId !== null) {
+            this.toolClicked("processes",{ id: this.props.processId })
+        }
+    }
+
+    loadWidgetsProperties = (widgetsProperties) => {
+        this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, ...widgetsProperties } }));
+    };
+
     getProcess(processId, parentVals, callback, errorCallback) {
         const requestUrl = GwUtils.getServiceUrl("toolbox");
         if (!isEmpty(requestUrl)) {
@@ -140,7 +156,10 @@ class GwToolbox extends React.Component {
         }
     }
     clearToolManager = () => {
-        this.setState({ hiddenWidgets: ["tab_line", "tab_point", "tab_polygon"], toolResult: null, toolType: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {} });
+        this.setState({ hiddenWidgets: ["tab_line", "tab_point", "tab_polygon"], toolResult: null, toolType: null, executionResult: null, toolWidgetValues: {}, toolActiveTabs: {}, processId: null });
+        if (this.props.processId !== null) {
+            this.props.openToolBoxProcess(null);
+        }
     };
     onShow = () => {
         let pendingRequests = false;
@@ -200,6 +219,10 @@ class GwToolbox extends React.Component {
                 }
             }));
         }
+
+        this.setState((state) => ({
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: {  ...state.widgetsProperties[widget.name],value: value } }
+        }));
     };
     // eslint-disable-next-line
     onToolButton = (action, widget) => {
@@ -542,6 +565,8 @@ class GwToolbox extends React.Component {
                             onWidgetAction={this.onToolButton}
                             onWidgetValueChange={this.toolOnFieldUpdated}
                             widgetValues={this.state.toolWidgetValues}
+                            loadWidgetsProperties={this.loadWidgetsProperties}
+                            useNew widgetsProperties={this.state.widgetsProperties}
                         />
                     </div>
                 </ResizeableWindow>
@@ -564,7 +589,8 @@ const selector = (state) => ({
     currentTask: state.task.id,
     layers: state.layers.flat,
     map: state.map,
-    theme: state.theme.current
+    theme: state.theme.current,
+    processId: state.toolbox.processId,
 });
 
 export default connect(selector, {
@@ -572,5 +598,6 @@ export default connect(selector, {
     addLayerFeatures: addLayerFeatures,
     removeLayer: removeLayer,
     processStarted: processStarted,
-    processFinished: processFinished
+    processFinished: processFinished,
+    openToolBoxProcess: openToolBoxProcess
 })(GwToolbox);

@@ -9,7 +9,6 @@ import dscenarioReducer from "../reducers/dscenario";
 ReducerIndex.register("dscenario", dscenarioReducer);
 
 export const SET_ACTIVE_DSCENARIO = 'SET_ACTIVE_DSCENARIO';
-export const OPEN_TOOLBOX_PROCESS = 'OPEN_TOOLBOX_PROCESS';
 
 export function setActiveDscenario(dscenarioResult, keepManagerOpen, dscenarioId) {
     return {
@@ -17,12 +16,5 @@ export function setActiveDscenario(dscenarioResult, keepManagerOpen, dscenarioId
         dscenarioResult: dscenarioResult,
         keepManagerOpen: keepManagerOpen,
         dscenarioId: dscenarioId
-    };
-}
-
-export function openToolBoxProcess(processId) {
-    return {
-        type: OPEN_TOOLBOX_PROCESS,
-        processId: processId
     };
 }

@@ -4,23 +4,18 @@
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
  */
-
-import { SET_ACTIVE_DSCENARIO } from '../actions/dscenario';
+import { OPEN_TOOLBOX_PROCESS } from '../actions/toolbox';
 
 const defaultState = {
-    dscenarioResult: null,
-    keepManagerOpen: false,
-    dscenarioId: -1
+    processId: -1
 };
 
-export default function dscenario(state = defaultState, action) {
+export default function toolbox(state = defaultState, action) {
     switch (action.type) {
-        case SET_ACTIVE_DSCENARIO: {
+        case OPEN_TOOLBOX_PROCESS: {
             return {
                 ...state,
-                dscenarioResult: action.dscenarioResult,
-                keepManagerOpen: action.keepManagerOpen,
-                dscenarioId: action.dscenarioId
+                processId: action.processId
             };
         }
         default:

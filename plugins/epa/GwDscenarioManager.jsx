@@ -13,7 +13,8 @@ import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
-import { setActiveDscenario, openToolBoxProcess } from '../../actions/dscenario';
+import { setActiveDscenario } from '../../actions/dscenario';
+import { openToolBoxProcess } from '../../actions/toolbox';
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
 
@@ -39,13 +40,15 @@ class GwDscenarioManager extends React.Component {
         addLayerFeatures: PropTypes.func,
         keepManagerOpen: PropTypes.bool,
         removeLayer: PropTypes.func,
+        processId: PropTypes.number
     };
 
     static defaultProps = {
         title: 'Dscenario manager',
         initialWidth: 1065,
-        initialHeight: 375,
-        keepManagerOpen: true
+        initialHeight: 461,
+        keepManagerOpen: true,
+        processId: null
     };
 
     state = {
@@ -62,6 +65,10 @@ class GwDscenarioManager extends React.Component {
         // Manage close tool
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === null) {
             this.onClose();
+        }
+        // When user close a toolbox process table is reloaded
+        if (prevProps.processId !== this.props.processId && this.props.processId === null) {
+            this.getList(this.state.dscenarioManagerResult);
         }
     }
 
@@ -87,6 +94,7 @@ class GwDscenarioManager extends React.Component {
     };
 
     onClose = () => {
+        // Close dialog
         this.props.setCurrentTask(null);
         this.setState({ dscenarioManagerResult: null, pendingRequests: false });
     };
@@ -113,14 +121,11 @@ class GwDscenarioManager extends React.Component {
                 break;
             }
             case "create_crm":{
-                // not yet
-                this.openToolBoxProcess(3110);
-
+                this.props.openToolBoxProcess(3110);
                 break;
             }
             case "create_mincut":{
-                // not yet
-                this.openToolBoxProcess(3158);
+                this.props.openToolBoxProcess(3158);
                 break;
             }
             case "delete":{
@@ -147,18 +152,16 @@ class GwDscenarioManager extends React.Component {
         }
     };
 
-    openToolBoxProcess = (processId) => {
-        this.props.openToolBoxProcess(processId);
-        this.props.setCurrentTask("GwToolbox");
-    }
-
     openDscenario = async (dscenarioId) => {
+        // Open dscenario selected
         try {
             const requestUrl = GwUtils.getServiceUrl("dscenariomanager");
             const params = {
                 theme: this.props.theme.title,
                 formType: "dscenario",
-                layoutName: "lyt_dscenario"
+                layoutName: "lyt_dscenario",
+                idName: "dscenario_id",
+                id: dscenarioId
             };
 
             // Make a request to open the workspace dialog without an ID
@@ -316,7 +319,8 @@ const selector = (state) => ({
     currentTask: state.task.id,
     layers: state.layers.flat,
     map: state.map,
-    theme: state.theme.current
+    theme: state.theme.current,
+    processId: state.toolbox.processId,
 });
 
 export default connect(selector, {
