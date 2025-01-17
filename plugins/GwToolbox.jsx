@@ -403,14 +403,12 @@ class GwToolbox extends React.Component {
                 this.setState((prevState) => ({
                     hiddenWidgets: hiddenWidgets,
                     executionResult: result,
-                    toolWidgetValues: { ...prevState.toolWidgetValues, ...geojsonData, txt_infolog: { value: logText } },
-                    toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" }
+                    widgetsProperties: { ...prevState.widgetsProperties, ...geojsonData, txt_infolog: { value: logText } },
+                    toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" },
                 }));
-                // this.setState({ toolboxResult: result, pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
                 this.props.processFinished("process_msg", false, `Execution failed "${e}"`);
-                // this.setState({ pendingRequests: false });
             });
             break;
         }

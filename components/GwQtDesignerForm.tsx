@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import xml2js from 'xml2js';
 import {v1 as uuidv1} from 'uuid';
 import isEmpty from 'lodash.isempty';
-import Spinner from 'qwc2/components/Spinner';
+import Spinner from 'qwc2/components/widgets/Spinner';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MiscUtils from 'qwc2/utils/MiscUtils';
 
@@ -427,7 +427,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             return (
                 <div className="qt-designer-form-container">
                     <div className="qt-designer-form-tabbar">
-                        {widget.widget.map(tab => (this.props.useNew ? this.getWidgetProperties(tab).hidden : this.props.hiddenWidgets.includes(tab.name)) ? null : (
+                        {widget.widget.map(tab => (this.props.hiddenWidgets.includes(tab.name)) ? null : (
                             <span
                                 className={tab.name === activetab ? "qt-designer-form-tab-active" : ""}
                                 key={tab.name}
