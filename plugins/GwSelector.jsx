@@ -19,8 +19,9 @@ import 'qwc2-giswater/plugins/style/GwSelector.css';
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 
-import {setActiveSelector} from '../actions/selector';
+import {setActiveSelector, reloadLayersFilters} from '../actions/selector';
 import { setCurrentTask } from 'qwc2/actions/task';
+import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 
 class GwSelector extends React.Component {
     static propTypes = {
@@ -34,12 +35,14 @@ class GwSelector extends React.Component {
         initiallyDocked: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
-        mincutIds: PropTypes.string,
+        mincutIds: PropTypes.array,
         onWidgetAction: PropTypes.func,
         refreshLayer: PropTypes.func,
         removeLayer: PropTypes.func,
         selectorResult: PropTypes.object,
         setActiveSelector: PropTypes.func,
+        reloadLayersFilters: PropTypes.func,
+        geometry: PropTypes.object,
         setCurrentTask: PropTypes.func,
         theme: PropTypes.object,
         zoomToExtent: PropTypes.func
@@ -49,7 +52,8 @@ class GwSelector extends React.Component {
         initialHeight: 420,
         initialX: 0,
         initialY: 0,
-        initiallyDocked: true
+        initiallyDocked: true,
+        geometry: null
     };
     constructor(props) {
         super(props);
@@ -103,6 +107,13 @@ class GwSelector extends React.Component {
         if (this.props.selectorResult && this.props.selectorResult !== prevProps.selectorResult) {
             this.setState({selectorResult: null});
         }
+        if (prevProps.geometry !== this.props.geometry && this.props.geometry !== null) {
+            // Update filters and zoom to map
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+            this.panToResult({ body:{ data:{ geometry: this.props.geometry }}});
+            this.reloadLayersFilters();
+
+        }
     }
     componentDidMount() {
     }
@@ -153,6 +164,42 @@ class GwSelector extends React.Component {
         }).catch((e) => {
             console.log(e);
             this.setState({ pendingRequests: false });
+        });
+        this.reloadLayersFilters();
+    };
+
+    reloadLayersFilters = () => {
+        this.getFilters().then((response) => {
+            const queryableLayers = this.getQueryableLayers();
+            const filters = response.data;
+            console.log("filters: ", filters)
+            console.log("queryableLayers: ", queryableLayers)
+        }).catch(error => {
+            console.error("Failed in toggle archived: ", error);
+        });
+    }
+
+    getFilters = async() =>{
+        try {
+            const requestUrl = GwUtils.getServiceUrl("util");
+            try {
+                return await axios.get(requestUrl + "getfilters", { params: { theme: this.props.theme.title } });
+            } catch (e) {
+                console.log(e);
+            }
+        } catch (error) {
+            console.warn(error);
+            return Promise.reject(error);
+        }
+    }
+    getQueryableLayers = () => {
+        if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
+            return [];
+        }
+
+        return IdentifyUtils.getQueryLayers(this.props.layers, this.props.map).filter(l => {
+            // TODO: If there are some wms external layers this would select more than one layer
+            return l.type === "wms";
         });
     };
 
@@ -367,7 +414,8 @@ const selector = (state) => ({
     map: state.map,
     theme: state.theme.current,
     selectorResult: state.selector.selectorResult,
-    mincutIds: state.selector.mincutIds
+    mincutIds: state.selector.mincutIds,
+    geometry: state.selector.geometry
 });
 
 export default connect(selector, {
@@ -377,5 +425,6 @@ export default connect(selector, {
     removeLayer: removeLayer,
     changeLayerProperty: changeLayerProperty,
     setCurrentTask: setCurrentTask,
-    setActiveSelector: setActiveSelector
+    setActiveSelector: setActiveSelector,
+    reloadLayersFilters: reloadLayersFilters
 })(GwSelector);
