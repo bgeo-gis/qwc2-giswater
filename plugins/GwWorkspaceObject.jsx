@@ -50,13 +50,11 @@ class GwWorkspaceObject extends React.Component {
     componentDidUpdate(prevProps) {
         // Open the dialog when workspace data changes
         if (prevProps.workspaceData !== this.props.workspaceData) {
-            console.log("Workspace data updated:", this.props.workspaceData);
             this.initializeForm(this.props.workspaceData);
         }
 
         // Close the dialog when the task is reset
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === null) {
-            console.log("Closing workspace dialog...");
             this.onClose();
         }
     }
@@ -65,7 +63,6 @@ class GwWorkspaceObject extends React.Component {
         // Initialize form values and properties based on the fetched workspace data
         const widgetValues = workspaceData?.values || {};
         const workspaceId = workspaceData?.id || null; // Extract the id from the response
-        console.log("Initialized workspace ID:", workspaceId);
 
         this.setState({
             widgetValues: widgetValues,
@@ -81,7 +78,6 @@ class GwWorkspaceObject extends React.Component {
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } }
 
         }));
-        console.log("WIDGETPROPERTIES", this.state.widgetsProperties);
     };
 
     onClose = () => {
@@ -122,7 +118,6 @@ class GwWorkspaceObject extends React.Component {
         try {
             const requestUrl = GwUtils.getServiceUrl("workspace");
             const response = await axios.post(`${requestUrl}manage`, payload);
-
             const result = response.data;
 
             if (result.status === "Accepted") {
@@ -164,7 +159,7 @@ class GwWorkspaceObject extends React.Component {
 
     render() {
         let window = null;
-        const { currentTask, initialWidth, initialHeight, initialX, initialY, workspaceData } = this.props;
+        const { initialWidth, initialHeight, initialX, initialY, workspaceData } = this.props;
         if (workspaceData) {
             let body = null;
 

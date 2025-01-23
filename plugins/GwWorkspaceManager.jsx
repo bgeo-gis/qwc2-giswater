@@ -38,13 +38,15 @@ class GwWorkspaceManager extends React.Component {
         theme: PropTypes.object,
         title: PropTypes.string,
         reloadLayersFilters: PropTypes.func,
+        geometry: PropTypes.object
     };
 
     static defaultProps = {
         title: 'Workspace management',
         initialWidth: 1368,
         initialHeight: 388,
-        keepManagerOpen: true
+        keepManagerOpen: true,
+        geometry: null
     };
 
     state = {
@@ -185,7 +187,6 @@ class GwWorkspaceManager extends React.Component {
             case "setCurrent": {
                 const selectedId = action.row.map((row) => row.original.id)[0];
                 this.setCurrentWorkspace(selectedId);
-                this.props.reloadLayersFilters();
                 break;
             }
             case "togglePrivacy": {
@@ -301,8 +302,8 @@ class GwWorkspaceManager extends React.Component {
                 formType: "workspace_open",
                 layoutName: "lyt_workspace_open",
                 tableName: "cat_workspace",
-                id: "id",
-                idVal: workspaceId
+                id: workspaceId,
+                idName: "id"
             };
 
             // Make a request to open the workspace edit dialog
@@ -337,19 +338,11 @@ class GwWorkspaceManager extends React.Component {
 
             // Execute the procedure to set the current workspace
             const response = await axios.post(`${requestUrl}setcurrent`, payload);
+            this.props.reloadLayersFilters(response.data.geometry);
 
-            const result = response.data;
-
-            // Check if the operation was successful
-            if (result.status === "Accepted") {
-                alert("Workspace set as current successfully!");
-            } else {
-                console.error(`Failed to set workspace ${workspaceId} as current:`, result.message);
-                alert(`Error: ${result.message}`);
-            }
         } catch (error) {
             console.error("Error setting workspace as current:", error.message);
-            alert(`An error occurred: ${error.message}`);
+            alert(`An error occurred: ${error.message} (INP CONFIGURATION IS NULL)`);
         }
     };
 
@@ -460,7 +453,8 @@ class GwWorkspaceManager extends React.Component {
 const selector = (state) => ({
     currentTask: state.task.id,
     theme: state.theme.current,
-    refreshManager: state.workspace.refreshManager
+    refreshManager: state.workspace.refreshManager,
+    geometry: state.selector.geometry
 });
 
 export default connect(selector, {
