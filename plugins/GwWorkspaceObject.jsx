@@ -94,7 +94,6 @@ class GwWorkspaceObject extends React.Component {
 
         if (!widgetValues || !workspaceData) {
             console.error("Missing data: widgetValues or workspaceData is undefined.");
-            alert("Cannot save workspace: Missing data.");
             return;
         }
 
@@ -135,7 +134,6 @@ class GwWorkspaceObject extends React.Component {
             }
         } catch (error) {
             console.error("Error saving workspace:", error.message);
-            alert(`Error saving workspace: ${error.message}`);
         }
     };
 
@@ -150,9 +148,6 @@ class GwWorkspaceObject extends React.Component {
                 break;
             case "saveFeat":
                 this.onSave();
-                break;
-            default:
-                console.warn(`Unhandled action: ${functionName}`);
                 break;
         }
     };
