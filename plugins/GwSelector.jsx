@@ -14,9 +14,8 @@ import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import GwUtils from '../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
-import { LayerRole, refreshLayer, removeLayer, addLayerFeatures, changeLayerProperty } from 'qwc2/actions/layers';
+import { LayerRole, refreshLayer, removeLayer, addLayerFeatures, changeLayerProperty, setFilter } from 'qwc2/actions/layers';
 import 'qwc2-giswater/plugins/style/GwSelector.css';
-
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 
 import {setActiveSelector, reloadLayersFilters} from '../actions/selector';
@@ -45,7 +44,8 @@ class GwSelector extends React.Component {
         geometry: PropTypes.object,
         setCurrentTask: PropTypes.func,
         theme: PropTypes.object,
-        zoomToExtent: PropTypes.func
+        zoomToExtent: PropTypes.func,
+        setFilter: PropTypes.func,
     };
     static defaultProps = {
         initialWidth: 480,
@@ -108,11 +108,9 @@ class GwSelector extends React.Component {
             this.setState({selectorResult: null});
         }
         if (prevProps.geometry !== this.props.geometry && this.props.geometry !== null) {
-            // Update filters and zoom to map
-            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+            // Zoom to map and filter layers
             this.panToResult({ body:{ data:{ geometry: this.props.geometry }}});
             this.reloadLayersFilters();
-
         }
     }
     componentDidMount() {
@@ -159,31 +157,68 @@ class GwSelector extends React.Component {
             const result = response.data;
             this.setState({ selectorResult: result, pendingRequests: false });
             this.handleResult(result);
-            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
-
+            this.reloadLayersFilters();
         }).catch((e) => {
             console.log(e);
             this.setState({ pendingRequests: false });
         });
-        this.reloadLayersFilters();
     };
 
     reloadLayersFilters = () => {
+        // Get filters from HTTP Response
         this.getFilters().then((response) => {
-            const queryableLayers = this.getQueryableLayers();
-            const filters = response.data;
-            console.log("filters: ", filters)
-            console.log("queryableLayers: ", queryableLayers)
+            const muniFilter = response.data.muni_filter;
+            const sectorFilter = response.data.sector_filter;
+
+            if (!muniFilter && !sectorFilter) {
+                return
+            }
+            // Get WMS layers
+            this.getLayersFiltered(["muni_id","sector_id"]).then((response) => {
+                const layers = response.data.body.layers;
+                const filter = {};
+                const filterArray = this.buildFilterArray(muniFilter, sectorFilter);
+                for (const layerToFilter of layers) {
+                    filter[layerToFilter] = [filterArray];
+                }
+                // Set filter
+                this.props.setFilter(filter);
+
+                // Refresh map
+                this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
+            }).catch(error => {
+                console.error("Failed in getLayers: ", error);
+            });
         }).catch(error => {
-            console.error("Failed in toggle archived: ", error);
+            console.error("Failed in getFilters: ", error);
         });
     }
 
-    getFilters = async() =>{
+    getLayersFiltered = (filter) => {
+        try{
+            const queryLayers = this.getQueryableLayers()[0].queryLayers;
+            const requestUrl = GwUtils.getServiceUrl("selector");
+            const params = {
+                theme: this.props.theme.title,
+                filter: filter,
+                queryLayers: queryLayers
+            }
+            try{
+                return axios.put(requestUrl + "getlayersfiltered", params);
+            }catch (e) {
+                console.log(e);
+            }
+        }catch(error){
+            console.warn(error);
+            return Promise.reject(error);
+        }
+    }
+
+    getFilters=() =>{
         try {
             const requestUrl = GwUtils.getServiceUrl("util");
             try {
-                return await axios.get(requestUrl + "getfilters", { params: { theme: this.props.theme.title } });
+                return axios.get(requestUrl + "getfilters", { params: { theme: this.props.theme.title } });
             } catch (e) {
                 console.log(e);
             }
@@ -192,6 +227,20 @@ class GwSelector extends React.Component {
             return Promise.reject(error);
         }
     }
+
+    buildFilterArray = (muniFilter, sectorFilter) => {
+        // Build filter array
+        const filterArray = [];
+        if (muniFilter && sectorFilter) {
+            filterArray.push(["muni_id", "IN", muniFilter], "and", ["sector_id", "IN", sectorFilter]);
+        } else if (muniFilter) {
+            filterArray.push(["muni_id", "IN", muniFilter]);
+        } else if (sectorFilter) {
+            filterArray.push(["sector_id", "IN", sectorFilter]);
+        }
+        return filterArray;
+    };
+
     getQueryableLayers = () => {
         if ((typeof this.props.layers === 'undefined' || this.props.layers === null) || (typeof this.props.map === 'undefined' || this.props.map === null)) {
             return [];
@@ -426,5 +475,6 @@ export default connect(selector, {
     changeLayerProperty: changeLayerProperty,
     setCurrentTask: setCurrentTask,
     setActiveSelector: setActiveSelector,
-    reloadLayersFilters: reloadLayersFilters
+    reloadLayersFilters: reloadLayersFilters,
+    setFilter: setFilter,
 })(GwSelector);
