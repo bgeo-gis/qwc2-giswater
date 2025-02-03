@@ -23,6 +23,7 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
 import { setCurrentTask } from 'qwc2/actions/task';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 import { setActiveVisit } from '../actions/visit';
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
@@ -83,6 +84,7 @@ class GwVisit extends React.Component {
         }
     }
     onWidgetAction = (action, widget) => {
+        console.log("VISIT: ", action);
         const requestUrl = GwUtils.getServiceUrl("visit");
         switch (action.functionName) {
         case 'apply':
@@ -465,20 +467,23 @@ class GwVisit extends React.Component {
     }
 }
 
-const selector = (state) => ({
-    click: state.map.click || { modifiers: {} },
-    currentTask: state.task.id,
-    currentIdentifyTool: state.identify.tool,
-    layers: state.layers.flat,
-    map: state.map,
-    theme: state.theme.current,
-    selection: state.selection,
-    visitResult: state.visit.visitResult,
-    keepManagerOpen: state.visit.keepManagerOpen,
-    state
-});
-
-export default connect(selector, {
+export default connect((state) => {
+    const enabled = state.task.id === "Identify" || (
+        state.task.identifyEnabled &&
+        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "Identify") === "Identify"
+    );
+    return {
+        click: state.map.click || { modifiers: {} },
+        enabled: enabled,
+        layers: state.layers.flat,
+        map: state.map,
+        theme: state.theme.current,
+        selection: state.selection,
+        visitResult: state.visit.visitResult,
+        keepManagerOpen: state.visit.keepManagerOpen,
+        state
+    };
+}, {
     addLayerFeatures: addLayerFeatures,
     addMarker: addMarker,
     panTo: panTo,
@@ -489,3 +494,4 @@ export default connect(selector, {
     setCurrentTask: setCurrentTask,
     setActiveVisit: setActiveVisit
 })(GwVisit);
+
