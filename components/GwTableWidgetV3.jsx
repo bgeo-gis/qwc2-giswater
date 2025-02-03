@@ -35,7 +35,8 @@ class GwTableWidgetV3 extends React.Component {
     static propTypes = {
         form: PropTypes.object,
         onWidgetAction: PropTypes.func,
-        values: PropTypes.array
+        values: PropTypes.array,
+        buttonsToDisable: PropTypes.array
     };
     static defaultState = {
         loading: false
@@ -208,23 +209,55 @@ class GwTableWidgetV3 extends React.Component {
             inputProps.getRowId = (row) => row.userId;
             inputProps.muiTableBodyRowProps = ({ row }) => ({
                 onClick: () => {
+                    // Update selection state
                     if (tableParams.multipleRowSelection) {
                         this.setState((prevState) => ({
                             rowSelection: {
                                 ...prevState.rowSelection,
-                                [row.id]: !prevState.rowSelection[row.id]
-                            }
+                                [row.id]: !prevState.rowSelection[row.id],
+                            },
                         }));
                     } else {
                         this.setState({
                             rowSelection: {
-                                [row.id]: !rowSelection[row.id]
-                            }
+                                [row.id]: !this.state.rowSelection[row.id],
+                            },
+                        });
+                    }
+                    // Trigger callback or handle the row click
+                    if (this.props.onWidgetAction) {
+                        this.props.onWidgetAction({
+                            functionName: "selectedRow",
+                            rowData: row.original, // Pass the full row data
                         });
                     }
                 },
-                selected: rowSelection[row.id],
-                sx: { cursor: 'pointer' }
+                onDoubleClick: () => {
+                    // Update selection state
+                    if (tableParams.multipleRowSelection) {
+                        this.setState((prevState) => ({
+                            rowSelection: {
+                                ...prevState.rowSelection,
+                                [row.id]: !prevState.rowSelection[row.id],
+                            },
+                        }));
+                    } else {
+                        this.setState({
+                            rowSelection: {
+                                [row.id]: !this.state.rowSelection[row.id],
+                            },
+                        });
+                    }
+                    // Trigger callback or handle the row click
+                    if (this.props.onWidgetAction) {
+                        this.props.onWidgetAction({
+                            functionName: "doubleClickselectedRow",
+                            rowData: row.original, // Pass the full row data
+                        });
+                    }
+                },
+                selected: this.state.rowSelection[row.id],
+                sx: { cursor: 'pointer' },
             });
             inputProps.state = { rowSelection };
         }
@@ -254,6 +287,7 @@ class GwTableWidgetV3 extends React.Component {
         if (inputProps.modifyTopToolBar) {
             const customAction = tableParams.renderTopToolbarCustomActions;
             inputProps.renderTopToolbarCustomActions = ({ table }) => {
+                const buttonsList = this.props.buttonsToDisable;
                 return (
                     <Box sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}>
                         {customAction.map((item, index) => {
@@ -262,6 +296,9 @@ class GwTableWidgetV3 extends React.Component {
                                 disableProp.disabled = item.moreThanOneDisable
                                     ? table.getSelectedRowModel().flatRows.length === 0 || table.getSelectedRowModel().flatRows.length > 1
                                     : table.getSelectedRowModel().flatRows.length === 0;
+                            }
+                            if (buttonsList.includes(item.name)){
+                                disableProp.disabled = true
                             }
                             return (
                                 <Button
