@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import isEmpty from 'lodash.isempty';
 import { LayerRole, addMarker, removeMarker, removeLayer, addLayerFeatures, refreshLayer } from 'qwc2/actions/layers';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
-import Spinner from 'qwc2/components/Spinner';
+import Spinner from 'qwc2/components/widgets/Spinner';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import { panTo, zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';

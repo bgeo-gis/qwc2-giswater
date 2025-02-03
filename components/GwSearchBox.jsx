@@ -14,7 +14,7 @@ import { panTo, zoomToPoint } from 'qwc2/actions/map';
 import { LayerRole, addLayerFeatures, removeLayer, addLayer } from 'qwc2/actions/layers';
 import { setCurrentTask } from 'qwc2/actions/task';
 import Icon from 'qwc2/components/Icon';
-import InputContainer from 'qwc2/components/InputContainer';
+import InputContainer from 'qwc2/components/widgets/InputContainer';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
 import MiscUtils from 'qwc2/utils/MiscUtils';
