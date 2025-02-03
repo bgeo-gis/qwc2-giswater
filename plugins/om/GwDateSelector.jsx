@@ -17,10 +17,10 @@ import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwUtils from '../utils/GwUtils';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import GwUtils from '../../utils/GwUtils';
 
-import './style/GwDateSelector.css';
+import '../style/GwDateSelector.css';
 
 class GwDateSelector extends React.Component {
     static propTypes = {

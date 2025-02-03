@@ -21,10 +21,10 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwUtils from '../utils/GwUtils';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import GwUtils from '../../utils/GwUtils';
 
-import {setActiveVisit} from '../actions/visit';
+import {setActiveVisit} from '../../actions/visit';
 
 class GwVisitManager extends React.Component {
     static propTypes = {

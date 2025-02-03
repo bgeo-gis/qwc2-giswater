@@ -12,13 +12,13 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
-import GwUtils from '../utils/GwUtils';
+import GwUtils from '../../utils/GwUtils';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { LayerRole, refreshLayer, removeLayer, addLayerFeatures, changeLayerProperty, setFilter } from 'qwc2/actions/layers';
 import 'qwc2-giswater/plugins/style/GwSelector.css';
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 
-import {setActiveSelector, reloadLayersFilters} from '../actions/selector';
+import {setActiveSelector, reloadLayersFilters} from '../../actions/selector';
 import { setCurrentTask } from 'qwc2/actions/task';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 

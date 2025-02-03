@@ -13,11 +13,11 @@ import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
-import { setActiveWorkspace } from "../actions/workspace";
+import { setActiveWorkspace } from "../../actions/workspace";
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwUtils from '../utils/GwUtils';
-import {reloadLayersFilters} from '../actions/selector';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import GwUtils from '../../utils/GwUtils';
+import {reloadLayersFilters} from '../../actions/selector';
 class GwWorkspaceManager extends React.Component {
 
     static propTypes = {

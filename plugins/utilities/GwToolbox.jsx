@@ -12,17 +12,17 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import SideBar from 'qwc2/components/SideBar';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
-import GwUtils from '../utils/GwUtils';
+import GwUtils from '../../utils/GwUtils';
 import { refreshLayer, addLayerFeatures, removeLayer } from 'qwc2/actions/layers';
 import InputContainer from 'qwc2/components/widgets/InputContainer';
 import Icon from 'qwc2/components/Icon';
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import 'qwc2-giswater/plugins/style/GwToolbox.css';
 import 'qwc2/components/style/IdentifyViewer.css';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-import { openToolBoxProcess } from '../actions/toolbox';
+import { openToolBoxProcess } from '../../actions/toolbox';
 
 class GwToolbox extends React.Component {
     static propTypes = {

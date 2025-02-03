@@ -22,12 +22,12 @@ import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 import { setCurrentTask } from 'qwc2/actions/task';
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwUtils from '../utils/GwUtils';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import GwUtils from '../../utils/GwUtils';
 
-import './style/GwInfo.css';
+import '../style/GwInfo.css';
 
-import { setIdentifyResult } from '../actions/info';
+import { setIdentifyResult } from '../../actions/info';
 
 
 class GwInfo extends React.Component {

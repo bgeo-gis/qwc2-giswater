@@ -14,7 +14,7 @@ import { addMarker, removeMarker, removeLayer, addLayerFeatures } from 'qwc2/act
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 import TaskBar from 'qwc2/components/TaskBar';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
-import GwUtils from '../utils/GwUtils';
+import GwUtils from '../../utils/GwUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 

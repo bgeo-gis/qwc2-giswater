@@ -20,11 +20,11 @@ import { panTo } from 'qwc2/actions/map';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 
-import {changeProfileState} from '../actions/profile';
+import {changeProfileState} from '../../actions/profile';
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
 import MeasureUtils from 'qwc2/utils/MeasureUtils';
 
-import GwUtils from '../utils/GwUtils';
+import GwUtils from '../../utils/GwUtils';
 
 import FeatureStyles from 'qwc2/utils/FeatureStyles';
 

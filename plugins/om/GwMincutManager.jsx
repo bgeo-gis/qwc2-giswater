@@ -20,11 +20,11 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwUtils from '../utils/GwUtils';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import GwUtils from '../../utils/GwUtils';
 
-import {setActiveMincut} from '../actions/mincut';
-import {setActiveSelector} from '../actions/selector';
+import {setActiveMincut} from '../../actions/mincut';
+import {setActiveSelector} from '../../actions/selector';
 import { ConstructionOutlined } from '@mui/icons-material';
 
 class GwMincutManager extends React.Component {

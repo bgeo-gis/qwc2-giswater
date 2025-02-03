@@ -20,12 +20,12 @@ import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwUtils from '../utils/GwUtils';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import GwUtils from '../../utils/GwUtils';
 import { setCurrentTask } from 'qwc2/actions/task';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
-import { setActiveVisit } from '../actions/visit';
+import { setActiveVisit } from '../../actions/visit';
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
 
 import url from 'url';

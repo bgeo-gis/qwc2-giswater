@@ -6,11 +6,11 @@
  */
 import React from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
+import { connect } from 'react-redux';
+import { createSelector } from 'reselect';
 import isEmpty from 'lodash.isempty';
 import displayCrsSelector from 'qwc2/selectors/displaycrs';
-import {setCurrentTask} from 'qwc2/actions/task';
+import { setCurrentTask } from 'qwc2/actions/task';
 import { LayerRole, refreshLayer, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import GwUtils from '../../utils/GwUtils';
@@ -78,7 +78,7 @@ class GwInfoValve extends React.Component {
         loading: true
     };
     componentDidMount() {
-        this.setState({point: this.props.point});
+        this.setState({ point: this.props.point });
         const point = this.props.point;
         this.loadValveResult(point);
     }
@@ -108,10 +108,10 @@ class GwInfoValve extends React.Component {
             zoomRatio: zoomRatio,
             layers: queryLayers.join(',')
         };
-        axios.get(gwInfoService + 'getlayersfromcoordinates', {params: params}).then(response => {
+        axios.get(gwInfoService + 'getlayersfromcoordinates', { params: params }).then(response => {
             gwInfoResponse = response.data;
             if (gwInfoResponse) {
-                this.setState({gwInfoResponse: gwInfoResponse, loading: false});
+                this.setState({ gwInfoResponse: gwInfoResponse, loading: false });
             }
         }).catch((e) => {
             console.warn(e);
@@ -121,7 +121,7 @@ class GwInfoValve extends React.Component {
         const id = data.id;
         const tableName = data.tableName;
         const value = data.value;
-        const fields = {closed: value};
+        const fields = { closed: value };
 
         const requestUrl = GwUtils.getServiceUrl("util");
         if (!isEmpty(requestUrl)) {
@@ -140,7 +140,7 @@ class GwInfoValve extends React.Component {
                     return;
                 }
                 // refresh map
-                if (this.props.theme.tiled) {
+                if (this.props.tiled) {
                     console.log("VALVE ID: ", id);
                     this.refreshTiles(id);
                 } else {
@@ -170,7 +170,7 @@ class GwInfoValve extends React.Component {
         const processNotificationId = `tiling_msg-${+new Date()}`;
         this.props.processStarted(processNotificationId, "Updating tiles");
         // Send request
-        axios.get(requestUrl + "update_valve", { params: params }).then(response => {
+        axios.get(requestUrl + "seed/feature", { params: params }).then(response => {
             this.props.processFinished(processNotificationId, true, "Update successful");
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }).catch((e) => {
@@ -180,7 +180,7 @@ class GwInfoValve extends React.Component {
     };
     clear = () => {
         this.props.removeLayer("identifyslection");
-        this.setState({point: null, height: null, extraInfo: null, gwInfoResponse: null, loading: true});
+        this.setState({ point: null, height: null, extraInfo: null, gwInfoResponse: null, loading: true });
     };
     showInfo = (selection, table) => {
         const requestUrl = GwUtils.getServiceUrl("info");
@@ -265,7 +265,7 @@ class GwInfoValve extends React.Component {
                             {layernames.map((vals, i) => (
                                 <div className="hover-dropdown-item" key={i}>
                                     <span className="first-item">{this.getLastWordFromLayer(vals.layerName)}</span>
-                                    <Icon className="item-icon" icon="chevron-right"/>
+                                    <Icon className="item-icon" icon="chevron-right" />
                                     <div className="dropdown-content">
                                         {(vals.ids).map((subValues, j) => (
                                             <span key={j} onClick={() => this.showInfo(subValues, vals.layerName)} onMouseEnter={() => this.highLightFeature(subValues)}>{subValues.label}</span>
@@ -273,7 +273,7 @@ class GwInfoValve extends React.Component {
                                     </div>
                                 </div>
                             ))}
-                            <hr/>
+                            <hr />
                             <div className="hover-dropdown-item" onMouseEnter={() => this.highLightMultipleFeatures(layernames)}>
                                 Identify All ({layernames.reduce((partialSum, component) => partialSum + (component.ids).length, 0)})
                             </div>
@@ -295,11 +295,12 @@ class GwInfoValve extends React.Component {
 }
 
 const selector = createSelector([state => state, displayCrsSelector], (state, displaycrs) => ({
-    enabled: state.identify.tool !== null,
+    enabled: state.task.identifyEnabled,
     map: state.map,
     displaycrs: displaycrs,
     theme: state.theme.current,
-    layers: state.layers.flat
+    layers: state.layers.flat,
+    tiled: state.project.tiled,
 }));
 
 export default connect(selector, {

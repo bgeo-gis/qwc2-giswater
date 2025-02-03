@@ -12,10 +12,10 @@ import isEmpty from 'lodash.isempty';
 
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
-import { setActiveWorkspace, setRefreshManager } from '../actions/workspace';
+import { setActiveWorkspace, setRefreshManager } from '../../actions/workspace';
 
-import GwQtDesignerForm from '../components/GwQtDesignerForm';
-import GwUtils from '../utils/GwUtils';
+import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import GwUtils from '../../utils/GwUtils';
 import axios from 'axios';
 
 
