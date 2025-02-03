@@ -72,9 +72,15 @@
 }
 
 .epa-manager-body  div.MuiTableContainer-root{
-    max-width: 870px;
+    max-width: 790px;
 }
 
+.dscenario-manager-body div.MuiTableContainer-root{
+    max-width: 1050px;
+    height: 200px;
+}
+
+.dscenario-manager-body div.css-10gei56,
 .epa-manager-body div.css-10gei56{
     height: 100px;
 }

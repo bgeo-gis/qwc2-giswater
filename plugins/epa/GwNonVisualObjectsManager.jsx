@@ -41,7 +41,7 @@ class GwNonVisualObjectsManager extends React.Component {
     };
     static defaultProps = {
         title: 'Non Visual Objects Manager',
-        initialHeight: 550,
+        initialHeight: 525,
         initialWidth: 915,
         initialX: null,
         initialY: null,

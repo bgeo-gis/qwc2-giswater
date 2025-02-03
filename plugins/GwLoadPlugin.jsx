@@ -38,6 +38,8 @@ class GwLoadPlugin extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
+            
+            console.log("Theme changed: ", this.props.theme);
             this.makeRequest();
 
             console.log("Layers: ", this.props.layers);
@@ -78,6 +80,7 @@ class GwLoadPlugin extends React.Component {
 
             axios.post(requestUrl + "setinitproject", { ...params }).then(response => {
                 const result = response.data;
+                console.log("Load plugin: ", result);
                 if (result.status !== 'Accepted') {
                     this.props.processStarted("loadplugin_msg", `Loading plugin`);
                     this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`, 4000);

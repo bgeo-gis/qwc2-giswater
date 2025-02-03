@@ -70,7 +70,8 @@ class GwMincut extends React.Component {
         initialHeight: 600,
         initialX: 0,
         initialY: 0,
-        mincutResult: null
+        mincutResult: null,
+        keepManagerOpen: true
     };
 
     state = {
