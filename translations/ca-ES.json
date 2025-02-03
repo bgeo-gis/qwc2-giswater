@@ -58,7 +58,10 @@
         "GwParcelFilter": "Filtra parcel·les",
         "GwSuperset": "Quadre de comandament",
         "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
-        "GwEpaSelector": "Selector EPA"
+        "GwEpaSelector": "Selector EPA",
+        "GwEpaManager":"Gestor de resultats EPA",
+        "GwWorkspaceManager": "Gestor d'espacis de treball",
+        "GwDscenarioManager":"Gestor d'escenaris"
       }
     },
     "colorschemes": {
