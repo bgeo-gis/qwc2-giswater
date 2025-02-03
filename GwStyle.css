@@ -84,10 +84,6 @@ div.AppMenu .appmenu-icon {
     pointer-events: all;
 }
 
-#PluginsContainer
-div.AppMenu .appmenu-icon:before {
-    height: 100%;
-}
 
 #PluginsContainer
 div.AppMenu div.appmenu-menu-container {
@@ -251,7 +247,6 @@ div.Toolbar > .icon {
 
 #PluginsContainer
 div.Toolbar > .icon:before {
-    height: 100%;
     font-size: 140%;
 }
 
@@ -337,6 +332,7 @@ div.measure-body * {
 #TopBar img.logo {
     display: none;
 }
+
 
 #PluginsContainer
 #TopBar.mobile div.AppMenu .appmenu-button {
