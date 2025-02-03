@@ -17,6 +17,8 @@ import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import { panTo, zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
+
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
 import GwUtils from '../utils/GwUtils';
@@ -77,9 +79,11 @@ class GwMincutManager extends React.Component {
     };
     componentDidUpdate(prevProps) {
         if (this.props.currentTask !== prevProps.currentTask && prevProps.currentTask === "GwMincutManager") {
+            console.log("Closing Mincut Manager");
             this.onToolClose();
         }
         if (!this.state.mincutmanagerResult && this.props.currentTask === "GwMincutManager" && this.props.currentTask !== prevProps.currentTask) {
+            console.log("Opening Mincut Manager");
             this.openMincutManager();
         }
     }
@@ -350,17 +354,21 @@ class GwMincutManager extends React.Component {
     }
 }
 
-const selector = (state) => ({
-    click: state.map.click || { modifiers: {} },
-    currentTask: state.task.id,
-    currentIdentifyTool: state.identify.tool,
-    layers: state.layers.flat,
-    map: state.map,
-    selection: state.selection,
-    currentTheme: state.theme.current
-});
-
-export default connect(selector, {
+export default connect((state) => {
+    const enabled = state.task.id === "GwInfo" || (
+        state.task.identifyEnabled &&
+        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "GwInfo") === "GwInfo"
+    );
+    return {
+        click: state.map.click || { modifiers: {} },
+        enabled: enabled,
+        currentTask: state.task.id,
+        layers: state.layers.flat,
+        map: state.map,
+        selection: state.selection,
+        currentTheme: state.theme.current
+    };
+}, {
     addLayerFeatures: addLayerFeatures,
     addMarker: addMarker,
     panTo: panTo,

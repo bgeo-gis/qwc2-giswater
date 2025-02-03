@@ -26,7 +26,6 @@ class MapWatermark extends React.Component {
         /** The hyperlink to open when the logo is clicked. */
         logoUrl: PropTypes.string,
         marginBottom: PropTypes.string,
-        mobile: PropTypes.bool,
         opacity: PropTypes.string,
         width: PropTypes.string
     };
@@ -40,7 +39,8 @@ class MapWatermark extends React.Component {
     render() {
         let logo;
         const assetsPath = ConfigUtils.getAssetsPath();
-        if (this.props.mobile) {
+        const isMobile = ConfigUtils.isMobile();
+        if (isMobile) {
             logo = assetsPath + "/img/logo-mobile." + this.props.logoFormat;
         } else {
             logo = assetsPath + "/img/logo."  + this.props.logoFormat;
@@ -65,8 +65,5 @@ class MapWatermark extends React.Component {
     }
 }
 
-const selector = (state) => ({
-    mobile: state.browser.mobile
-});
+export default connect(() => ({}), {})(MapWatermark);
 
-export default connect(selector, {})(MapWatermark);

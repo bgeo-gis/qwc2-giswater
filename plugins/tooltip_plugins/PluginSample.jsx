@@ -71,7 +71,7 @@ class PluginSample extends React.Component {
 
 const selector = createSelector([state => state, displayCrsSelector], (state, displaycrs) => ({
     // Random variables
-    enabled: state.identify.tool !== null,
+    enabled: state.task.identifyEnabled,
     map: state.map,
     displaycrs: displaycrs,
     theme: state.theme.current,

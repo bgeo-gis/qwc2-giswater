@@ -17,6 +17,8 @@ import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import { panTo } from 'qwc2/actions/map';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
+
 
 import {changeProfileState} from '../actions/profile';
 import CoordinatesUtils from 'qwc2/utils/CoordinatesUtils';
@@ -656,20 +658,22 @@ class GwProfilePicker extends React.Component {
         }
     }
 }
-
-const selector = (state) => ({
-    click: state.map.click || { modifiers: {} },
-    currentTask: state.task.id,
-    currentIdentifyTool: state.identify.tool,
-    layers: state.layers.flat,
-    mapObj: state.map,
-    measurement: state.measurement,
-    selection: state.selection,
-    profile: state.profile,
-    theme: state.theme.current
-});
-
-export default connect(selector, {
+export default connect((state) => {
+    const enabled = state.task.id === "Identify" || (
+        state.task.identifyEnabled &&
+        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "Identify") === "Identify"
+    );
+    return {
+        click: state.map.click || { modifiers: {} },
+        enabled: enabled,
+        layers: state.layers.flat,
+        mapObj: state.map,
+        measurement: state.measurement,
+        selection: state.selection,
+        profile: state.profile,
+        theme: state.theme.current
+    };
+}, {
     addLayerFeatures: addLayerFeatures,
     addLayer: addLayer,
     addMarker: addMarker,
@@ -680,3 +684,4 @@ export default connect(selector, {
     processStarted: processStarted,
     changeProfileState: changeProfileState
 })(GwProfilePicker);
+

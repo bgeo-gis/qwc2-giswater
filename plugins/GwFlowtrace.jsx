@@ -16,6 +16,8 @@ import TaskBar from 'qwc2/components/TaskBar';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import GwUtils from '../utils/GwUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
+
 
 class GwFlowtrace extends React.Component {
     static propTypes = {
@@ -207,15 +209,18 @@ class GwFlowtrace extends React.Component {
     }
 }
 
-const selector = (state) => ({
-    click: state.map.click || { modifiers: {} },
-    currentTask: state.task.id,
-    currentIdentifyTool: state.identify.tool,
-    theme: state.theme.current,
-    map: state.map
-});
-
-export default connect(selector, {
+export default connect((state) => {
+    const enabled = state.task.id === "Identify" || (
+        state.task.identifyEnabled &&
+        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "Identify") === "Identify"
+    );
+    return {
+        click: state.map.click || { modifiers: {} },
+        enabled: enabled,
+        theme: state.theme.current,
+        map: state.map
+    };
+}, {
     addLayerFeatures: addLayerFeatures,
     addMarker: addMarker,
     removeMarker: removeMarker,

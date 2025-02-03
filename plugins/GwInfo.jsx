@@ -16,6 +16,7 @@ import TaskBar from 'qwc2/components/TaskBar';
 import IdentifyUtils from 'qwc2/utils/IdentifyUtils';
 import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import MapUtils from 'qwc2/utils/MapUtils';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
 import VectorLayerUtils from 'qwc2/utils/VectorLayerUtils';
 import { panTo } from 'qwc2/actions/map';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
@@ -34,7 +35,8 @@ class GwInfo extends React.Component {
         addLayerFeatures: PropTypes.func,
         addMarker: PropTypes.func,
         click: PropTypes.object,
-        currentIdentifyTool: PropTypes.string,
+        // currentIdentifyTool: PropTypes.string,
+        enabled: PropTypes.bool,
         currentTask: PropTypes.string,
         dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         identifyResult: PropTypes.object,
@@ -87,11 +89,11 @@ class GwInfo extends React.Component {
         // this.state = GwInfo.defaultState;
     }
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.currentIdentifyTool !== prevProps.currentIdentifyTool && prevProps.currentIdentifyTool === "GwInfo") {
-            this.clearResults();
-        }
+        // if (this.props.enabled !== prevProps.enabled) {
+        //     this.clearResults();
+        // }
         // Manage map click
-        if (this.props.currentTask === "GwInfo" || this.props.currentIdentifyTool === "GwInfo") {
+        if (this.props.currentTask === "GwInfo" || this.props.enabled) {
             if (this.state.mode === "Point") {
                 this.identifyPoint(prevProps);
             }
@@ -753,19 +755,22 @@ class GwInfo extends React.Component {
     }
 }
 
-const selector = (state) => ({
-    click: state.map.click || { modifiers: {} },
-    currentTask: state.task.id,
-    currentIdentifyTool: state.identify.tool,
-    layers: state.layers.flat,
-    map: state.map,
-    selection: state.selection,
-    theme: state.theme.current,
-    identifyResult: state.info.identifyResult,
-    projectData: state.project
-});
-
-export default connect(selector, {
+export default connect((state) => {
+    const enabled = state.task.id === "GwInfo" || (
+        state.task.identifyEnabled &&
+        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "GwInfo") === "GwInfo"
+    );
+    return {
+        click: state.map.click || { modifiers: {} },
+        enabled: enabled,
+        layers: state.layers.flat,
+        map: state.map,
+        selection: state.selection,
+        theme: state.theme.current,
+        identifyResult: state.info.identifyResult,
+        projectData: state.project
+    };
+}, {
     addLayerFeatures: addLayerFeatures,
     addMarker: addMarker,
     panTo: panTo,
@@ -777,3 +782,4 @@ export default connect(selector, {
     setIdentifyResult: setIdentifyResult,
     setCurrentTask: setCurrentTask
 })(GwInfo);
+
