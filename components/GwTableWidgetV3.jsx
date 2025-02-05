@@ -72,10 +72,10 @@ class GwTableWidgetV3 extends React.Component {
 
 
     render() {
-        const data = this.props.values;
+        const data = this.props.values || [];
         const cols = [];
-        const headers = this.props.form.headers || [];
-        const tableParams = this.props.form.table || {};
+        const headers = this.props?.form?.headers || [];
+        const tableParams = this.props?.form?.table || {};
         if (!isEmpty(headers)) {
             for (let i = 0; i < headers.length; i++) {
                 const header = headers[i];

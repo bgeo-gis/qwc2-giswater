@@ -365,10 +365,6 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             );
         }
         else if (widget.class === "QTableWidget") {
-            if (!value || !value.values) {
-                return null;
-            }
-
             const { values, form } = value;
             return (<GwTableWidgetV3 onWidgetAction={this.props.onWidgetAction} buttonsToDisable={widgetProperties.buttonsToDisable} form={form} values={values}/>);
         } else if (widget.class === "QTableView") {
