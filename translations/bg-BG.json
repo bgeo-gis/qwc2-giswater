@@ -1,0 +1,70 @@
+{
+  "locale": "bg-BG",
+  "messages": {
+    "heightprofile": {
+      "asl": "a.s.l.",
+      "distance": "Разстояние",
+      "height": "Височина"
+    },
+    "identify": {
+      "confirmDiscard": "Искате ли да отхвърлите промените?",
+      "confirmSave": "Искате ли да запазите промените?",
+      "noresults": "Няма налична информация за избраната точка",
+      "querying": "Запитване..."
+    },
+    "infotool": {
+      "clickhelpPoint": "Кликнете върху местоположение, за да го идентифицирате в картата..."
+    },
+    "mapinfotooltip": {
+      "elevation": "Издигане",
+      "title": "Позиция"
+    },
+    "mincut": {
+      "clickhelpChangeValveStatus": "Щракнете върху клапаните, за да ги отворите или затворите след обновяване на Mincut",
+      "clickhelpNetwork": "Щракнете върху всяка дъга, за да извършите Mincut",
+      "clickhelpValveUnaccess": "Кликнете върху клапан, за да го изключите от работа"
+    },
+    "routing": {
+      "addviapoint": "Чрез тук",
+      "fromhere": "Оттук",
+      "isocenter": "Център",
+      "isoextracenter": "Допълнителен център",
+      "reachability": "Достижимост",
+      "route": "Маршрут",
+      "tohere": "До тук"
+    },
+    "searchbox": {
+      "placeholder": "Търсене на място или добавяне на карта..."
+    },
+    "appmenu": {
+      "items": {
+        "GwTools": "Инструменти Giswater",
+        "GwInfoPoint": "Информация за Giswater",
+        "GwInfoDma": "Информация за DMA",
+        "GwInfoScada": "Информация за Scada",
+        "GwProfilePicker": "Профил",
+        "GwSelector": "Селектор",
+        "GwFlowtracetrace": "Проследяване на потока",
+        "GwFlowtraceexit": "Изход на потока",
+        "GwMincutNetwork": "Mincut",
+        "GwMincutManager": "Мениджър на Mincut",
+        "GwVisitVisit": "Ново посещение",
+        "GwVisitIncidencia": "Нова заболеваемост",
+        "GwDateSelector": "Избор на дата",
+        "GwVisitManager": "Мениджър на посещения",
+        "GwToolbox": "Кутия с инструменти",
+        "NetCDFExplorer": "Преглед на NetCDF (бета версия)",
+        "GwHelp": "Помощ",
+        "GwParcelFilter": "Филтриране на парцели",
+        "GwSuperset": "Контролен панел",
+        "GwNonVisualObjectsManager": "Управление на невизуални обекти",
+        "GwEpaSelector": "Селектор на EPA"
+      }
+    },
+    "colorschemes": {
+      "giswater": "Giswater",
+      "white": "Бял",
+      "transparent": "Прозрачен"
+    }
+  }
+}
