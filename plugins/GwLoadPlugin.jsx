@@ -1,5 +1,5 @@
 /**
- * Copyright © 2024 by BGEO. All rights reserved.
+ * Copyright © 2025 by BGEO. All rights reserved.
  * The program is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version
@@ -38,8 +38,6 @@ class GwLoadPlugin extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
-            
-            console.log("Theme changed: ", this.props.theme);
             this.makeRequest();
 
             console.log("Layers: ", this.props.layers);
@@ -85,7 +83,7 @@ class GwLoadPlugin extends React.Component {
                     this.props.processStarted("loadplugin_msg", `Loading plugin`);
                     this.props.processFinished("loadplugin_msg", false, `${result.message?.text}`, 4000);
                     return;
-                    
+
                 }
                 this.props.setProjectData(result.tiled);
                 this.setState({pendingRequests: false });
