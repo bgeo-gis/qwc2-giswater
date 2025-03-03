@@ -81,8 +81,9 @@
 }
 
 .dscenario-manager-body div.css-10gei56,
-.epa-manager-body div.css-10gei56{
-    height: 100px;
+.epa-manager-body div.css-10gei56,
+.psector-manager-body div.css-10gei56 {
+    height: 124px;
 }
 
 .epa-manager-body textarea{
@@ -90,6 +91,10 @@
     min-width: 250px;
 }
 
+.psector-manager-body div.MuiTableContainer-root{
+    max-width: 1010px;
+    max-height: 280px;
+}
 
 .manager-body div.qt-designer-layout-grid,
 .generic-manager-body div.qt-designer-layout-grid {
@@ -108,4 +113,46 @@
 input:invalid, select:invalid, textarea:invalid, input:not([type=checkbox]):not([type=radio]):not([type=range]):invalid {
    border: 2px solid red !important;
    background: var(--input-bg-color) !important;
+}
+
+
+div.qt-designer-form div.text-input-wrapper,
+div.qt-designer-form div.text-input-wrapper > pre {
+    min-height: 2em;
+}
+
+div.qt-designer-form div.TextInput,
+div.qt-designer-form div.TextInput > pre {
+    min-height: 2em;
+}
+
+
+div.qt-designer-form-tabbar {
+    overflow-x: auto;
+
+}
+
+
+
+div.qt-designer-form-tabbar > span {
+    padding: 0.25em;
+    border-left: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+    display: inline-block;
+    background-color: var(--button-bg-color);
+    height: 2em;
+    display: inline-flex;
+    align-items: center;
+}
+
+
+div.qt-designer-form-tabbar > span:last-child {
+    border-right: 1px solid var(--border-color);
+
+}
+
+div.qt-designer-form-tabbar > span.qt-designer-form-tab-active {
+    background-color: var(--button-bg-color-active);
+    color: var(--button-text-color-active);
+
 }
