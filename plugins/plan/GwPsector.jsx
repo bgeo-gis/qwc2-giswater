@@ -15,27 +15,27 @@ import { setCurrentTask } from 'qwc2/actions/task';
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
 import axios from 'axios';
-import { setActiveDscenario } from '../../actions/dscenario';
+import { setActivePsector } from '../../actions/psector';
 
-class GwDscenario extends React.Component {
+class GwPsector extends React.Component {
     static propTypes = {
         currentTask: PropTypes.string,
-        initialHeight: PropTypes.number,
+        initialX: PropTypes.number,
         initialY: PropTypes.number,
         theme: PropTypes.object,
-        dscenarioResult: PropTypes.object,
-        dscenarioId: PropTypes.number,
+        psectorResult: PropTypes.object,
+        psectorObj: PropTypes.object,
         setCurrentTask: PropTypes.func,
-        setActiveDscenario: PropTypes.func,
+        setActivePsector: PropTypes.func,
         keepManagerOpen: PropTypes.bool,
         title: PropTypes.string,
     };
 
     static defaultProps = {
-        title: 'Dscenario',
+        title: 'Psector',
         keepManagerOpen: true,
-        dscenarioResult: null,
-        dscenarioId: null
+        psectorResult: null,
+        psectorObj: null
     };
 
     state = {
@@ -45,9 +45,9 @@ class GwDscenario extends React.Component {
     };
 
     componentDidUpdate(prevProps,prevState) {
-        // Open the dialog when dscenario data changes
-        if (prevProps.dscenarioResult !== this.props.dscenarioResult) {
-            this.openDialog(this.props.dscenarioResult);
+        // Open the dialog when psector data changes
+        if (prevProps.psectorResult !== this.props.psectorResult) {
+            this.openDialog();
         }
 
         // Close the dialog when the task is reset
@@ -61,99 +61,78 @@ class GwDscenario extends React.Component {
         }
     }
 
-    openDialog = (dscenarioResult) => {
-        // Initialize form values and properties based on the fetched dscenario data
-        this.setState({
-            widgetValues: dscenarioResult?.values || {},
-            widgetsProperties: dscenarioResult?.fields || {}
-        });
-        this.getListInitial(dscenarioResult);
+    openDialog = () => {
+        // Initialize form values and properties based on the fetched psector data
+        const psector = this.props.psectorObj;
+        if (psector) {
+            this.setState({
+                widgetValues: this.props.psectorResult?.values || {},
+                widgetsProperties: this.props.psectorResult?.fields || {}
+            });
+
+            const params = {
+                theme: this.props.theme.title,
+                psectorId: psector.id
+            };
+            this.getBudget(params).then((response) => {
+                const fields = response.data?.fields;
+                console.log("Result: ", fields);
+                if (fields) {
+                    Object.keys(fields).forEach(key => {
+                        if (!["gexpenses", "vat", "other"].includes(key)) {
+                            fields[key] += " €";
+                        }
+                        this.setState((state) => ({
+                            widgetsProperties: { ...state.widgetsProperties, [`tab_budget_${key}`]: { value: fields[key] } }
+                        }));
+                    });
+                }
+            }).catch(error => {
+                console.error("Failed in getPsector: ", error);
+            });
+        }
     };
 
     getList = (tab) => {
         try {
             const requestUrl = GwUtils.getServiceUrl("util");
-            let tableWidget = null;
-
-            console.log(tab)
-            //Get widget
-            GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
-                if (widget.class === "QTableView" || widget.class === "QTableWidget") {
-                    tableWidget = widget;
-                }
-            });
-
-            if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
+            if (isEmpty(requestUrl)) {
                 return;
             }
 
-            let filters = { dscenario_id : { value : this.props.dscenarioId, filterSign : "=" } };
+            // Iterar sobre todos los widgets de la pestaña
+            GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
+                if (widget.class === "QTableView" || widget.class === "QTableWidget") {
+                    console.log("Table widget: ", widget);
 
-            const params = {
-                theme: this.props.theme.title,
-                tableName: tableWidget.property.linkedobject,
-                filterFields: JSON.stringify(filters)
-            };
-            axios.get(requestUrl + "getlist", { params: params }).then((response) => {
-                const result = response.data;
-                this.setState((state) => ({
-                    tableValues: { ...state.tableValues, [tableWidget.name]: result },
-                    widgetsProperties: { ...state.widgetsProperties, [tableWidget.name]: {
-                        value: GwUtils.getListToValue(result)
-                    } }
-                }));
-            }).catch((e) => {
-                console.warn(e);
+                    let filters = { psector_id: { value: this.props.psectorId, filterSign: "=" } };
+
+                    const params = {
+                        theme: this.props.theme.title,
+                        tableName: widget.property.linkedobject,
+                        filterFields: JSON.stringify(filters)
+                    };
+
+                    axios.get(requestUrl + "getlist", { params: params }).then((response) => {
+                        const result = response.data;
+                        this.setState((state) => ({
+                            tableValues: { ...state.tableValues, [widget.name]: result },
+                            widgetsProperties: {
+                                ...state.widgetsProperties,
+                                [widget.name]: { value: GwUtils.getListToValue(result) }
+                            }
+                        }));
+                    }).catch((e) => {
+                        console.warn(e);
+                    });
+                }
             });
+
         } catch (error) {
             console.error(error);
         }
     };
 
-    getListInitial = (result) => {
-        try {
-            const requestUrl = GwUtils.getServiceUrl("util");
-            const widgets = result.body.data.fields;
-            let firstTab = null;
-            let tableWidget = null;
-
-            //Get first tab form tabWidget
-            widgets.forEach(widget => {
-                if (widget.widgettype === "tabwidget") {
-                    firstTab = widget.tabs[0];
-                }
-
-            });
-            // Get the tablewidget from the first tab
-            widgets.forEach(widget => {
-                if (firstTab && widget.tabname === firstTab.tabName) {
-                    tableWidget = widget;
-                }
-            });
-
-
-            let filters = { dscenario_id : { value : this.props.dscenarioId, filterSign : "=" } };
-
-            const params = {
-                theme: this.props.theme.title,
-                tabName: tableWidget.tabname,
-                widgetname: tableWidget.widgetname,
-                tableName: tableWidget.linkedobject,
-                filterFields: JSON.stringify(filters)
-            };
-
-            axios.get(requestUrl + "getlist", { params: params }).then((response) => {
-                const result = response.data;
-                this.setState((state) => ({ widgetsProperties: {...state.widgetsProperties, [tableWidget.widgetname]: {
-                    value: GwUtils.getListToValue(result)
-                } } }));
-            }).catch((e) => {
-                console.log(e);
-            });
-        } catch (error) {
-            console.warn(error);
-        }
-    };
 
     onWidgetValueChange = (widget, value) => {
         this.setState((state) => ({
@@ -163,8 +142,8 @@ class GwDscenario extends React.Component {
     };
 
     onClose = () => {
-        // Reset the active dscenario data and close the dialog
-        this.props.setActiveDscenario(null, false);
+        // Reset the active psector data and close the dialog
+        this.props.setActivePsector(null, false);
         if (!this.props.keepManagerOpen) {
             this.props.setCurrentTask(null);
         }
@@ -189,19 +168,33 @@ class GwDscenario extends React.Component {
         this.setState({ currentTab: { tab: tab, widget: widget } });
     };
 
+    getBudget(params){
+        try {
+            const requestUrl = GwUtils.getServiceUrl("psectormanager");
+            try {
+                return axios.get(requestUrl + "getbudget", { params: params });
+            } catch (e) {
+                console.log(e);
+            }
+        } catch (error) {
+            console.warn(error);
+            return Promise.reject(error);
+        }
+    }
+
     render() {
         let window = null;
-        if (this.props.dscenarioResult) {
+        if (this.props.psectorResult) {
             let body = null;
 
-            // Check if dscenario data is empty or contains form XML
-            if (isEmpty(this.props.dscenarioResult.form_xml)) {
+            // Check if psector data is empty or contains form XML
+            if (isEmpty(this.props.psectorResult.form_xml)) {
                 body = <div role="body"><span>No result</span></div>;
             } else {
                 body = (
-                    <div role="body" className="dscenario-manager-body">
+                    <div role="body" className="psector-manager-body">
                         <GwQtDesignerForm
-                            form_xml={this.props.dscenarioResult.form_xml}
+                            form_xml={this.props.psectorResult.form_xml}
                             onWidgetAction={this.onWidgetAction}
                             onWidgetValueChange={this.onWidgetValueChange}
                             readOnly={false}
@@ -213,19 +206,19 @@ class GwDscenario extends React.Component {
                     </div>
                 );
             }
-            const width = 965;
-            const height = 514;
+            const width = 960;
+            const height = 628;
             window = (
                 <ResizeableWindow
                     dockable={false}
                     icon="giswater"
-                    id="GwDscenarioWindow"
+                    id="GwPsectorWindow"
                     title={this.props.title}
                     initialWidth={width}
                     initialHeight={height}
                     initialX={this.props.initialX}
                     initialY={this.props.initialY}
-                    key="GwDscenarioWindow"
+                    key="GwPsectorWindow"
                     minHeight={height}
                     minWidth={width}
                     onClose={this.onClose}
@@ -243,12 +236,12 @@ const selector = (state) => {
     return {
         currentTask: state.task.id,
         theme: state.theme.current,
-        dscenarioResult: state.dscenario.dscenarioResult,
-        dscenarioId: state.dscenario.dscenarioId,
+        psectorResult: state.psector.psectorResult,
+        psectorObj: state.psector.psectorObj,
     };
 };
 
 export default connect(selector, {
     setCurrentTask: setCurrentTask,
-    setActiveDscenario: setActiveDscenario
-})(GwDscenario);
+    setActivePsector: setActivePsector
+})(GwPsector);

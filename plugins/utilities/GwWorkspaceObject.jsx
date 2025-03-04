@@ -22,8 +22,6 @@ import axios from 'axios';
 class GwWorkspaceObject extends React.Component {
     static propTypes = {
         currentTask: PropTypes.string,
-        initialHeight: PropTypes.number,
-        initialWidth: PropTypes.number,
         initialX: PropTypes.number,
         initialY: PropTypes.number,
         theme: PropTypes.object,
@@ -36,8 +34,6 @@ class GwWorkspaceObject extends React.Component {
 
     static defaultProps = {
         title: 'Workspace Management',
-        initialWidth: 400,
-        initialHeight: 300,
         keepManagerOpen: true,
         workspaceData: null,
     };
@@ -176,7 +172,8 @@ class GwWorkspaceObject extends React.Component {
                     </div>
                 );
             }
-
+            const width = 390;
+            const height = 200;
             const title = "Workspace Object";
             window = (
                 <ResizeableWindow
@@ -184,13 +181,13 @@ class GwWorkspaceObject extends React.Component {
                     icon="giswater"
                     id="GwWorkspaceObjectWindow"
                     title={title}
-                    initialWidth={initialWidth}
-                    initialHeight={initialHeight}
+                    initialWidth={width}
+                    initialHeight={height}
                     initialX={initialX}
                     initialY={initialY}
                     key="GwWorkspaceObjectWindow"
-                    minHeight={400}
-                    minWidth={300}
+                    minHeight={height}
+                    minWidth={width}
                     onClose={this.onClose}
                 >
                     {body}

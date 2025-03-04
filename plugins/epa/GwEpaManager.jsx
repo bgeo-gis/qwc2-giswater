@@ -39,7 +39,7 @@ class GwEpaManager extends React.Component {
     };
 
     static defaultProps = {
-        title: 'Epa result manager',
+        title: 'Epa result management',
         initialWidth: 1103,
         initialHeight: 375
     };

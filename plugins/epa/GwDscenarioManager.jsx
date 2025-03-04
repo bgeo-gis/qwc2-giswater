@@ -46,7 +46,7 @@ class GwDscenarioManager extends React.Component {
     static defaultProps = {
         title: 'Dscenario manager',
         initialWidth: 1065,
-        initialHeight: 461,
+        initialHeight: 515,
         keepManagerOpen: true,
         processId: null
     };
@@ -60,7 +60,7 @@ class GwDscenarioManager extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "GwDscenarioManager") {
-            this.getDialog();
+            this.onShow();
         }
         // Manage close tool
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === null) {
@@ -73,24 +73,19 @@ class GwDscenarioManager extends React.Component {
     }
 
     onShow = () => {
-        // Make service request
-        this.getDialog();
-    };
-
-
-    getDialog = () => {
         // Open dialog
-        const requestUrl = GwUtils.getServiceUrl("dscenariomanager");
-        if (!isEmpty(requestUrl)) {
-            axios.get(requestUrl + "dialog", { params: { theme: this.props.theme.title } }).then(response => {
-                const result = response.data;
-                this.getList(result)
-                this.setState({ dscenarioManagerResult: result, pendingRequests: false });
-            }).catch((e) => {
-                console.log(e);
-                this.setState({ pendingRequests: false });
-            });
-        }
+        const params = {
+            theme: this.props.theme.title,
+            dialogName: "dscenario_manager",
+            layoutName: "lyt_dscenario_mngr"
+        };
+        GwUtils.getDialog(params).then((response) => {
+            const result = response.data;
+            this.setState({ dscenarioManagerResult: result, pendingRequests: false });
+            this.getList(result, false)
+        }).catch(error => {
+            console.error("Failed in getdialog: ", error);
+        });
     };
 
     onClose = () => {
@@ -103,6 +98,11 @@ class GwDscenarioManager extends React.Component {
         // Get event (action) from widget
         let functionName = action.functionName || action.widgetfunction.functionName;
         switch (functionName) {
+            case "showInactive":{
+                console.log("well done")
+                this.getList(this.state.dscenarioManagerResult);
+                break;
+            }
             case "toggle_active":{
                 const dscenarioId = action.row.map((row) => row.original.id)[0];
                 const isActive = action.row.map((row) => row.original.active)[0];
@@ -224,7 +224,7 @@ class GwDscenarioManager extends React.Component {
         this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, ...widgetsProperties } }));
     };
 
-    getList = (dscenarioManagerResult) => {
+    getList = (dscenarioManagerResult, filter = null) => {
         //Fill table widget
         try {
             const requestUrl = GwUtils.getServiceUrl("util");
@@ -240,13 +240,14 @@ class GwDscenarioManager extends React.Component {
             if (isEmpty(tableWidget) || isEmpty(requestUrl)) {
                 return;
             }
-
+            const showInactiveChecked = filter !== null ? filter :!this.state.widgetValues.tab_none_chk_show_inactive;
+            const filters =  showInactiveChecked ? {} : { active : { value : true, filterSign : "=" } };
             const params = {
                 theme: this.props.theme.title,
                 tabName: tableWidget.tabname,
                 widgetname: tableWidget.widgetname,
                 tableName: tableWidget.linkedobject,
-                filterFields: {}
+                filterFields: JSON.stringify(filters)
             };
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
@@ -259,6 +260,13 @@ class GwDscenarioManager extends React.Component {
         } catch (error) {
             console.warn(error);
         }
+    };
+
+    onWidgetValueChange = (widget, value) => {
+        this.setState((state) => ({
+            widgetValues: { ...state.widgetValues, [widget.name]: value },
+            widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } }
+        }));
     };
 
     render() {
@@ -280,6 +288,7 @@ class GwDscenarioManager extends React.Component {
                                 form_xml={result.form_xml}
                                 onWidgetAction={this.onWidgetAction}
                                 loadWidgetsProperties={this.loadWidgetsProperties}
+                                onWidgetValueChange={this.onWidgetValueChange}
                                 readOnly={false}
                                 widgetValues={this.state.widgetValues}
                                 useNew widgetsProperties={this.state.widgetsProperties}

@@ -43,7 +43,7 @@ class GwWorkspaceManager extends React.Component {
 
     static defaultProps = {
         title: 'Workspace management',
-        initialWidth: 1368,
+        initialWidth: 1050,
         initialHeight: 388,
         keepManagerOpen: true,
         geometry: null
@@ -410,7 +410,7 @@ class GwWorkspaceManager extends React.Component {
                 const result = this.state.workspaceManagementResult;
                 if (!isEmpty(result.form_xml)) {
                     body = (
-                        <div role="body">
+                        <div role="body" className="workspace-manager-body">
                             <GwQtDesignerForm
                                 form_xml={result.form_xml}
                                 onWidgetAction={this.onWidgetAction}
