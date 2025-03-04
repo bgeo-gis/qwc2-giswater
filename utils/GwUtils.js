@@ -249,6 +249,20 @@ const GwUtils = {
             helpUrl = "https://giswater.gitbook.io/giswater-manual";
         window.open(helpUrl, '_blank');
         }
+    },
+
+    getDialog(params){
+        try {
+            const requestUrl = this.getServiceUrl("util");
+            try {
+                return axios.get(requestUrl + "dialog", { params: params });
+            } catch (e) {
+                console.log(e);
+            }
+        } catch (error) {
+            console.warn(error);
+            return Promise.reject(error);
+        }
     }
 };
 
