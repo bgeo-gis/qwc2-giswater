@@ -229,6 +229,7 @@ class GwTableWidgetV3 extends React.Component {
                         this.props.onWidgetAction({
                             functionName: "selectedRow",
                             rowData: row.original, // Pass the full row data
+                            rowSelection: !this.state.rowSelection[row.id]
                         });
                     }
                 },
