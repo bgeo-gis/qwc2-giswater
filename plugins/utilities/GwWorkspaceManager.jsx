@@ -171,16 +171,17 @@ class GwWorkspaceManager extends React.Component {
 
     onWidgetAction = (action) => {
         // Get event (action) from widget
-        let functionName = action.functionName ? action.functionName : action.widgetfunction.functionName;
+        const functionName = action.functionName || action.widgetfunction.functionName;
         switch (functionName) {
             case "selectedRow":{
-                const rowData = action.rowData;
-
-                if (rowData && rowData.id) {
-                    // Trigger backend call with INFO action
-                    this.fetchWorkspaceInfo(rowData.id);
-                } else {
-                    console.error("Row data is missing or ID is undefined.");
+                // Fill log if row is selected
+                if (action.rowSelection) {
+                    this.fetchWorkspaceInfo(action.rowData.id);
+                }else{
+                    // Clean log if row is unselected
+                    this.setState((state) => ({
+                        widgetsProperties: { ...state.widgetsProperties, ["tab_none_txt_info"]: { value: "" } }
+                    }));
                 }
                 break;
             }

@@ -89,11 +89,19 @@ class GwEpaManager extends React.Component {
 
     onWidgetAction = (action) => {
         // Get event (action) from widget
-        let functionName = action.functionName ? action.functionName : action.widgetfunction.functionName;
+        const functionName = action.functionName || action.widgetfunction.functionName;
         switch (functionName) {
             case "selectedRow":{
-                this.disableButtons(action.rowData);
-                this.fillTxtInfoLog(action.rowData);
+                // Fill log if row is selected
+                if (action.rowSelection) {
+                    this.fillTxtInfoLog(action.rowData);
+                    this.disableButtons(action.rowData);
+                }else{
+                    // Clean log if row is unselected
+                    this.setState((state) => ({
+                        widgetsProperties: { ...state.widgetsProperties, ["tab_none_txt_info"]: { value: "" } }
+                    }));
+                }
                 break;
             }
             case "edit":{
