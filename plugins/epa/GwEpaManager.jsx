@@ -117,7 +117,19 @@ class GwEpaManager extends React.Component {
             case "showInpData":{
                 const resultIds = action.row.map((row) => row.original.id);
                 this.showInpData(resultIds).then((response) => {
-                    this.manageGeoJSON(response.data)
+                    const style = {
+                        lineStyle: {
+                            strokeColor: [255, 206, 128, 1],
+                            strokeWidth: 6
+                        },
+                        pointStyle: {
+                            strokeColor: [160, 134, 17, 1],
+                            strokeWidth: 1,
+                            circleRadius: 3,
+                            fillColor: [241, 209, 66, 1]
+                        }
+                    }
+                    GwUtils.manageGeoJSON(response.data, this.props, style);
                 }).catch(error => {
                     console.error("Failed in toggle archived: ", error);
                 });
@@ -171,55 +183,6 @@ class GwEpaManager extends React.Component {
                 break;
         }
     };
-
-    manageGeoJSON = (result) => {
-        // Manage geo json result
-
-        //Remove temporal layers
-        this.removeTempLayers();
-
-        // Line
-        const line = result.body.data.line;
-        const lineStyle = {
-            strokeColor: [255, 206, 128, 1],
-            strokeWidth: 6
-        };
-        const lineFeatures = GwUtils.getGeoJSONFeatures("default", line, lineStyle);
-        if (!isEmpty(lineFeatures)) {
-            this.props.addLayerFeatures({
-                id: "temp_lines.geojson",
-                name: "temp_lines.geojson",
-                title: "Temporal Lines",
-                zoomToExtent: true
-            }, lineFeatures, true);
-        }
-
-        // Point
-        const point = result.body.data.point;
-        const pointStyle = {
-            strokeColor: [160, 134, 17, 1],
-            strokeWidth: 1,
-            circleRadius: 3,
-            fillColor: [241, 209, 66, 1]
-        };
-        const pointFeatures = GwUtils.getGeoJSONFeatures("default", point, pointStyle);
-        if (!isEmpty(pointFeatures)) {
-            this.props.addLayerFeatures({
-                id: "temp_points.geojson",
-                name: "temp_points.geojson",
-                title: "Temporal Points",
-                zoomToExtent: true
-            }, pointFeatures, true);
-        }
-
-    }
-
-    removeTempLayers = () => {
-        this.props.removeLayer("temp_points.geojson");
-        this.props.removeLayer("temp_lines.geojson");
-        this.props.removeLayer("temp_polygons.geojson");
-    };
-
 
     disableButtons = (row) => {
         // Disable material react table buttons depending of the selected row values

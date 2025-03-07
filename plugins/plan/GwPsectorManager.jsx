@@ -114,9 +114,20 @@ class GwPsectorManager extends React.Component {
             }
             case "showPsector":{
                 const ids = action.row.map((row) => row.original.id);
-                this.getPsectorFeatures(ids).then((features) => {
-                    console.log("Features: ", features);
-                    //this.props.addLayerFeatures("psector", features);
+                this.getPsectorFeatures(ids).then((response) => {
+                    const style = {
+                        lineStyle: {
+                            strokeColor: [200, 30, 30, 1],
+                            strokeWidth: 6
+                        },
+                        pointStyle: {
+                            strokeColor: [200, 30, 30, 1],
+                            strokeWidth: 1,
+                            circleRadius: 3,
+                            fillColor: [200, 30, 30, 1]
+                        }
+                    }
+                    GwUtils.manageGeoJSON(response.data, this.props, style)
                 });
                 break;
             }
