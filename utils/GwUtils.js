@@ -116,6 +116,42 @@ const GwUtils = {
             }
         });
     },
+    manageGeoJSON (result, props, style){
+        // Manage geo json result
+
+        //Remove temporal layers
+        props.removeLayer("temp_points.geojson");
+        props.removeLayer("temp_lines.geojson");
+        props.removeLayer("temp_polygons.geojson");
+
+        // Line
+        if (result.body.returnManager.style.line) {
+            const line = result.body.data.line;
+            const lineFeatures = GwUtils.getGeoJSONFeatures("default", line, style.lineStyle);
+            if (!isEmpty(lineFeatures)) {
+                props.addLayerFeatures({
+                    id: "temp_lines.geojson",
+                    name: "temp_lines.geojson",
+                    title: "Temporal Lines",
+                    zoomToExtent: true
+                }, lineFeatures, true);
+            }
+        }
+
+        // Point
+        if (result.body.returnManager.style.point) {
+            const point = result.body.data.point;
+            const pointFeatures = GwUtils.getGeoJSONFeatures("default", point, style.pointStyle);
+            if (!isEmpty(pointFeatures)) {
+                props.addLayerFeatures({
+                    id: "temp_points.geojson",
+                    name: "temp_points.geojson",
+                    title: "Temporal Points",
+                    zoomToExtent: true
+                }, pointFeatures, true);
+            }
+        }
+    },
     getGeoJSONFeatures(styleName = null, data, styleOptions = null, ) {
         if (isEmpty(data.features)) {
             return [];
@@ -247,7 +283,7 @@ const GwUtils = {
         //TODO: Get helpUrl from DB
         if (!helpUrl) {
             helpUrl = "https://giswater.gitbook.io/giswater-manual";
-        window.open(helpUrl, '_blank');
+            window.open(helpUrl, '_blank');
         }
     },
 
