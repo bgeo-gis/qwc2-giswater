@@ -12,7 +12,6 @@ export const SET_ACTIVE_WORKSPACE = 'SET_ACTIVE_WORKSPACE';
 export const REFRESH_MANAGER = 'REFRESH_MANAGER';
 
 export function setActiveWorkspace(workspaceData, keepManagerOpen) {
-    console.log("Action: Set active workspace:", workspaceData);
     return {
         type: SET_ACTIVE_WORKSPACE,
         workspaceData: workspaceData,
