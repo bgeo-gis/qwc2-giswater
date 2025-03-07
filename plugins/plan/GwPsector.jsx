@@ -165,6 +165,12 @@ class GwPsector extends React.Component {
             case "close_dlg":
                 this.onClose();
                 break;
+            case "doubleClickselectedRow":
+                const path = action.rowData?.path;
+                if (!isEmpty(path)) {
+                    window.open(path, '_blank');
+                }
+                break;
             case "help":
                 console.log("Help action triggered.");
                 break;
@@ -216,7 +222,7 @@ class GwPsector extends React.Component {
                     </div>
                 );
             }
-            const width = 1043;
+            const width = 1050;
             const height = 628;
             window = (
                 <ResizeableWindow
