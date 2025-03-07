@@ -13,13 +13,11 @@ import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
-import { setActiveDscenario } from '../../actions/dscenario';
-import { openToolBoxProcess } from '../../actions/toolbox';
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
+import { setActivePsector } from '../../actions/psector';
 
-
-class GwDscenarioManager extends React.Component {
+class GwPsectorManager extends React.Component {
     static propTypes = {
         currentTask: PropTypes.string,
         initialHeight: PropTypes.number,
@@ -32,7 +30,7 @@ class GwDscenarioManager extends React.Component {
         processStarted: PropTypes.func,
         refreshLayer: PropTypes.func,
         setCurrentTask: PropTypes.func,
-        setActiveDscenario: PropTypes.func,
+        setActivePsector: PropTypes.func,
         openToolBoxProcess: PropTypes.func,
         setFilter: PropTypes.func,
         theme: PropTypes.object,
@@ -44,22 +42,21 @@ class GwDscenarioManager extends React.Component {
     };
 
     static defaultProps = {
-        title: 'Dscenario manager',
-        initialWidth: 1065,
-        initialHeight: 515,
+        title: 'Psector management',
+        initialWidth: 1240,
+        initialHeight: 585,
         keepManagerOpen: true,
-        processId: null
     };
 
     state = {
-        dscenarioManagerResult: null,
+        psectorManagerResult: null,
         pendingRequests: false,
         widgetsProperties: {},
-        widgetValues: {}
+        widgetValues: {},
     };
 
     componentDidUpdate(prevProps) {
-        if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "GwDscenarioManager") {
+        if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "GwPsectorManager") {
             this.onShow();
         }
         // Manage close tool
@@ -68,7 +65,7 @@ class GwDscenarioManager extends React.Component {
         }
         // When user close a toolbox process table is reloaded
         if (prevProps.processId !== this.props.processId && this.props.processId === null) {
-            this.getList(this.state.dscenarioManagerResult);
+            this.getList(this.state.psectorManagerResult);
         }
     }
 
@@ -76,12 +73,12 @@ class GwDscenarioManager extends React.Component {
         // Open dialog
         const params = {
             theme: this.props.theme.title,
-            dialogName: "dscenario_manager",
-            layoutName: "lyt_dscenario_mngr"
+            dialogName: "psector_manager",
+            layoutName: "lyt_psector_mngr"
         };
         GwUtils.getDialog(params).then((response) => {
             const result = response.data;
-            this.setState({ dscenarioManagerResult: result, pendingRequests: false });
+            this.setState({ psectorManagerResult: result, pendingRequests: false });
             this.getList(result, false)
         }).catch(error => {
             console.error("Failed in getdialog: ", error);
@@ -91,97 +88,85 @@ class GwDscenarioManager extends React.Component {
     onClose = () => {
         // Close dialog
         this.props.setCurrentTask(null);
-        this.setState({ dscenarioManagerResult: null, pendingRequests: false });
+        this.setState({ psectorManagerResult: null, pendingRequests: false });
     };
 
     onWidgetAction = (action) => {
         // Get event (action) from widget
-        let functionName = action.functionName || action.widgetfunction.functionName;
+        const functionName = action.functionName || action.widgetfunction.functionName;
         switch (functionName) {
-            case "showInactive":{
-                this.getList(this.state.dscenarioManagerResult);
-                break;
-            }
-            case "toggle_active":{
-                const dscenarioId = action.row.map((row) => row.original.id)[0];
-                const isActive = action.row.map((row) => row.original.active)[0];
-                this.toggleActive(dscenarioId, isActive).then(() => {
-                    // Refresh the list after setting active
-                    this.getList(this.state.dscenarioManagerResult);
-                }).catch(error => {
-                    console.error("Failed to setting active: ", error);
-                });
-                action.removeSelectedRow();
+            case "selectedRow":{
+                // Fill log if row is selected
+                if (action.rowSelection) {
+                    this.fillTxtInfoLog(action.rowData);
+                }else{
+                    // Clean log if row is unselected
+                    this.setState((state) => ({
+                        widgetsProperties: { ...state.widgetsProperties, ["tab_none_txt_info"]: { value: "" } }
+                    }));
+                }
                 break;
             }
             case "doubleClickselectedRow":{
-                const dscenarioId = action.rowData.id;
-                this.openDscenario(dscenarioId);
+                const psectorObj = action.rowData;
+                this.openPsector(psectorObj);
                 break;
             }
-            case "create_crm":{
-                this.props.openToolBoxProcess(3110);
-                break;
-            }
-            case "create_mincut":{
-                this.props.openToolBoxProcess(3158);
-                break;
-            }
-            case "delete":{
+            case "showPsector":{
                 const ids = action.row.map((row) => row.original.id);
-                if (!confirm(`CAUTION! Deleting a dscenario will delete data from features related to the dscenario.`
-                    + `\nAre you sure you want to delete these records:\n${ids.toString()}`)) {
-                    break;
-                }
-                const promises = action.row.map((row) => {
-                    return this.deleteDscenario(row.original.id);
+                this.getPsectorFeatures(ids).then((features) => {
+                    console.log("Features: ", features);
+                    //this.props.addLayerFeatures("psector", features);
                 });
-                Promise.all(promises).then(() => {
-                    this.getList(this.state.dscenarioManagerResult);
-                });
-                action.removeSelectedRow();
                 break;
             }
-            case "close_dlg":
+            case "showInactive":{
+                this.getList(this.state.psectorManagerResult);
+                break;
+            }
+            case "closeDlg":
                 this.onClose();
                 break;
             case "help":
                 GwUtils.openHelp();
                 break;
+            default:
+                print(functionName);
         }
     };
 
-    openDscenario = async (dscenarioId) => {
-        // Open dscenario selected
-        const params = {
-            theme: this.props.theme.title,
-            dialogName: "dscenario",
-            layoutName: "lyt_dscenario",
-            idName: "dscenario_id",
-            id: dscenarioId
-        };
-
-        GwUtils.getDialog(params).then((response) => {
-            const result = response.data;
-            this.props.setActiveDscenario(result, this.props.keepManagerOpen, dscenarioId);
-            this.props.setCurrentTask("GwDscenario");
-        }).catch(error => {
-            console.error("Failed in getdialog: ", error);
-            this.setState({ pendingRequests: false });
-        });
-    };
-
-    toggleActive = async (dscenarioId, active) => {
-        // Set active dscenario
+    openPsector = async (psectorObj) => {
+        // Open psector selected
         try {
-            const requestUrl = GwUtils.getServiceUrl("dscenariomanager");
             const params = {
                 theme: this.props.theme.title,
-                dscenarioId: dscenarioId,
-                active: active
+                dialogName: "psector",
+                layoutName: "lyt_psector",
+                idName: "psector_id",
+                id: psectorObj.id,
+                tableName: "plan_psector"
+            };
+            GwUtils.getDialog(params).then((response) => {
+                const result = response.data;
+                this.props.setActivePsector(result, this.props.keepManagerOpen, psectorObj);
+                this.props.setCurrentTask("GwPsector");
+            }).catch(error => {
+                console.error("Failed in getdialog: ", error);
+            });
+        } catch (error) {
+            console.error("Error fetching psector create dialog:", error);
+        }
+    };
+
+    getPsectorFeatures = (psectorIds) => {
+        try {
+            const requestUrl = GwUtils.getServiceUrl("psectormanager");
+            const params = {
+                theme: this.props.theme.title,
+                psectorIds: psectorIds
             };
             try {
-                return await axios.get(requestUrl + "setactive", { params });
+                return axios.put(requestUrl + "getpsectorfeatures", params );
             } catch (e) {
                 console.log(e);
             }
@@ -189,36 +174,26 @@ class GwDscenarioManager extends React.Component {
             console.warn(error);
             return Promise.reject(error);
         }
-    };
-
-    deleteDscenario = async (dscenarioId) => {
-        // Manage delete selected epa results
-        try {
-            const requestUrl = GwUtils.getServiceUrl("dscenariomanager");
-            const params = {
-                theme: this.props.theme.title,
-                dscenarioId: dscenarioId
-            };
-            try {
-                return await axios.delete(requestUrl + "delete", { params });
-            } catch (e) {
-                console.log(e);
-            }
-        } catch (error) {
-            console.warn(error);
-            return Promise.reject(error);
-        }
-    };
+    }
 
     loadWidgetsProperties = (widgetsProperties) => {
         this.setState((state) => ({ widgetsProperties: { ...state.widgetsProperties, ...widgetsProperties } }));
     };
 
-    getList = (dscenarioManagerResult, filter = null) => {
+    fillTxtInfoLog = (row) => {
+        // Fill textarea info log with row values
+        const cols = ['Name', 'Priority', 'Status', 'expl_id', 'Descript', 'text1', 'text2', 'Observ'];
+        let msg = cols.map(col => `${col}:\n${row[col.toLowerCase()] ?? 'NULL'}\n\n`).join('');
+        this.setState((state) => ({
+            widgetsProperties: { ...state.widgetsProperties, ["tab_none_txt_info"]: { value: msg } }
+        }));
+    };
+
+    getList = (psectorManagerResult, filter=null) => {
         //Fill table widget
         try {
             const requestUrl = GwUtils.getServiceUrl("util");
-            const widgets = dscenarioManagerResult.body.data.fields;
+            const widgets = psectorManagerResult.body.data.fields;
             let tableWidget = null;
 
             widgets.forEach(widget => {
@@ -262,18 +237,18 @@ class GwDscenarioManager extends React.Component {
     render() {
         let resultWindow = null;
 
-        if (this.state.pendingRequests === true || this.state.dscenarioManagerResult !== null) {
+        if (this.state.pendingRequests === true || this.state.psectorManagerResult !== null) {
             let body = null;
 
-            if (isEmpty(this.state.dscenarioManagerResult)) {
+            if (isEmpty(this.state.psectorManagerResult)) {
                 let msg = this.state.pendingRequests === true ? "Querying..." : "No result" // TODO: TRANSLATION
                 body = (<div role="body"><span>{msg}</span></div>);
             } else {
 
-                const result = this.state.dscenarioManagerResult;
+                const result = this.state.psectorManagerResult;
                 if (!isEmpty(result.form_xml)) {
                     body = (
-                        <div role="body" className="dscenario-manager-body">
+                        <div role="body" className="psector-manager-body">
                             <GwQtDesignerForm
                                 form_xml={result.form_xml}
                                 onWidgetAction={this.onWidgetAction}
@@ -292,12 +267,12 @@ class GwDscenarioManager extends React.Component {
                 <ResizeableWindow
                     dockable={false}
                     icon="giswater"
-                    id="GwDscenarioManager"
+                    id="GwPsectorManager"
                     initialHeight={this.props.initialHeight}
                     initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX}
                     initialY={this.props.initialY}
-                    key="GwDscenarioManagerWindow"
+                    key="GwPsectorManagerWindow"
                     maximizeabe={false}
                     minHeight={this.props.initialHeight}
                     minWidth={this.props.initialWidth}
@@ -318,8 +293,7 @@ const selector = (state) => ({
     currentTask: state.task.id,
     layers: state.layers.flat,
     map: state.map,
-    theme: state.theme.current,
-    processId: state.toolbox.processId,
+    theme: state.theme.current
 });
 
 export default connect(selector, {
@@ -328,8 +302,7 @@ export default connect(selector, {
     processStarted: processStarted,
     removeLayer: removeLayer,
     addLayerFeatures: addLayerFeatures,
-    setActiveDscenario: setActiveDscenario,
-    openToolBoxProcess: openToolBoxProcess
-})(GwDscenarioManager);
+    setActivePsector: setActivePsector
+})(GwPsectorManager);
 
 

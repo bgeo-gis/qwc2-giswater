@@ -120,7 +120,7 @@ class GwDscenario extends React.Component {
             //Get first tab form tabWidget
             widgets.forEach(widget => {
                 if (widget.widgettype === "tabwidget") {
-                    firstTab = widget.tabs[0];
+                    firstTab = widget.tabs_tab_main[0];
                 }
 
             });

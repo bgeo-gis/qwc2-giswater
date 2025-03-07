@@ -54,8 +54,8 @@ class GwVisitManager extends React.Component {
     };
 
     static defaultProps = {
-        initialWidth: 800,
-        initialHeight: 500,
+        initialWidth: 870,
+        initialHeight: 582,
         initialX: 0,
         initialY: 0,
         initiallyDocked: false,
@@ -90,24 +90,21 @@ class GwVisitManager extends React.Component {
     }
 
     openVisitManager = (updateState = true) => {
-        let pendingRequests = false;
-        const requestUrl = GwUtils.getServiceUrl("visit");
-        if (!isEmpty(requestUrl)) {
-            const params = {
-                theme: this.props.currentTheme.title
-            };
-
-            pendingRequests = true;
-            axios.get(requestUrl + "getvisitmanager", { params: params }).then(response => {
-                const result = response.data;
-                this.getList(result);
-                if (updateState) this.setState({ visitmanagerResult: result, prevvisitmanagerResult: null, pendingRequests: false });
-            }).catch((e) => {
-                console.log(e);
-                if (updateState) this.setState({ pendingRequests: false });
-            });
-        }
-        if (updateState) this.setState({ visitmanagerResult: {}, prevvisitmanagerResult: null, pendingRequests: pendingRequests });
+        // Open dialog
+        const params = {
+            theme: this.props.currentTheme.title,
+            dialogName: "form_visit",
+            layoutName: "lyt_visit_mng"
+        };
+        GwUtils.getDialog(params).then((response) => {
+            const result = response.data;
+            this.getList(result)
+            if (updateState) this.setState({ visitmanagerResult: result, prevvisitmanagerResult: null, pendingRequests: false });
+        }).catch(error => {
+            console.error("Failed in getdialog: ", error);
+            if (updateState) this.setState({ pendingRequests: false });
+        });
+        if (updateState) this.setState({ visitmanagerResult: {}, prevvisitmanagerResult: null, pendingRequests: false });
     };
 
     onToolClose = () => {
@@ -170,7 +167,7 @@ class GwVisitManager extends React.Component {
             axios.get(requestUrl + "getlist", { params: params }).then((response) => {
                 const result = response.data;
                 this.setState((state) => ({
-                    widgetsProperties: {...state.widgetsProperties, [tableWidgets[0].columnname]: {
+                    widgetsProperties: {...state.widgetsProperties, [tableWidgets[0].widgetname]: {
                         value: GwUtils.getListToValue(result)
                     }}
                 }));
@@ -294,7 +291,7 @@ class GwVisitManager extends React.Component {
                     this.props.processFinished("visitmanager_msg", false, "DB error:" + (result.SQLERR || result.message || "Check logs"));
                 } else {
                     body = (
-                        <div className="manager-body" role="body">
+                        <div className="visitmanager-body" role="body">
                             <GwQtDesignerForm form_xml={result.form_xml} getInitialValues={false}
                                 onWidgetAction={this.onWidgetAction}
                                 onWidgetValueChange={this.onWidgetValueChange} readOnly={false}
@@ -306,9 +303,18 @@ class GwVisitManager extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={600} initialWidth= {900}
-                    initialX={this.props.initialX} initialY={this.props.initialY}
-                    initiallyDocked={this.props.initiallyDocked} key="GwVisitManagerWindow" minimizeable="true"
+                <ResizeableWindow
+                    dockable="bottom"
+                    icon="giswater"
+                    initialHeight={this.props.initialHeight}
+                    initialWidth= {this.props.initialWidth}
+                    initialX={this.props.initialX}
+                    initialY={this.props.initialY}
+                    initiallyDocked={this.props.initiallyDocked}
+                    key="GwVisitManagerWindow"
+                    minWidth={this.props.initialWidth}
+                    minHeight={this.props.initialHeight}
+                    minimizeable="true"
                     onClose={this.onToolClose}
                     scrollable title="Giswater Visit Manager"
                 >

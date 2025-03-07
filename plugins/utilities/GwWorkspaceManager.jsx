@@ -44,7 +44,7 @@ class GwWorkspaceManager extends React.Component {
     static defaultProps = {
         title: 'Workspace management',
         initialWidth: 1050,
-        initialHeight: 388,
+        initialHeight: 476,
         keepManagerOpen: true,
         geometry: null
     };
@@ -60,13 +60,13 @@ class GwWorkspaceManager extends React.Component {
     componentDidUpdate(prevProps) {
         if (prevProps.currentTask !== this.props.currentTask) {
             if (this.props.currentTask === "GwWorkspaceManager") {
-                this.getDialog();
+                this.onShow();
             }
         }
 
         // Detect refreshManager change and refresh the list
         if (prevProps.refreshManager !== this.props.refreshManager) {
-            this.getDialog(); // Re-fetch the table data
+            this.getList(this.state.workspaceManagementResult);
         }
 
         // Close tool
@@ -75,18 +75,43 @@ class GwWorkspaceManager extends React.Component {
         }
     }
 
-    getDialog = () => {
-        const requestUrl = GwUtils.getServiceUrl("workspace");
-        if (!isEmpty(requestUrl)) {
-            axios.get(requestUrl + "dialog", { params: { theme: this.props.theme.title } }).then(response => {
-                const result = response.data;
-                this.getList(result)
-                this.setState({ workspaceManagementResult: result, pendingRequests: false });
-            }).catch((e) => {
-                console.log(e);
-                this.setState({ pendingRequests: false });
-            });
+    onShow = () => {
+        // Open dialog
+        const params = {
+            theme: this.props.theme.title,
+            dialogName: "workspace_manager",
+            layoutName: "lyt_workspace_mngr"
+        };
+        GwUtils.getDialog(params).then((response) => {
+            const result = response.data;
+            this.setState({ workspaceManagementResult: result, pendingRequests: false });
+            this.getList(result)
+        }).catch(error => {
+            console.error("Failed in getdialog: ", error);
+            this.setState({ pendingRequests: false });
+        });
+    };
+
+    onpenWorkspaceObject = (optionalAtr = null) => {
+        // Open dialog
+        let params = {
+            theme: this.props.theme.title,
+            dialogName: "workspace_open",
+            layoutName: "lyt_workspace_open"
+        };
+
+        if (optionalAtr) {
+            params = {...params, ...optionalAtr }
         }
+
+        GwUtils.getDialog(params).then((response) => {
+            const result = response.data;
+            this.props.setActiveWorkspace({...result, ...optionalAtr }, this.props.keepManagerOpen);
+            this.props.setCurrentTask("GwWorkspaceObject");
+        }).catch(error => {
+            console.error("Failed in getdialog: ", error);
+            this.setState({ pendingRequests: false });
+        });
     };
 
     getList = (workspaceManagementResult) => {
@@ -203,12 +228,17 @@ class GwWorkspaceManager extends React.Component {
             }
 
             case "create": {
-                this.openCreateDialog();
+                this.onpenWorkspaceObject();
                 break;
             }
             case "edit": {
                 const selectedId = action.row.map((row) => row.original.id)[0];
-                this.openEditDialog(selectedId);
+                const other = {
+                    tableName: "cat_workspace",
+                    id: selectedId,
+                    idName: "id"
+                }
+                this.onpenWorkspaceObject(other);
                 break;
             }
             case "delete":{
@@ -264,67 +294,6 @@ class GwWorkspaceManager extends React.Component {
         }
     };
 
-    openCreateDialog = async () => {
-        try {
-            const requestUrl = GwUtils.getServiceUrl("workspace");
-            const params = {
-                theme: this.props.theme.title,
-                formType: "workspace_open", // Use the same form type for the dialog
-                layoutName: "lyt_workspace_open",
-                tableName: "cat_workspace", // Use the table linked to workspaces
-            };
-
-            // Make a request to open the workspace dialog without an ID
-            const response = await axios.get(requestUrl + "getworkspaceobject", { params });
-            const result = response.data;
-
-            // Check if the response is valid
-            if (result.status !== "Accepted") {
-                console.error("Failed to fetch workspace dialog data:", result.message);
-                alert("Failed to fetch workspace dialog data: " + (result.message?.text || result.message));
-                return;
-            }
-
-            // Set the active workspace and switch to the workspace object task
-            this.props.setActiveWorkspace(result, this.props.keepManagerOpen);
-            this.props.setCurrentTask("GwWorkspaceObject");
-        } catch (error) {
-            console.error("Error fetching workspace create dialog:", error);
-            alert("An error occurred while fetching the workspace dialog.");
-        }
-    };
-
-
-    openEditDialog = async (workspaceId) => {
-        try {
-            const requestUrl = GwUtils.getServiceUrl("workspace");
-            const params = {
-                theme: this.props.theme.title,
-                formType: "workspace_open",
-                layoutName: "lyt_workspace_open",
-                tableName: "cat_workspace",
-                id: workspaceId,
-                idName: "id"
-            };
-
-            // Make a request to open the workspace edit dialog
-            const response = await axios.get(requestUrl + "getworkspaceobject", { params });
-            const result = response.data;
-
-            // Check if the response is valid
-            if (result.status !== "Accepted") {
-                console.error("Failed to fetch workspace dialog data:", result.message);
-                alert("Failed to fetch workspace dialog data: " + (result.message?.text || result.message));
-                return;
-            }
-
-            this.props.setActiveWorkspace(result, this.props.keepManagerOpen);
-            this.props.setCurrentTask("GwWorkspaceObject");
-        } catch (error) {
-            console.error("Error fetching workspace object dialog:", error);
-            alert("An error occurred while fetching the workspace dialog.");
-        }
-    };
 
     setCurrentWorkspace = async (workspaceId) => {
         try {

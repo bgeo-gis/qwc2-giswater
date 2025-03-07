@@ -100,12 +100,22 @@ class GwPsector extends React.Component {
                 return;
             }
 
-            // Iterar sobre todos los widgets de la pestaña
             GwUtils.forEachWidgetInLayout(tab.layout, (widget) => {
                 if (widget.class === "QTableView" || widget.class === "QTableWidget") {
-                    console.log("Table widget: ", widget);
 
-                    let filters = { psector_id: { value: this.props.psectorId, filterSign: "=" } };
+                    console.log("Linked object: ", widget.property.linkedobject);
+
+                    let filters = {}
+                    switch (widget.property.linkedobject) {
+                        case "prices_results":
+                            break;
+                        case "doc_results":
+                            filters = { psector_name: { value: this.props.psectorObj.name, filterSign: "=" } };
+                            break;
+                        default:
+                            filters = { psector_id: { value: this.props.psectorObj.id, filterSign: "=" } };
+                            break;
+                    }
 
                     const params = {
                         theme: this.props.theme.title,
@@ -206,7 +216,7 @@ class GwPsector extends React.Component {
                     </div>
                 );
             }
-            const width = 960;
+            const width = 1043;
             const height = 628;
             window = (
                 <ResizeableWindow

@@ -59,7 +59,7 @@ class GwNonVisualObjectsManager extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "GwNonVisualObjectsManager") {
-            this.getManager();
+            this.onShow();
         }
         // Manage close tool
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === null) {
@@ -132,7 +132,7 @@ class GwNonVisualObjectsManager extends React.Component {
             //Get first tab form tabWidget
             widgets.forEach(widget => {
                 if (widget.widgettype === "tabwidget") {
-                    firstTab = widget.tabs[0];
+                    firstTab = widget.tabs_tab_main[0];
                 }
 
             });
@@ -164,25 +164,21 @@ class GwNonVisualObjectsManager extends React.Component {
         }
     };
 
-    getManager = () => {
-        let pendingRequests = false;
-
-        const requestUrl = GwUtils.getServiceUrl("nonvisual");
-        if (!isEmpty(requestUrl)) {
-            // Send request
-            pendingRequests = true;
-            axios.get(requestUrl + "open", { params: {theme: this.props.theme.title} }).then(response => {
-                const result = response.data;
-                this.getListInitial(result);
-                console.log("Non visual objects manager response:", result);
-                this.setState({ managerResult: result, pendingRequests: false });
-            }).catch((e) => {
-                console.log(e);
-                this.setState({ pendingRequests: false });
-            });
-        }
-        // Set "Waiting for request..." message
-        this.setState({ managerResult: {}, pendingRequests: pendingRequests });
+    onShow = () => {
+        // Open dialog
+        const params = {
+            theme: this.props.theme.title,
+            dialogName: "nvo_manager",
+            layoutName: "lyt_nvo_mng"
+        };
+        GwUtils.getDialog(params).then((response) => {
+            const result = response.data;
+            this.setState({ managerResult: result, pendingRequests: false });
+            this.getListInitial(result);
+        }).catch(error => {
+            console.error("Failed in getdialog: ", error);
+            this.setState({ pendingRequests: false });
+        });
     };
 
     onClose = () => {
@@ -245,30 +241,25 @@ class GwNonVisualObjectsManager extends React.Component {
             this.setState({ managerResult: null });
         }
         try{
-            const requestUrl = GwUtils.getServiceUrl("nonvisual");
-            if (!isEmpty(requestUrl)) {
-                // Send request
-                console.log("Requesting dialog...");
-                const params = {
-                    theme: this.props.theme.title,
-                    formType: formType,
-                    layoutName:layoutName,
-                    tableName: tableName,
-                    idname: idname,
-                    id: id
-                };
+            // Send request
+            const params = {
+                theme: this.props.theme.title,
+                dialogName: formType,
+                layoutName:layoutName,
+                tableName: tableName,
+                idName: idname,
+                id: id
+            };
 
-                axios.get(requestUrl + "getnonvisualobject", { params: params }).then(response => {
-                    const result = response.data;
-                    const filterFields = { [filterColumn]: id };
+            GwUtils.getDialog(params).then((response) => {
+                const result = response.data;
+                const filterFields = { [filterColumn]: id };
+                this.props.setActiveNonVisualObject(result, this.props.keepManagerOpen, filterFields, dialogParams);
+                this.props.setCurrentTask("GwNonVisualObject");
+            }).catch(error => {
+                console.error("Failed in getdialog: ", error);
+            });
 
-                    //Open non visual object dialog
-                    this.props.setActiveNonVisualObject(result, this.props.keepManagerOpen, filterFields, dialogParams);
-                    this.props.setCurrentTask("GwNonVisualObject");
-                }).catch((e) => {
-                    console.log("FAILED: ",e);
-                });
-            }
         } catch (error) {
             console.warn("ERROR:", error);
         }
@@ -323,7 +314,7 @@ class GwNonVisualObjectsManager extends React.Component {
                 const result = this.state.managerResult;
                 if (!isEmpty(result.form_xml)) {
                     body = (
-                        <div className="generic-manager-body" role="body">
+                        <div className="nvo-manager-body" role="body">
                             <GwQtDesignerForm form_xml={result.form_xml} onWidgetAction={this.onWidgetAction}
                             onTabChanged={this.onTabChanged} onWidgetValueChange={this.onWidgetValueChange} readOnly={false}
                             widgetValues={this.state.widgetValues} useNew widgetsProperties={this.state.widgetsProperties}/>

@@ -116,7 +116,6 @@ class GwWorkspaceObject extends React.Component {
             const result = response.data;
 
             if (result.status === "Accepted") {
-                alert("Workspace saved successfully!");
                 this.props.setActiveWorkspace(null, false);
 
                 // Refresh the workspace manager
@@ -126,7 +125,7 @@ class GwWorkspaceObject extends React.Component {
                     this.props.setCurrentTask(null);
                 }
             } else {
-                alert(`Error: ${result.message}`);
+                console.log(`Error: ${result.message}`);
             }
         } catch (error) {
             console.error("Error saving workspace:", error.message);
@@ -150,7 +149,7 @@ class GwWorkspaceObject extends React.Component {
 
     render() {
         let window = null;
-        const { initialWidth, initialHeight, initialX, initialY, workspaceData } = this.props;
+        const { initialX, initialY, workspaceData } = this.props;
         if (workspaceData) {
             let body = null;
 
@@ -174,7 +173,7 @@ class GwWorkspaceObject extends React.Component {
             }
             const width = 390;
             const height = 200;
-            const title = "Workspace Object";
+            const title = "Create new workspace";
             window = (
                 <ResizeableWindow
                     dockable={false}

@@ -41,7 +41,7 @@ class GwEpaManager extends React.Component {
     static defaultProps = {
         title: 'Epa result management',
         initialWidth: 1103,
-        initialHeight: 375
+        initialHeight: 541
     };
 
     state = {
@@ -53,7 +53,7 @@ class GwEpaManager extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === "GwEpaManager") {
-            this.getDialog();
+            this.onShow();
         }
         // Manage close tool
         if (prevProps.currentTask !== this.props.currentTask && this.props.currentTask === null) {
@@ -62,24 +62,20 @@ class GwEpaManager extends React.Component {
     }
 
     onShow = () => {
-        // Make service request
-        this.getDialog();
-    };
-
-
-    getDialog = () => {
         // Open dialog
-        const requestUrl = GwUtils.getServiceUrl("epamanager");
-        if (!isEmpty(requestUrl)) {
-            axios.get(requestUrl + "dialog", { params: { theme: this.props.theme.title } }).then(response => {
-                const result = response.data;
-                this.getList(result)
-                this.setState({ epaManagerResult: result, pendingRequests: false });
-            }).catch((e) => {
-                console.log(e);
-                this.setState({ pendingRequests: false });
-            });
-        }
+        const params = {
+            theme: this.props.theme.title,
+            dialogName: "epa_manager",
+            layoutName: "lyt_epa_mngr"
+        };
+        GwUtils.getDialog(params).then((response) => {
+            const result = response.data;
+            this.setState({ epaManagerResult: result, pendingRequests: false });
+            this.getList(result)
+        }).catch(error => {
+            console.error("Failed in getdialog: ", error);
+            this.setState({ pendingRequests: false });
+        });
     };
 
     onClose = () => {
