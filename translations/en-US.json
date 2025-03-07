@@ -58,7 +58,11 @@
         "GwParcelFilter": "Filter parcels",
         "GwSuperset": "Control panel",
         "GwNonVisualObjectsManager": "Nonvisual objects manager",
-        "GwEpaSelector": "EPA Selector"
+        "GwEpaSelector": "EPA Selector",
+        "GwEpaManager": "Epa Manager",
+        "GwWorkspaceManager": "Workspace manager",
+        "GwDscenarioManager": "Dscenario manager",
+        "GwPsectorManager": "Psector manager"
       }
     },
     "colorschemes": {

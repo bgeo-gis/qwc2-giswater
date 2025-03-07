@@ -59,9 +59,10 @@
         "GwSuperset": "Quadre de comandament",
         "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
         "GwEpaSelector": "Selector EPA",
-        "GwEpaManager":"Gestor de resultats EPA",
-        "GwWorkspaceManager": "Gestor d'espacis de treball",
-        "GwDscenarioManager":"Gestor d'escenaris"
+        "GwEpaManager": "Gestor EPA",
+        "GwWorkspaceManager": "Gestor d'espais de treball",
+        "GwDscenarioManager": "Gestor d'escenaris",
+        "GwPsectorManager": "Gestor de plans de sectors"
       }
     },
     "colorschemes": {
