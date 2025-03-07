@@ -548,11 +548,14 @@ class GwToolbox extends React.Component {
 
             toolWindow = (
                 <ResizeableWindow icon={this.props.icon}
-                    initialHeight={this.props.initialHeight} initialWidth={this.props.initialWidth}
+                    initialHeight={this.props.initialHeight}
+                    initialWidth={this.props.initialWidth}
                     initialX={this.props.initialX}
-                    initialY={this.props.initialY} initiallyDocked={this.props.initiallyDocked}
-                    key="ToolManager" minHeight={this.props.initialHeight} minWidth={this.props.initialWidth}
-                    onClose={this.clearToolManager} title={tool.body.data.alias}
+                    initialY={this.props.initialY}
+                    initiallyDocked={this.props.initiallyDocked}
+                    key="ToolManager"
+                    onClose={this.clearToolManager}
+                    title={tool.body.data.alias}
                 >
                     <div className={`tool-manager-body toolbox-${this.state.toolType}`} role='body'>
                         <GwQtDesignerForm
