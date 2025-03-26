@@ -73,6 +73,7 @@
 
 .epa-manager-body  div.MuiTableContainer-root{
     max-width: 790px;
+    max-height: 260px;
 }
 
 .dscenario-manager-body div.MuiTableContainer-root{
@@ -80,9 +81,12 @@
     height: 200px;
 }
 
-.dscenario-manager-body div.css-10gei56,
-.epa-manager-body div.css-10gei56,
-.psector-manager-body div.css-10gei56 {
+.workspace-manager-body div.MuiTableContainer-root{
+    height: 196px;
+}
+
+/* Bottom Table Container */
+div.css-10gei56 {
     height: 124px;
 }
 
@@ -96,18 +100,14 @@
     max-height: 280px;
 }
 
-.manager-body div.qt-designer-layout-grid,
-.generic-manager-body div.qt-designer-layout-grid {
-    display: block;
+.visitmanager-body div.MuiTableContainer-root{
+    max-height: 270px;
+    max-width: 465px;
 }
 
-.manager-body > div.qt-designer-form > div.qt-designer-layout-grid > div,
-.generic-manager-body > div.qt-designer-form > div.qt-designer-layout-grid > div {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
+.nvo-manager-body div.MuiTableContainer-root{
+    height: 200px;
+    max-width: 890px;
 }
 
 input:invalid, select:invalid, textarea:invalid, input:not([type=checkbox]):not([type=radio]):not([type=range]):invalid {
