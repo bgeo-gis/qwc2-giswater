@@ -4,7 +4,8 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distância",
-      "height": "Altura"
+      "height": "Altura",
+      "title": ""
     },
     "identify": {
       "confirmDiscard": "",
@@ -58,7 +59,11 @@
         "GwParcelFilter": "",
         "GwSuperset": "",
         "GwNonVisualObjectsManager": "",
-        "GwEpaSelector": ""
+        "GwEpaSelector": "",
+        "GwEpaManager": "",
+        "GwWorkspaceManager": "",
+        "GwDscenarioManager": "",
+        "GwPsectorManager": ""
       }
     },
     "colorschemes": {

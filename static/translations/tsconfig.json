@@ -51,6 +51,7 @@
     "heightprofile.asl",
     "heightprofile.distance",
     "heightprofile.height",
+    "heightprofile.title",
     "identify.confirmDiscard",
     "identify.confirmSave",
     "identify.noresults",

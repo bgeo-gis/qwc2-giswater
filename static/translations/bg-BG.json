@@ -4,7 +4,8 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Разстояние",
-      "height": "Височина"
+      "height": "Височина",
+      "title": ""
     },
     "identify": {
       "confirmDiscard": "Искате ли да отхвърлите промените?",
@@ -58,7 +59,11 @@
         "GwParcelFilter": "Филтриране на парцели",
         "GwSuperset": "Контролен панел",
         "GwNonVisualObjectsManager": "Управление на невизуални обекти",
-        "GwEpaSelector": "Селектор на EPA"
+        "GwEpaSelector": "Селектор на EPA",
+        "GwEpaManager": "",
+        "GwWorkspaceManager": "",
+        "GwDscenarioManager": "",
+        "GwPsectorManager": ""
       }
     },
     "colorschemes": {

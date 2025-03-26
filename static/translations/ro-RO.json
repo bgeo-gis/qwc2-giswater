@@ -1,10 +1,11 @@
 {
-  "locale": "de-CH",
+  "locale": "ro-RO",
   "messages": {
     "heightprofile": {
       "asl": "",
       "distance": "",
-      "height": ""
+      "height": "",
+      "title": ""
     },
     "identify": {
       "confirmDiscard": "",
@@ -58,7 +59,11 @@
         "GwParcelFilter": "",
         "GwSuperset": "",
         "GwNonVisualObjectsManager": "",
-        "GwEpaSelector": ""
+        "GwEpaSelector": "",
+        "GwEpaManager": "",
+        "GwWorkspaceManager": "",
+        "GwDscenarioManager": "",
+        "GwPsectorManager": ""
       }
     },
     "colorschemes": {

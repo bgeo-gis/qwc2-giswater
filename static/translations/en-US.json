@@ -4,7 +4,8 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distance",
-      "height": "Height"
+      "height": "Height",
+      "title": ""
     },
     "identify": {
       "confirmDiscard": "Do you want to discard the changes?",

@@ -4,7 +4,8 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distancia",
-      "height": "Altura"
+      "height": "Altura",
+      "title": ""
     },
     "identify": {
       "confirmDiscard": "¿Desea descartar los cambios?",
