@@ -84,7 +84,7 @@ class GwFlowtrace extends React.Component {
     }
     */
     componentDidUpdate(prevProps) {
-        if (this.props.currentTask === "GwFlowtrace" || this.props.currentIdentifyTool === "GwFlowtrace") {
+        if (this.props.currentTask === "GwFlowtrace" || this.props.enabled) {
             this.identifyPoint(prevProps);
         }
     }
@@ -210,9 +210,9 @@ class GwFlowtrace extends React.Component {
 }
 
 export default connect((state) => {
-    const enabled = state.task.id === "Identify" || (
+    const enabled = state.task.id === "GwFlowtrace" || (
         state.task.identifyEnabled &&
-        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "Identify") === "Identify"
+        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "GwFlowtrace") === "GwFlowtrace"
     );
     return {
         click: state.map.click || { modifiers: {} },
