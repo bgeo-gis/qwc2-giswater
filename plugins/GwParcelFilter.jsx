@@ -16,6 +16,7 @@ import { LayerRole, refreshLayer, setFilter} from 'qwc2/actions/layers';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 
 import GwQtDesignerForm from '../components/GwQtDesignerForm';
@@ -229,7 +230,7 @@ class GwParcelFilter extends React.Component {
                     initialX={this.props.initialX} initialY={this.props.initialY}
                     key="GwParcelFilterWindow" maximizeabe={false}
                     minHeight={this.props.initialHeight} minWidth={this.props.initialWidth} minimizeable={false}
-                    onClose={this.onToolClose} onShow={this.onShow} title={this.props.title}
+                    onClose={this.onToolClose} onShow={this.onShow} title={LocaleUtils.tr("appmenu.items.GwParcelFilter") || this.props.title}
                 >
                     {body}
                 </ResizeableWindow>

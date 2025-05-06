@@ -342,7 +342,7 @@ class GwMincutManager extends React.Component {
                     initialX={this.props.initialX} initialY={this.props.initialY}
                     initiallyDocked={this.props.initiallyDocked} key="GwMincutManagerWindow" minimizeable
                     onClose={this.onToolClose}
-                    scrollable title="Giswater Mincut Manager"
+                    scrollable title={LocaleUtils.tr("appmenu.items.GwMincutManager") || "Giswater Mincut Manager"}
                 >
                     {body}
                 </ResizeableWindow>

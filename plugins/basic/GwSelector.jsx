@@ -17,6 +17,7 @@ import { zoomToExtent } from 'qwc2/actions/map';
 import { LayerRole, refreshLayer, removeLayer, addLayerFeatures, changeLayerProperty, setFilter } from 'qwc2/actions/layers';
 import 'qwc2-giswater/plugins/style/GwSelector.css';
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 import {setActiveSelector, reloadLayersFilters} from '../../actions/selector';
 import { setCurrentTask } from 'qwc2/actions/task';
@@ -449,7 +450,7 @@ class GwSelector extends React.Component {
         } else {
             return (
                 <SideBar icon="giswater" id="GwSelector" key="GwSelectorNull"
-                    onShow={this.onShow} title="GW Selector" >
+                    onShow={this.onShow} title={LocaleUtils.tr("appmenu.items.GwSelector") || "GW Selector"} >
                     {body}
                 </SideBar>
             );

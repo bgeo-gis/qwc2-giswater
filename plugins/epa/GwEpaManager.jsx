@@ -13,6 +13,7 @@ import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
@@ -434,7 +435,7 @@ class GwEpaManager extends React.Component {
                     minimizeable={false}
                     onClose={this.onClose}
                     onShow={this.onShow}
-                    title={this.props.title}
+                    title={LocaleUtils.tr("appmenu.items.GwEpaManager") || this.props.title}
                 >
                     {body}
                 </ResizeableWindow>

@@ -12,6 +12,7 @@ import isEmpty from 'lodash.isempty';
 
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
 import axios from 'axios';
@@ -220,7 +221,7 @@ class GwDscenario extends React.Component {
                     dockable={false}
                     icon="giswater"
                     id="GwDscenarioWindow"
-                    title={this.props.title}
+                    title={LocaleUtils.tr("appmenu.items.GwDscenario") || this.props.title}
                     initialWidth={width}
                     initialHeight={height}
                     initialX={this.props.initialX}

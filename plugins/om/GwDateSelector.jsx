@@ -16,6 +16,7 @@ import { LayerRole, refreshLayer } from 'qwc2/actions/layers';
 import { zoomToExtent } from 'qwc2/actions/map';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
@@ -258,7 +259,7 @@ class GwDateSelector extends React.Component {
                     initialX={this.props.initialX} initialY={this.props.initialY}
                     key="GwDateSelectorWindow" minHeight={this.props.initialHeight}
                     minWidth={this.props.initialWidth} minimizeable={false}
-                    onClose={this.onToolClose} onShow={this.onShow} title="GW Date Selector"
+                    onClose={this.onToolClose} onShow={this.onShow} title={LocaleUtils.tr("appmenu.items.GwDateSelector") || "GW Date Selector"}
                 >
                     {body}
                 </ResizeableWindow>

@@ -13,6 +13,7 @@ import isEmpty from 'lodash.isempty';
 import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { setActiveWorkspace, setRefreshManager } from '../../actions/workspace';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';

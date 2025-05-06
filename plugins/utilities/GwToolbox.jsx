@@ -16,6 +16,7 @@ import GwUtils from '../../utils/GwUtils';
 import { refreshLayer, addLayerFeatures, removeLayer } from 'qwc2/actions/layers';
 import InputContainer from 'qwc2/components/widgets/InputContainer';
 import Icon from 'qwc2/components/Icon';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import 'qwc2-giswater/plugins/style/GwToolbox.css';
@@ -577,7 +578,7 @@ class GwToolbox extends React.Component {
         return [toolWindow, (
             <SideBar icon={this.props.icon} id="GwToolbox" key="GwToolboxNull"
                 minWidth={this.props.toolboxMinWidth} onShow={this.onShow}
-                title={this.props.title}
+                title={LocaleUtils.tr('appmenu.items.GwToolbox') || this.props.title}
                 width={this.props.toolboxInitialWidth} >
                 {body}
             </SideBar>

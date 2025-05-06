@@ -14,6 +14,7 @@ import ResizeableWindow from 'qwc2/components/ResizeableWindow';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
 import { setActiveNonvisualobject } from '../../actions/nonvisualobject';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
@@ -330,7 +331,7 @@ class GwNonVisualObjectsManager extends React.Component {
                     initialX={this.props.initialX} initialY={this.props.initialY}
                     key="GwNonVisualObjectsManagerWindow" maximizeabe={false}
                     minHeight={this.props.initialHeight} minWidth={this.props.initialWidth} minimizeable={true}
-                    onClose={this.onClose} onShow={this.onShow} title={this.props.title}
+                    onClose={this.onClose} onShow={this.onShow} title={LocaleUtils.tr("appmenu.items.GwNonVisualObjectsManager") || this.props.title}
                 >
                     {body}
                 </ResizeableWindow>

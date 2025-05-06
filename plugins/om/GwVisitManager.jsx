@@ -316,7 +316,7 @@ class GwVisitManager extends React.Component {
                     minHeight={this.props.initialHeight}
                     minimizeable="true"
                     onClose={this.onToolClose}
-                    scrollable title="Giswater Visit Manager"
+                    scrollable title={LocaleUtils.tr("appmenu.items.GwVisitManager") || "Giswater Visit Manager"}
                 >
                     {body}
                 </ResizeableWindow>

@@ -15,6 +15,8 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 import { LayerRole, refreshLayer, changeLayerProperty } from 'qwc2/actions/layers';
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
+
 
 class GwEpaSelector extends React.Component {
 
@@ -265,7 +267,7 @@ class GwEpaSelector extends React.Component {
                     minimizeable={false}
                     onClose={this.onClose}
                     onShow={this.onShow}
-                    title={this.props.title}
+                    title={LocaleUtils.tr("appmenu.items.GwEpaSelector") || this.props.title}
                 >
                     {body}
                 </ResizeableWindow>
