@@ -1,6 +1,38 @@
 {
   "locale": "fr-FR",
   "messages": {
+    "appmenu": {
+      "items": {
+        "GwDateSelector": "",
+        "GwDscenario": "",
+        "GwDscenarioManager": "",
+        "GwEpaManager": "",
+        "GwEpaSelector": "",
+        "GwMincut": "",
+        "GwMincutManager": "",
+        "GwNonVisualObjectsManager": "",
+        "GwParcelFilter": "",
+        "GwPsector": "",
+        "GwPsectorManager": "",
+        "GwSelector": "",
+        "GwToolbox": "",
+        "GwVisitManager": "",
+        "GwWorkspaceManager": "",
+        "GwTools": "",
+        "GwInfoPoint": "",
+        "GwInfoDma": "",
+        "GwInfoScada": "",
+        "GwProfilePicker": "",
+        "GwFlowtracetrace": "",
+        "GwFlowtraceexit": "",
+        "GwMincutNetwork": "",
+        "GwVisitVisit": "",
+        "GwVisitIncidencia": "",
+        "NetCDFExplorer": "",
+        "GwHelp": "",
+        "GwSuperset": ""
+      }
+    },
     "heightprofile": {
       "asl": "",
       "distance": "",
@@ -36,35 +68,6 @@
     },
     "searchbox": {
       "placeholder": ""
-    },
-    "appmenu": {
-      "items": {
-        "GwTools": "",
-        "GwInfoPoint": "",
-        "GwInfoDma": "",
-        "GwInfoScada": "",
-        "GwProfilePicker": "",
-        "GwSelector": "",
-        "GwFlowtracetrace": "",
-        "GwFlowtraceexit": "",
-        "GwMincutNetwork": "",
-        "GwMincutManager": "",
-        "GwVisitVisit": "",
-        "GwVisitIncidencia": "",
-        "GwDateSelector": "",
-        "GwVisitManager": "",
-        "GwToolbox": "",
-        "NetCDFExplorer": "",
-        "GwHelp": "",
-        "GwParcelFilter": "",
-        "GwSuperset": "",
-        "GwNonVisualObjectsManager": "",
-        "GwEpaSelector": "",
-        "GwEpaManager": "",
-        "GwWorkspaceManager": "",
-        "GwDscenarioManager": "",
-        "GwPsectorManager": ""
-      }
     },
     "colorschemes": {
       "giswater": "",

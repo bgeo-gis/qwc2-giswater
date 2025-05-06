@@ -1,6 +1,38 @@
 {
   "locale": "en-US",
   "messages": {
+    "appmenu": {
+      "items": {
+        "GwDateSelector": "Date Selector",
+        "GwDscenario": "Dscenario",
+        "GwDscenarioManager": "Dscenario manager",
+        "GwEpaManager": "Epa Manager",
+        "GwEpaSelector": "EPA Selector",
+        "GwMincut": "Mincut",
+        "GwMincutManager": "Mincut Manager",
+        "GwNonVisualObjectsManager": "Nonvisual objects manager",
+        "GwParcelFilter": "Filter parcels",
+        "GwPsector": "Psector",
+        "GwPsectorManager": "Psector manager",
+        "GwSelector": "Selector",
+        "GwToolbox": "Toolbox",
+        "GwVisitManager": "Visit Manager",
+        "GwWorkspaceManager": "Workspace manager",
+        "GwTools": "Giswater Tools",
+        "GwInfoPoint": "Giswater Info",
+        "GwInfoDma": "Info DMA",
+        "GwInfoScada": "Info Scada",
+        "GwProfilePicker": "Profile",
+        "GwFlowtracetrace": "Flow trace",
+        "GwFlowtraceexit": "Flow exit",
+        "GwMincutNetwork": "Mincut",
+        "GwVisitVisit": "New Visit",
+        "GwVisitIncidencia": "New Incidence",
+        "NetCDFExplorer": "NetCDF Viewer (Beta)",
+        "GwHelp": "Help",
+        "GwSuperset": "Control panel"
+      }
+    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distance",
@@ -36,35 +68,6 @@
     },
     "searchbox": {
       "placeholder": "Search place or add map..."
-    },
-    "appmenu": {
-      "items": {
-        "GwTools": "Giswater Tools",
-        "GwInfoPoint": "Giswater Info",
-        "GwInfoDma": "Info DMA",
-        "GwInfoScada": "Info Scada",
-        "GwProfilePicker": "Profile",
-        "GwSelector": "Selector",
-        "GwFlowtracetrace": "Flow trace",
-        "GwFlowtraceexit": "Flow exit",
-        "GwMincutNetwork": "Mincut",
-        "GwMincutManager": "Mincut Manager",
-        "GwVisitVisit": "New Visit",
-        "GwVisitIncidencia": "New Incidence",
-        "GwDateSelector": "Date Selector",
-        "GwVisitManager": "Visit Manager",
-        "GwToolbox": "Toolbox",
-        "NetCDFExplorer": "NetCDF Viewer (Beta)",
-        "GwHelp": "Help",
-        "GwParcelFilter": "Filter parcels",
-        "GwSuperset": "Control panel",
-        "GwNonVisualObjectsManager": "Nonvisual objects manager",
-        "GwEpaSelector": "EPA Selector",
-        "GwEpaManager": "Epa Manager",
-        "GwWorkspaceManager": "Workspace manager",
-        "GwDscenarioManager": "Dscenario manager",
-        "GwPsectorManager": "Psector manager"
-      }
     },
     "colorschemes": {
       "giswater": "Giswater",

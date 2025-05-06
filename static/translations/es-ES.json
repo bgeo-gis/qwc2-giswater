@@ -1,6 +1,38 @@
 {
   "locale": "es-ES",
   "messages": {
+    "appmenu": {
+      "items": {
+        "GwDateSelector": "Selector de fecha",
+        "GwDscenario": "Dscenario",
+        "GwDscenarioManager": "Gestor de dscenarios",
+        "GwEpaManager": "Gestor EPA",
+        "GwEpaSelector": "Selector EPA",
+        "GwMincut": "Polígono de corte",
+        "GwMincutManager": "Gestor de polígonos de corte",
+        "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
+        "GwParcelFilter": "Filtrar parcelas",
+        "GwPsector": "Plan de sector",
+        "GwPsectorManager": "Gestor de planes de sectores",
+        "GwSelector": "Selector",
+        "GwToolbox": "Caja de herramientas",
+        "GwVisitManager": "Gestor de Visitas",
+        "GwWorkspaceManager": "Gestor de espacios de trabajo",
+        "GwTools": "Herramientas Giswater",
+        "GwInfoPoint": "Giswater Info",
+        "GwInfoDma": "Info DMA",
+        "GwInfoScada": "Info Scada",
+        "GwProfilePicker": "Perfil longitudinal",
+        "GwFlowtracetrace": "Aguas arriba",
+        "GwFlowtraceexit": "Aguas abajo",
+        "GwMincutNetwork": "Polígono de corte",
+        "GwVisitVisit": "Nueva Visita",
+        "GwVisitIncidencia": "Nueva Incidencia",
+        "NetCDFExplorer": "Visualizador de NetCDF (Beta)",
+        "GwHelp": "Ayuda",
+        "GwSuperset": "Panel de control"
+      }
+    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distancia",
@@ -36,35 +68,6 @@
     },
     "searchbox": {
       "placeholder": "Busque un lugar o agregue mapa"
-    },
-    "appmenu": {
-      "items": {
-        "GwTools": "Herramientas Giswater",
-        "GwInfoPoint": "Giswater Info",
-        "GwInfoDma": "Info DMA",
-        "GwInfoScada": "Info Scada",
-        "GwProfilePicker": "Perfil longitudinal",
-        "GwSelector": "Selector",
-        "GwFlowtracetrace": "Aguas arriba",
-        "GwFlowtraceexit": "Aguas abajo",
-        "GwMincutNetwork": "Polígono de corte",
-        "GwMincutManager": "Gestor de polígonos de corte",
-        "GwVisitVisit": "Nueva Visita",
-        "GwVisitIncidencia": "Nueva Incidencia",
-        "GwDateSelector": "Selector de fecha",
-        "GwVisitManager": "Gestor de Visitas",
-        "GwToolbox": "Caja de herramientas",
-        "NetCDFExplorer": "Visualizador de NetCDF (Beta)",
-        "GwHelp": "Ayuda",
-        "GwParcelFilter": "Filtrar parcelas",
-        "GwSuperset": "Panel de control",
-        "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
-        "GwEpaSelector": "Selector EPA",
-        "GwEpaManager": "Gestor EPA",
-        "GwWorkspaceManager": "Gestor de espacios de trabajo",
-        "GwDscenarioManager": "Gestor de dscenarios",
-        "GwPsectorManager": "Gestor de planes de sectores"
-      }
     },
     "colorschemes": {
       "giswater": "Giswater",

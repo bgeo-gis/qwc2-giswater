@@ -1,6 +1,38 @@
 {
   "locale": "pt-PT",
   "messages": {
+    "appmenu": {
+      "items": {
+        "GwDateSelector": "Seletor de Data",
+        "GwDscenario": "",
+        "GwDscenarioManager": "",
+        "GwEpaManager": "",
+        "GwEpaSelector": "",
+        "GwMincut": "",
+        "GwMincutManager": "Gestor Mincut",
+        "GwNonVisualObjectsManager": "",
+        "GwParcelFilter": "",
+        "GwPsector": "",
+        "GwPsectorManager": "",
+        "GwSelector": "Selector",
+        "GwToolbox": "Caixa de Ferramentas",
+        "GwVisitManager": "Gestor de Visitas",
+        "GwWorkspaceManager": "",
+        "GwTools": "Ferramentas Giswater",
+        "GwInfoPoint": "Informações Giswater",
+        "GwInfoDma": "Informações DMA",
+        "GwInfoScada": "Informações Scada",
+        "GwProfilePicker": "Perfil",
+        "GwFlowtracetrace": "Traçar fluxo",
+        "GwFlowtraceexit": "Saída de fluxo",
+        "GwMincutNetwork": "Mincut",
+        "GwVisitVisit": "Nova Visita",
+        "GwVisitIncidencia": "Nova Incidência",
+        "NetCDFExplorer": "Visualizador NetCDF (Beta)",
+        "GwHelp": "Ajuda",
+        "GwSuperset": ""
+      }
+    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distância",
@@ -36,35 +68,6 @@
     },
     "searchbox": {
       "placeholder": "Pesquisar..."
-    },
-    "appmenu": {
-      "items": {
-        "GwTools": "Ferramentas Giswater",
-        "GwInfoPoint": "Informações Giswater",
-        "GwInfoDma": "Informações DMA",
-        "GwInfoScada": "Informações Scada",
-        "GwProfilePicker": "Perfil",
-        "GwSelector": "Selector",
-        "GwFlowtracetrace": "Traçar fluxo",
-        "GwFlowtraceexit": "Saída de fluxo",
-        "GwMincutNetwork": "Mincut",
-        "GwMincutManager": "Gestor Mincut",
-        "GwVisitVisit": "Nova Visita",
-        "GwVisitIncidencia": "Nova Incidência",
-        "GwDateSelector": "Seletor de Data",
-        "GwVisitManager": "Gestor de Visitas",
-        "GwToolbox": "Caixa de Ferramentas",
-        "NetCDFExplorer": "Visualizador NetCDF (Beta)",
-        "GwHelp": "Ajuda",
-        "GwParcelFilter": "",
-        "GwSuperset": "",
-        "GwNonVisualObjectsManager": "",
-        "GwEpaSelector": "",
-        "GwEpaManager": "",
-        "GwWorkspaceManager": "",
-        "GwDscenarioManager": "",
-        "GwPsectorManager": ""
-      }
     },
     "colorschemes": {
       "giswater": "Giswater",

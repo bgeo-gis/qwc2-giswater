@@ -1,6 +1,38 @@
 {
   "locale": "bg-BG",
   "messages": {
+    "appmenu": {
+      "items": {
+        "GwDateSelector": "Избор на дата",
+        "GwDscenario": "",
+        "GwDscenarioManager": "",
+        "GwEpaManager": "",
+        "GwEpaSelector": "Селектор на EPA",
+        "GwMincut": "",
+        "GwMincutManager": "Мениджър на Mincut",
+        "GwNonVisualObjectsManager": "Управление на невизуални обекти",
+        "GwParcelFilter": "Филтриране на парцели",
+        "GwPsector": "",
+        "GwPsectorManager": "",
+        "GwSelector": "Селектор",
+        "GwToolbox": "Кутия с инструменти",
+        "GwVisitManager": "Мениджър на посещения",
+        "GwWorkspaceManager": "",
+        "GwTools": "Инструменти Giswater",
+        "GwInfoPoint": "Информация за Giswater",
+        "GwInfoDma": "Информация за DMA",
+        "GwInfoScada": "Информация за Scada",
+        "GwProfilePicker": "Профил",
+        "GwFlowtracetrace": "Проследяване на потока",
+        "GwFlowtraceexit": "Изход на потока",
+        "GwMincutNetwork": "Mincut",
+        "GwVisitVisit": "Ново посещение",
+        "GwVisitIncidencia": "Нова заболеваемост",
+        "NetCDFExplorer": "Преглед на NetCDF (бета версия)",
+        "GwHelp": "Помощ",
+        "GwSuperset": "Контролен панел"
+      }
+    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Разстояние",
@@ -36,35 +68,6 @@
     },
     "searchbox": {
       "placeholder": "Търсене на място или добавяне на карта..."
-    },
-    "appmenu": {
-      "items": {
-        "GwTools": "Инструменти Giswater",
-        "GwInfoPoint": "Информация за Giswater",
-        "GwInfoDma": "Информация за DMA",
-        "GwInfoScada": "Информация за Scada",
-        "GwProfilePicker": "Профил",
-        "GwSelector": "Селектор",
-        "GwFlowtracetrace": "Проследяване на потока",
-        "GwFlowtraceexit": "Изход на потока",
-        "GwMincutNetwork": "Mincut",
-        "GwMincutManager": "Мениджър на Mincut",
-        "GwVisitVisit": "Ново посещение",
-        "GwVisitIncidencia": "Нова заболеваемост",
-        "GwDateSelector": "Избор на дата",
-        "GwVisitManager": "Мениджър на посещения",
-        "GwToolbox": "Кутия с инструменти",
-        "NetCDFExplorer": "Преглед на NetCDF (бета версия)",
-        "GwHelp": "Помощ",
-        "GwParcelFilter": "Филтриране на парцели",
-        "GwSuperset": "Контролен панел",
-        "GwNonVisualObjectsManager": "Управление на невизуални обекти",
-        "GwEpaSelector": "Селектор на EPA",
-        "GwEpaManager": "",
-        "GwWorkspaceManager": "",
-        "GwDscenarioManager": "",
-        "GwPsectorManager": ""
-      }
     },
     "colorschemes": {
       "giswater": "Giswater",

@@ -1,6 +1,38 @@
 {
   "locale": "ca-ES",
   "messages": {
+    "appmenu": {
+      "items": {
+        "GwDateSelector": "Selector de Data",
+        "GwDscenario": "Dscenario",
+        "GwDscenarioManager": "Gestor d'escenaris",
+        "GwEpaManager": "Gestor EPA",
+        "GwEpaSelector": "Selector EPA",
+        "GwMincut": "Polígon de tall",
+        "GwMincutManager": "Gestor de polígons de tall",
+        "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
+        "GwParcelFilter": "Filtra parcel·les",
+        "GwPsector": "Pla de sector",
+        "GwPsectorManager": "Gestor de plans de sectors",
+        "GwSelector": "Selector",
+        "GwToolbox": "Caixa d'eines",
+        "GwVisitManager": "Gestor de Visites",
+        "GwWorkspaceManager": "Gestor d'espais de treball",
+        "GwTools": "Eines Giswater",
+        "GwInfoPoint": "Giswater Info",
+        "GwInfoDma": "Info DMA",
+        "GwInfoScada": "Info Scada",
+        "GwProfilePicker": "Perfil longitudinal",
+        "GwFlowtracetrace": "Aigües a munt",
+        "GwFlowtraceexit": "Aigües a vall",
+        "GwMincutNetwork": "Polígon de tall",
+        "GwVisitVisit": "Nova Visita",
+        "GwVisitIncidencia": "Nova Incidencia",
+        "NetCDFExplorer": "Visualitzador de NetCDF (Beta)",
+        "GwHelp": "Ajuda",
+        "GwSuperset": "Quadre de comandament"
+      }
+    },
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distància",
@@ -36,35 +68,6 @@
     },
     "searchbox": {
       "placeholder": "Cerqui un lloc o afegueixi mapa"
-    },
-    "appmenu": {
-      "items": {
-        "GwTools": "Eines Giswater",
-        "GwInfoPoint": "Giswater Info",
-        "GwInfoDma": "Info DMA",
-        "GwInfoScada": "Info Scada",
-        "GwProfilePicker": "Perfil longitudinal",
-        "GwSelector": "Selector",
-        "GwFlowtracetrace": "Aigües a munt",
-        "GwFlowtraceexit": "Aigües a vall",
-        "GwMincutNetwork": "Polígon de tall",
-        "GwMincutManager": "Gestor de polígons de tall",
-        "GwVisitVisit": "Nova Visita",
-        "GwVisitIncidencia": "Nova Incidencia",
-        "GwDateSelector": "Selector de Data",
-        "GwVisitManager": "Gestor de Visites",
-        "GwToolbox": "Caixa d'eines",
-        "NetCDFExplorer": "Visualitzador de NetCDF (Beta)",
-        "GwHelp": "Ajuda",
-        "GwParcelFilter": "Filtra parcel·les",
-        "GwSuperset": "Quadre de comandament",
-        "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
-        "GwEpaSelector": "Selector EPA",
-        "GwEpaManager": "Gestor EPA",
-        "GwWorkspaceManager": "Gestor d'espais de treball",
-        "GwDscenarioManager": "Gestor d'escenaris",
-        "GwPsectorManager": "Gestor de plans de sectors"
-      }
     },
     "colorschemes": {
       "giswater": "Giswater",
