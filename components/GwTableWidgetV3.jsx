@@ -178,6 +178,10 @@ class GwTableWidgetV3 extends React.Component {
             }));
         };
 
+        const handleExportData = () => {
+            csvExporter.generateCsv(data);
+          };
+
         const inputProps = {
             enableTopToolbar: tableParams.enableTopToolbar ?? true,
             enableGlobalFilter: tableParams.enableGlobalFilter ?? false,
@@ -330,11 +334,11 @@ class GwTableWidgetV3 extends React.Component {
                     <ThemeProvider theme={exportButtonTheme}>
                         <Button
                             color="primary"
-                            onClick={() => handleExportRows(table.getRowModel().rows)}
+                            onClick={handleExportData}
                             startIcon={<FileDownloadIcon />}
                             variant="contained"
                         >
-                            Export All Rows
+                            Export All Data
                         </Button>
                         <Button
                             disabled={!table.getIsSomeRowsSelected()}
