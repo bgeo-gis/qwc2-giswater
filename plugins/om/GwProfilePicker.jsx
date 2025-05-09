@@ -50,8 +50,8 @@ class GwProfilePicker extends React.Component {
         addMarker: PropTypes.func,
         changeProfileState: PropTypes.func,
         click: PropTypes.object,
-        currentIdentifyTool: PropTypes.string,
         currentTask: PropTypes.string,
+        enabled: PropTypes.bool,
         firstNodeCoordinates: PropTypes.object,
         firstNodeId: PropTypes.object,
         initPointStyle: PropTypes.object,
@@ -144,7 +144,7 @@ class GwProfilePicker extends React.Component {
             this.clearResults();
             this.reset();
         }
-        if (this.props.currentTask === "GwProfilePicker" || this.props.currentIdentifyTool === "GwProfilePicker") {
+        if (this.props.currentTask === "GwProfilePicker" || this.props.enabled) {
             this.identifyPoint(prevProps);
             if (this.state.firstNodeId !== null && this.state.secondNodeId !== null && (prevState.secondNodeId === null || isNaN(prevState.secondNodeId)) && !isNaN(this.state.secondNodeId)) {
                 // When both nodes selected request node information and draw the graph
@@ -659,9 +659,9 @@ class GwProfilePicker extends React.Component {
     }
 }
 export default connect((state) => {
-    const enabled = state.task.id === "Identify" || (
+    const enabled = state.task.id === "GwProfilePicker" || (
         state.task.identifyEnabled &&
-        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "Identify") === "Identify"
+        ConfigUtils.getConfigProp("identifyTool", state.theme.current, "GwProfilePicker") === "GwProfilePicker"
     );
     return {
         click: state.map.click || { modifiers: {} },
