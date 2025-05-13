@@ -61,7 +61,8 @@ class GwSelector extends React.Component {
     }
     state = {
         selectorResult: null,
-        pendingRequests: false
+        pendingRequests: false,
+        isShiftPressed: false
     };
     handleResult = (result) => {
         if (!result || result.schema === null) {
@@ -115,7 +116,25 @@ class GwSelector extends React.Component {
         }
     }
     componentDidMount() {
+        // Add event listeners for shift key
+        window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keyup', this.handleKeyUp);
     }
+    componentWillUnmount() {
+        // Remove event listeners
+        window.removeEventListener('keydown', this.handleKeyDown);
+        window.removeEventListener('keyup', this.handleKeyUp);
+    }
+    handleKeyDown = (event) => {
+        if (event.key === 'Shift') {
+            this.setState({ isShiftPressed: true });
+        }
+    };
+    handleKeyUp = (event) => {
+        if (event.key === 'Shift') {
+            this.setState({ isShiftPressed: false });
+        }
+    };
     onShow = () => {
         // Make service request
         this.makeRequest();
@@ -363,8 +382,8 @@ class GwSelector extends React.Component {
         const selectorType = action.params.selectorType;
         const tabName = action.params.tabName;
         const id = action.params.id;
-        const isAlone = false;
-        const disableParent = false; // TODO?: get if shift is pressed (depending on)
+        const isAlone = !this.state.isShiftPressed;;
+        const disableParent = false; // Use the state to determine if shift is pressed
         const value = action.params.value === 'False';
         const addSchema = "NULL"; // TODO?: allow addSchema
         const params = {
