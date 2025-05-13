@@ -465,11 +465,11 @@ class GwMincut extends React.Component {
                 ...state.widgetsProperties,
 
                 tab_plan: { disabled: !tabPlanEnabled },
-                work_order: { disabled: !workOrderEnabled },
+                tab_mincut_work_order: { disabled: !workOrderEnabled },
 
-                btn_valve_status: { disabled: !toolbarEnabled },
-                btn_custom_mincut: { disabled: !toolbarEnabled },
-                btn_refresh_mincut: { disabled: !toolbarEnabled },
+                tab_mincut_btn_valve_status: { disabled: !toolbarEnabled },
+                tab_mincut_btn_custom_mincut: { disabled: !toolbarEnabled },
+                tab_mincut_btn_refresh_mincut: { disabled: !toolbarEnabled },
 
                 ...lytExecWidgets.reduce((acc, widget) => {
                     acc[widget] = {
@@ -478,8 +478,8 @@ class GwMincut extends React.Component {
                     };
                     return acc;
                 }, {}),
-                btn_start: { disabled: !btnStartEnabled },
-                btn_end: { disabled: !btnEndEnabled }
+                tab_mincut_btn_start: { disabled: !btnStartEnabled },
+                tab_mincut_btn_end: { disabled: !btnEndEnabled }
             }
         }));
     };
