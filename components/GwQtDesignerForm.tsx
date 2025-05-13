@@ -490,7 +490,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             return (
                 // @ts-ignore
                 <label style={fontStyle} title={prop.toolTip}>
-                    <input checked={value} disabled={inputConstraints.readOnly} name={nametransform(this.groupOrName(widget))} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.checked)} {...inputConstraints} title={prop.toolTip} type={type} value={widget.name} />
+                    <input checked={value} disabled={inputConstraints.readOnly} onClick={() => this.props.onWidgetAction(JSON.parse(widgetFunction), widget)}  name={nametransform(this.groupOrName(widget))} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.checked)} {...inputConstraints} title={prop.toolTip} type={type} value={widget.name} />
                     {prop.text}
                 </label>
             );
