@@ -583,7 +583,7 @@ class GwProfileGraphV2 extends React.Component {
                 initialHeight={this.props.height} initialWidth={600} initiallyDocked
                 key="GwProfile" onClose={this.onClose} onExternalWindowResized={this.resizeChart}
                 splitScreenWhenDocked
-                title={LocaleUtils.tr("heightprofile.title")} usePortal={false}
+                title={LocaleUtils.tr("appmenu.items.GwProfilePicke")} usePortal={false}
             >
                 <div id="GwProfileGraphV2" role="body" key="1">
                     <Line data={fullData} options={options} ref={this.chartRef}
