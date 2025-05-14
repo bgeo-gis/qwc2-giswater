@@ -326,7 +326,7 @@ class GwMincut extends React.Component {
 
     onWidgetValueChange = (widget, value) => {
         this.setState((state) => ({
-            mincutValues: { ...state.mincutValues, [widget.name]: value },
+            mincutValues: { ...state.mincutValues, [widget.property.columnname]: value },
             widgetsProperties: { ...state.widgetsProperties, [widget.name]: { value: value } }
         }));
     };
