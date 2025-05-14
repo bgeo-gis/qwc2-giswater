@@ -109,7 +109,7 @@ class GwMincut extends React.Component {
                 mincutValues: {},
                 widgetsProperties: {
                     // chk_use_planified: state.widgetsProperties.chk_use_planified,
-                    txt_infolog: { value: messages }
+                    tab_mincut_txt_infolog: { value: messages }
                 }
             }, () => {
                 // If the xml is the same, GwQtDesignerForm won't reload the form and `loadFormUi` won't be called
