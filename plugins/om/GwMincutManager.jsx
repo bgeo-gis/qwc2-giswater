@@ -86,6 +86,11 @@ class GwMincutManager extends React.Component {
             console.log("Opening Mincut Manager");
             this.openMincutManager();
         }
+        // Refresh list when mincut is closed
+        if (prevProps.mincutResult && !this.props.mincutResult && this.state.mincutmanagerResult) {
+            console.log("Mincut closed, refreshing list");
+            this.getList(this.state.mincutmanagerResult);
+        }
     }
 
     openMincutManager = (updateState = true) => {
@@ -108,7 +113,7 @@ class GwMincutManager extends React.Component {
 
     onToolClose = () => {
         this.props.setCurrentTask(null);
-        this.setState({ mincutmanagerResult: null, pendingRequests: false, mincutResult: null, selectorResult: null, widgetsProperties: {}, mincutId: null});
+        this.setState({ mincutmanagerResult: null, pendingRequests: false, selectorResult: null, widgetsProperties: {}, mincutId: null});
     };
 
 
@@ -146,7 +151,6 @@ class GwMincutManager extends React.Component {
                 } } }));
             }).catch((e) => {
                 console.log(e);
-                // this.setState({  });
             });
         } catch (error) {
             console.warn(error);
@@ -163,8 +167,7 @@ class GwMincutManager extends React.Component {
             this.openMincut(action.row[0].original.id);
             this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
             if (!this.props.keepManagerOpen) {
-                console.log("this.props.keepManagerOpen", this.props.keepManagerOpen);
-                console.log("!!!!!! Closing mincut manager");
+                console.log("Closing mincut manager...");
                 this.setState({ mincutmanagerResult: null });
             }
             break;
@@ -195,19 +198,9 @@ class GwMincutManager extends React.Component {
             }
             break;
         }
-        case "mincutClose":
-            this.setState({ mincutResult: null });
-            if (!this.props.keepManagerOpen) {
-                this.onToolClose();
-            }
-            break;
         case "selectorClose":
             this.setState({ selectorResult: null });
             break;
-        case "refresh":
-            this.getList(this.state.mincutmanagerResult);
-            break;
-
         default:
             console.warn(`Action \`${functionName}\` cannot be handled.`);
             break;
@@ -237,8 +230,6 @@ class GwMincutManager extends React.Component {
                     axios.get(requestUrl + "get", { params: params }).then(response => {
                         const result = response.data;
                         this.props.setActiveSelector(result, ids, this.props.keepManagerOpen);
-                        // this.setState({ selectorResult: result, pendingRequests: false });
-                        // this.filterLayers(result);
                     }).catch((e) => {
                         console.log(e);
                         this.setState({ pendingRequests: false });
@@ -261,7 +252,6 @@ class GwMincutManager extends React.Component {
             axios.get(requestUrl + "open", { params: params }).then((response) => {
                 const result = response.data;
                 this.props.setActiveMincut(result, this.props.keepManagerOpen);
-                this.props.setCurrentTask("GwMincut");
             }).catch((e) => {
                 console.log(e);
             });
@@ -366,7 +356,8 @@ export default connect((state) => {
         layers: state.layers.flat,
         map: state.map,
         selection: state.selection,
-        currentTheme: state.theme.current
+        currentTheme: state.theme.current,
+        mincutResult: state.mincut.mincutResult
     };
 }, {
     addLayerFeatures: addLayerFeatures,
