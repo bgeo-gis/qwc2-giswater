@@ -110,6 +110,11 @@ div.css-10gei56 {
     max-width: 890px;
 }
 
+.mincut-manager-body div.MuiTableContainer-root{
+    height: 260px;
+    max-width: 890px;
+}
+
 input:invalid, select:invalid, textarea:invalid, input:not([type=checkbox]):not([type=radio]):not([type=range]):invalid {
    border: 2px solid red !important;
    background: var(--input-bg-color) !important;

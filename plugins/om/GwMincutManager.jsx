@@ -327,7 +327,7 @@ class GwMincutManager extends React.Component {
                     this.props.processFinished("mincutmanager_msg", false, "DB error:" + (result.SQLERR || result.message || "Check logs"));
                 } else {
                     body = (
-                        <div className="manager-body" role="body">
+                        <div className="mincut-manager-body" role="body">
                             <GwQtDesignerForm form_xml={result.form_xml} getInitialValues={false}
                                 onWidgetAction={this.onWidgetAction}
                                 onWidgetValueChange={this.onWidgetValueChange} readOnly={false} theme={this.props.currentTheme.title}
@@ -338,7 +338,7 @@ class GwMincutManager extends React.Component {
                 }
             }
             resultWindow = (
-                <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={600} initialWidth= {900}
+                <ResizeableWindow dockable="bottom" icon="giswater" initialHeight={520} initialWidth= {915}
                     initialX={this.props.initialX} initialY={this.props.initialY}
                     initiallyDocked={this.props.initiallyDocked} key="GwMincutManagerWindow" minimizeable
                     onClose={this.onToolClose}
