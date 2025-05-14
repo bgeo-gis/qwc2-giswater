@@ -16,6 +16,7 @@ import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
 import axios from 'axios';
 import { setActivePsector } from '../../actions/psector';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 class GwPsector extends React.Component {
     static propTypes = {
@@ -229,7 +230,7 @@ class GwPsector extends React.Component {
                     dockable={false}
                     icon="giswater"
                     id="GwPsectorWindow"
-                    title={this.props.title}
+                    title={LocaleUtils.tr("appmenu.items.GwPsector") || this.props.title}
                     initialWidth={width}
                     initialHeight={height}
                     initialX={this.props.initialX}

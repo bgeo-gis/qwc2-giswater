@@ -16,6 +16,7 @@ import { processFinished, processStarted } from 'qwc2/actions/processNotificatio
 import GwQtDesignerForm from '../../components/GwQtDesignerForm';
 import GwUtils from '../../utils/GwUtils';
 import { setActivePsector } from '../../actions/psector';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 class GwPsectorManager extends React.Component {
     static propTypes = {
@@ -290,7 +291,7 @@ class GwPsectorManager extends React.Component {
                     minimizeable={false}
                     onClose={this.onClose}
                     onShow={this.onShow}
-                    title={this.props.title}
+                    title={LocaleUtils.tr("appmenu.items.GwPsectorManager") || this.props.title}
                 >
                     {body}
                 </ResizeableWindow>
