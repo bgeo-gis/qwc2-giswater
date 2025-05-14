@@ -210,7 +210,7 @@ class GwTableWidgetV3 extends React.Component {
         });
 
         if (tableParams.enableRowSelection) {
-            inputProps.getRowId = (row) => row.userId;
+            inputProps.getRowId = (row) => row.id;
             inputProps.muiTableBodyRowProps = ({ row }) => ({
                 onClick: () => {
                     // Update selection state
