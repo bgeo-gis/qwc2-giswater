@@ -331,8 +331,8 @@ class GwToolbox extends React.Component {
 
                     const pointParams = Object.keys(point.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
                     geojsonData.point_table = {
-                        body: {
-                            form: { headers:
+                        form: {
+                            headers:
                                 pointParams.map(name => ({
                                     accessorKey: name,
                                     header: name,
@@ -344,12 +344,12 @@ class GwToolbox extends React.Component {
                                 },
                                 enableTopToolbar: false
                             }
-                            },
-                            data: { fields: [{
-                                value: point.features.map((l) => l.properties)
-                            }]}
-                        }
+                        },
+                        values: point.features.map((l) => l.properties)
                     };
+                    this.setState((prevState) => ({
+                        widgetsProperties: { ...prevState.widgetsProperties, point_table: { value: geojsonData.point_table } },
+                    }));
                 } else {
                     hiddenWidgets.push("tab_point");
                 }
@@ -378,25 +378,24 @@ class GwToolbox extends React.Component {
 
                     const lineParams = Object.keys(line.features.reduce((acc, curr) => ({...acc, ...curr.properties}), {}));
                     geojsonData.line_table = {
-                        body: {
-                            form: { headers:
-                                lineParams.map(name => ({
-                                    accessorKey: name,
-                                    header: name,
-                                    id: name
-                                })),
+                        form: {
+                            headers: lineParams.map(name => ({
+                                accessorKey: name,
+                                header: name,
+                                id: name
+                            })),
                             table: {
                                 initialState: {
                                     density: 'compact'
                                 },
                                 enableTopToolbar: false
                             }
-                            },
-                            data: { fields: [{
-                                value: line.features.map((l) => l.properties)
-                            }]}
-                        }
+                        },
+                        values: line.features.map((l) => l.properties)
                     };
+                    this.setState((prevState) => ({
+                        widgetsProperties: { ...prevState.widgetsProperties, line_table: { value: geojsonData.line_table } },
+                    }));
                 } else {
                     hiddenWidgets.push("tab_line");
                 }
@@ -404,7 +403,7 @@ class GwToolbox extends React.Component {
                 this.setState((prevState) => ({
                     hiddenWidgets: hiddenWidgets,
                     executionResult: result,
-                    widgetsProperties: { ...prevState.widgetsProperties, ...geojsonData, txt_infolog: { value: logText } },
+                    widgetsProperties: { ...prevState.widgetsProperties, txt_infolog: { value: logText } },
                     toolActiveTabs: { ...prevState.toolActiveTabs, mainTab: "tab_loginfo" },
                 }));
             }).catch((e) => {

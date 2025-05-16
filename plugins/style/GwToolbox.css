@@ -35,6 +35,11 @@ div.tool-manager-body {
     height: 100%;
 }
 
+div.tool-manager-body div.MuiTableContainer-root{
+    height: 275px;
+    width: 675px;
+}
+
 div.toolbox-processes > div.qt-designer-form {
     height: 100%;
 }
