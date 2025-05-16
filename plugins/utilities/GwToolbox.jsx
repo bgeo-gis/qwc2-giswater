@@ -130,12 +130,26 @@ class GwToolbox extends React.Component {
         switch (type) {
         case "processes":
             if (this.state.toolResult?.body?.data.id !== tool.id) {
-                this.getProcess(tool.id, {}, (response) => {
-                    const result = response.data;
-                    this.setState({ hiddenWidgets: ["tab_line", "tab_point", "tab_polygon"], toolResult: result, toolType: type, toolWidgetValues: {}, toolActiveTabs: {} });
-                }, (error) => {
-                    this.props.processStarted("get_process", "Get process");
-                    this.props.processFinished("get_process", false, `Failed to get process: ${error}`);
+                // Clear previous state first
+                this.setState({
+                    hiddenWidgets: ["tab_line", "tab_point", "tab_polygon"],
+                    toolResult: null,
+                    toolType: null,
+                    toolWidgetValues: {},
+                    toolActiveTabs: {},
+                    executionResult: null,
+                    widgetsProperties: {}
+                }, () => {
+                    this.getProcess(tool.id, {}, (response) => {
+                        const result = response.data;
+                        this.setState({
+                            toolResult: result,
+                            toolType: type
+                        });
+                    }, (error) => {
+                        this.props.processStarted("get_process", "Get process");
+                        this.props.processFinished("get_process", false, `Failed to get process: ${error}`);
+                    });
                 });
             }
             break;
