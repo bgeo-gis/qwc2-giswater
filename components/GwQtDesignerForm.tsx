@@ -65,6 +65,7 @@ type GwQtDesignerFormState = {
     formData: any,
     loading: boolean,
     loadingReqId: string | null,
+    focusedTypeahead: string | null,
 };
 
 export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormProps, GwQtDesignerFormState> {
@@ -91,6 +92,7 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
         formData: null,
         loading: false,
         loadingReqId: null,
+        focusedTypeahead: null,
     };
     constructor(props) {
         super(props);
@@ -446,10 +448,28 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             // If QLineEdit is typeahead
             if (widget.property.isTypeahead === 'true') {
                 const suggestions = widgetProperties.props?.suggestions || [];
-                const showSuggestionsList = suggestions.length > 0 && !(suggestions.length === 1 && suggestions[0] === value);
+                const showSuggestionsList = suggestions.length > 0 &&
+                    !(suggestions.length === 1 && suggestions[0] === value) &&
+                    this.state.focusedTypeahead === widget.name;
                 return (
                     <div key={widget.name} style={{ position: 'relative', width: '100%' }}>
-                        <input name={elname} onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)} {...inputConstraints} size={5} style={{ ...fontStyle, width: '100%' }} title={prop.toolTip} type="text" value={value} />
+                        <input
+                            name={elname}
+                            onChange={(ev) => this.props.onWidgetValueChange(widget, ev.target.value)}
+                            onFocus={() => this.setState({ focusedTypeahead: widget.name })}
+                            onBlur={() => {
+                                // Small delay to allow click event on suggestions to fire first
+                                setTimeout(() => {
+                                    this.setState({ focusedTypeahead: null });
+                                }, 200);
+                            }}
+                            {...inputConstraints}
+                            size={5}
+                            style={{ ...fontStyle, width: '100%' }}
+                            title={prop.toolTip}
+                            type="text"
+                            value={value}
+                        />
 
                         {showSuggestionsList && (
                             <div style={{
@@ -464,7 +484,10 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
                                 {suggestions.map((suggestion, idx) => (
                                     <div
                                         key={idx}
-                                        onClick={() => this.props.onWidgetValueChange(widget, suggestion)}  // Handle suggestion click
+                                        onMouseDown={(e) => {
+                                            e.preventDefault(); // Prevent blur
+                                            this.props.onWidgetValueChange(widget, suggestion);
+                                        }}
                                         style={{
                                             padding: '5px',
                                             cursor: 'pointer',
