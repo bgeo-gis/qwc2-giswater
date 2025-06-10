@@ -287,6 +287,15 @@ class GwInfo extends React.Component {
                 queryTextFilter = widget.property.queryTextFilter;
             }
 
+            const widgetFunction = JSON.parse(widget.property.widgetfunction)
+            let parentValue = null;
+            if (widgetFunction.parameters.filterc_value) {
+                let filterValue = widgetFunction.parameters.filterc_value
+                if (filterValue === "$FEATURE_ID") {
+                    parentValue = this.props.identifyResult.body.feature.id;
+                }
+            }
+
             const requestUrl = GwUtils.getServiceUrl("info");
             if (!isEmpty(requestUrl)) {
                 const epsg = GwUtils.crsStrToInt(this.props.map.projection);
@@ -296,7 +305,8 @@ class GwInfo extends React.Component {
                     queryText: queryText,
                     queryTextFilter: queryTextFilter,
                     parentId: parentId,
-                    textToSearch: textToSearch
+                    textToSearch: textToSearch,
+                    parentValue: parentValue
                 };
 
                 console.log("params::::", params);
