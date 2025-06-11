@@ -7,7 +7,8 @@ import GwUtils from 'qwc2-giswater/utils/GwUtils';
 type GwTableViewProps = {
     values: { [key: string]: string }[],
     form: any,
-    style?: string
+    style?: string,
+    displayFields?: string[]
 };
 
 type GwTableViewState = {
@@ -28,6 +29,7 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
         const value = this.props.values || [];
         const replaceImgs = this.props.form?.table?.replaceImgs ?? true;
         const fieldName = value.length === 0 ? null : (this.props.form?.table?.displayField ?? Object.keys(value[0])[0]);
+        const displayFields = this.props.displayFields || [fieldName];
 
         const resultsContainerStyle = {
             maxHeight: this.state.currentResult ? '20%' : 'initial'
@@ -85,7 +87,7 @@ export default class GwTableView extends React.Component<GwTableViewProps, GwTab
                                     className={this.state.currentResult === result ? "active clickable" : "clickable"}
                                     onClick={() => this.setState({ currentResult: result })}
                                 >
-                                    {result[fieldName]}
+                                    {displayFields.map(field => result[field]).join(' - ')}
                                 </span>
                             </div>
                         );

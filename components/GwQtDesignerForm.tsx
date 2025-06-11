@@ -373,8 +373,9 @@ export default class GwQtDesignerForm extends React.Component<GwQtDesignerFormPr
             // Check if there is style specified in widgetcontrols
             const widgetControls = JSON.parse(widget.property.widgetcontrols);
             let style = widgetControls.style || "";
+            let displayFields = widgetControls.displayFields || null;
 
-            return (<GwTableView values={value.values || []} form={value.form} style={style} />);
+            return (<GwTableView values={value.values || []} form={value.form} style={style} displayFields={displayFields} />);
         } else if (widget.class === "QLabel") {
             if (widget.name.includes("img_")) {
                 // Get value
