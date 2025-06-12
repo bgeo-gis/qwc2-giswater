@@ -64,8 +64,8 @@ class StreetViewButton extends React.Component {
                     <td><b>{LocaleUtils.tr("streetview.title")}:</b></td>
                     <td>
                         <div className="controlgroup">
-                            <button className="button" onClick={this.openStreetView}>{LocaleUtils.tr("streetview.streetview")}:</button>
-                            <button className="button" onClick={this.openGoogleMaps}>{LocaleUtils.tr("streetview.google")}:</button>
+                            <button className="button" onClick={this.openStreetView}>{LocaleUtils.tr("streetview.streetview")}</button>
+                            <button className="button" onClick={this.openGoogleMaps}>{LocaleUtils.tr("streetview.google")}</button>
                         </div>
                     </td>
                 </tr>
