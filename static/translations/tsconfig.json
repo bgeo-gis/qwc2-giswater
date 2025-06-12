@@ -38,6 +38,7 @@
     "appmenu.items.GwDateSelector",
     "appmenu.items.GwDscenario",
     "appmenu.items.GwDscenarioManager",
+    "appmenu.items.GwProfilePicker",
     "appmenu.items.GwEpaManager",
     "appmenu.items.GwEpaSelector",
     "appmenu.items.GwMincut",
@@ -48,7 +49,9 @@
     "appmenu.items.GwToolbox",
     "colorschemes.giswater",
     "colorschemes.white",
-    "colorschemes.transparent"
+    "colorschemes.transparent",
+    "streetview.streetview",
+    "streetview.google"
   ],
   "strings": [
     "appmenu.items.GwDateSelector",
@@ -69,7 +72,6 @@
     "heightprofile.asl",
     "heightprofile.distance",
     "heightprofile.height",
-    "heightprofile.title",
     "identify.confirmDiscard",
     "identify.confirmSave",
     "identify.noresults",
@@ -87,6 +89,9 @@
     "routing.reachability",
     "routing.route",
     "routing.tohere",
-    "searchbox.placeholder"
+    "searchbox.placeholder",
+    "streetview.google",
+    "streetview.streetview",
+    "streetview.title"
   ]
 }

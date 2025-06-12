@@ -36,8 +36,7 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Разстояние",
-      "height": "Височина",
-      "title": ""
+      "height": "Височина"
     },
     "identify": {
       "confirmDiscard": "Искате ли да отхвърлите промените?",
@@ -68,6 +67,11 @@
     },
     "searchbox": {
       "placeholder": "Търсене на място или добавяне на карта..."
+    },
+    "streetview": {
+      "google": "",
+      "streetview": "",
+      "title": ""
     },
     "colorschemes": {
       "giswater": "Giswater",

@@ -36,8 +36,7 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distance",
-      "height": "Height",
-      "title": ""
+      "height": "Height"
     },
     "identify": {
       "confirmDiscard": "Do you want to discard the changes?",
@@ -68,6 +67,11 @@
     },
     "searchbox": {
       "placeholder": "Search place or add map..."
+    },
+    "streetview": {
+      "google": "Open route in Google Maps",
+      "streetview": "Open street view",
+      "title": "Street view"
     },
     "colorschemes": {
       "giswater": "Giswater",

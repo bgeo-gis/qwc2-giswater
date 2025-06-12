@@ -36,8 +36,7 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distância",
-      "height": "Altura",
-      "title": ""
+      "height": "Altura"
     },
     "identify": {
       "confirmDiscard": "",
@@ -68,6 +67,11 @@
     },
     "searchbox": {
       "placeholder": "Pesquisar..."
+    },
+    "streetview": {
+      "google": "",
+      "streetview": "",
+      "title": ""
     },
     "colorschemes": {
       "giswater": "Giswater",

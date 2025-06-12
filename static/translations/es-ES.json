@@ -36,8 +36,7 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distancia",
-      "height": "Altura",
-      "title": ""
+      "height": "Altura"
     },
     "identify": {
       "confirmDiscard": "¿Desea descartar los cambios?",
@@ -68,6 +67,11 @@
     },
     "searchbox": {
       "placeholder": "Busque un lugar o agregue mapa"
+    },
+    "streetview": {
+      "google": "Abrir ruta en Google Maps",
+      "streetview": "Abrir vista de calle",
+      "title": "Vista de calle"
     },
     "colorschemes": {
       "giswater": "Giswater",

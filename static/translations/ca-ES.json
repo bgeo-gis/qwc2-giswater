@@ -36,8 +36,7 @@
     "heightprofile": {
       "asl": "a.s.l.",
       "distance": "Distància",
-      "height": "Alçada",
-      "title": ""
+      "height": "Alçada"
     },
     "identify": {
       "confirmDiscard": "Vols descartar els canvis?",
@@ -68,6 +67,11 @@
     },
     "searchbox": {
       "placeholder": "Cerqui un lloc o afegueixi mapa"
+    },
+    "streetview": {
+      "google": "Obrir rutaGoogle Maps",
+      "streetview": "Obrir vista de carrer",
+      "title": "Vista de carrer"
     },
     "colorschemes": {
       "giswater": "Giswater",

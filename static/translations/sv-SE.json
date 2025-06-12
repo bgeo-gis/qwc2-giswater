@@ -36,8 +36,7 @@
     "heightprofile": {
       "asl": "",
       "distance": "",
-      "height": "",
-      "title": ""
+      "height": ""
     },
     "identify": {
       "confirmDiscard": "",
@@ -68,6 +67,11 @@
     },
     "searchbox": {
       "placeholder": ""
+    },
+    "streetview": {
+      "google": "",
+      "streetview": "",
+      "title": ""
     },
     "colorschemes": {
       "giswater": "",
