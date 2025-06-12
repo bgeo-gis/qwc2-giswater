@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import proj4 from 'proj4';
 
 import './style/StreetViewButton.css';
+import LocaleUtils from 'qwc2/utils/LocaleUtils';
 
 class StreetViewButton extends React.Component {
     static propTypes = {
@@ -48,14 +49,30 @@ class StreetViewButton extends React.Component {
         );
     };
 
+    openGoogleMaps = () => {
+        const { coordinate } = this.props.point;
+        const [longitude, latitude] = this.convertCoordinates(coordinate);
+        const googleMapsUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+        window.open(googleMapsUrl, '_blank');
+    };
+
     render() {
         return (
-            <div className='mapinfotooltip-body-streetview'>
-                <button className="button" onClick={this.openStreetView}>
-                    Street View
-                </button>
-            </div>
-        );
+            <table className="mapinfotooltip-body-routing'">
+            <tbody>
+                <tr>
+                    <td><b>{LocaleUtils.tr("streetview.title")}:</b></td>
+                    <td>
+                        <div className="controlgroup">
+                            <button className="button" onClick={this.openStreetView}>{LocaleUtils.tr("streetview.streetview")}:</button>
+                            <button className="button" onClick={this.openGoogleMaps}>{LocaleUtils.tr("streetview.google")}:</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    );
+
     }
 }
 

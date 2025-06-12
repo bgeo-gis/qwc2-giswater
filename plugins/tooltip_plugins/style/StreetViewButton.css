@@ -1,4 +1,8 @@
 
-.mapinfotooltip-body-streetview {
-    padding: 0.25em;
+table.mapinfotooltip-body-streetview td:last-child {
+    display: flex;
+}
+
+table.mapinfotooltip-body-streetview td:last-child button {
+    flex: 1 1 auto;
 }
