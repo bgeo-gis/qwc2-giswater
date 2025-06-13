@@ -69,8 +69,8 @@
       "placeholder": "Busque un lugar o agregue mapa"
     },
     "streetview": {
-      "google": "Abrir ruta en Google Maps",
-      "streetview": "Abrir vista de calle",
+      "google": "Ruta en Google Maps",
+      "streetview": "Vista de calle",
       "title": "Vista de calle"
     },
     "colorschemes": {

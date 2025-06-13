@@ -69,8 +69,8 @@
       "placeholder": "Cerqui un lloc o afegueixi mapa"
     },
     "streetview": {
-      "google": "Obrir rutaGoogle Maps",
-      "streetview": "Obrir vista de carrer",
+      "google": "Ruta Google Maps",
+      "streetview": "Vista de carrer",
       "title": "Vista de carrer"
     },
     "colorschemes": {

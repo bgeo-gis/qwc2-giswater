@@ -69,8 +69,8 @@
       "placeholder": "Search place or add map..."
     },
     "streetview": {
-      "google": "Open route in Google Maps",
-      "streetview": "Open street view",
+      "google": "Route in Google Maps",
+      "streetview": "Street view",
       "title": "Street view"
     },
     "colorschemes": {
