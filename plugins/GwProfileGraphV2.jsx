@@ -116,6 +116,8 @@ class GwProfileGraphV2 extends React.Component {
 
     componentWillUnmount() {
         this.setState({ isGraphLoading: false });
+        // Remove marker when component unmounts
+        this.props.removeMarker('GwProfileGraph');
     }
 
     componentDidUpdate(prevProps) {
@@ -583,7 +585,7 @@ class GwProfileGraphV2 extends React.Component {
                 initialHeight={this.props.height} initialWidth={600} initiallyDocked
                 key="GwProfile" onClose={this.onClose} onExternalWindowResized={this.resizeChart}
                 splitScreenWhenDocked
-                title={LocaleUtils.tr("appmenu.items.GwProfilePicke")} usePortal={false}
+                title={LocaleUtils.tr("appmenu.items.GwProfilePicker")} usePortal={false}
             >
                 <div id="GwProfileGraphV2" role="body" key="1">
                     <Line data={fullData} options={options} ref={this.chartRef}
@@ -700,6 +702,8 @@ class GwProfileGraphV2 extends React.Component {
 
     onClose = () => {
         this.setState({ profilePickerResult: null, getProfilesResult: null });
+        // Remove marker when tool is closed
+        this.props.removeMarker('GwProfileGraph');
     };
 }
 
