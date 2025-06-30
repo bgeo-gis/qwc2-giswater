@@ -7,9 +7,8 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import Icon from 'qwc2/components/Icon';
+import MapButton from 'qwc2/components/MapButton';
 import { removeLayer } from 'qwc2/actions/layers';
-import 'qwc2/plugins/style/Buttons.css';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { LayerRole } from 'qwc2/actions/layers';
 import {changeRedliningState} from 'qwc2/actions/redlining';
@@ -69,13 +68,12 @@ class GwClearTempLayersButton extends React.Component<GwClearTempLayersButtonPro
 
     render() {
         return (
-            <button className="map-button"
+            <MapButton
+                icon="trash"
                 onClick={() => this.btnClicked()}
-                style={{ bottom: (5 + 4 * this.props.position) + 'em' }}
-                title="Clear Temporal Layers"
-            >
-                <Icon icon="trash" title="Clear Temporal Layers" />
-            </button>
+                position={this.props.position}
+                tooltip="Clear Temporal Layers"
+            />
         );
     }
 }
