@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import GwUtils from '../utils/GwUtils';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
-import { LayerRole, setLayers } from 'qwc2/actions/layers';
+import { LayerRole, changeLayerProperty } from 'qwc2/actions/layers';
 import { setProjectData } from '../actions/project';
 
 
@@ -23,7 +23,7 @@ class GwLoadPlugin extends React.Component {
         map: PropTypes.object,
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
-        setLayers: PropTypes.func,
+        changeLayerProperty: PropTypes.func,
         setProjectData: PropTypes.func,
         theme: PropTypes.object
     };
@@ -42,27 +42,21 @@ class GwLoadPlugin extends React.Component {
 
             console.log("Layers: ", this.props.layers);
 
-            const layers = this.props.layers.map((layer) => {
+            // Update each layer individually using changeLayerProperty
+            this.props.layers.forEach((layer) => {
                 if (layer.role === LayerRole.THEME) {
-
                     const externalLayerMap = Object.entries(layer.externalLayerMap).reduce((acc, [layerName, externalLayer]) => {
-                        // externalLayer.queryLayers = [layerName];
                         acc[layerName] = {
                             ...externalLayer,
                             queryLayers: [layerName]
                         };
                         return acc;
                     }, {});
-                    return {
-                        ...layer,
-                        externalLayerMap: externalLayerMap
-                    };
-                } else {
-                    return layer;
+
+                    // Update the layer's externalLayerMap property
+                    this.props.changeLayerProperty(layer.id, 'externalLayerMap', externalLayerMap);
                 }
             });
-
-            this.props.setLayers(layers);
         }
     }
 
@@ -113,6 +107,6 @@ const loadplugin = (state) => ({
 export default connect(loadplugin, {
     processFinished: processFinished,
     processStarted: processStarted,
-    setLayers: setLayers,
+    changeLayerProperty: changeLayerProperty,
     setProjectData: setProjectData
 })(GwLoadPlugin);

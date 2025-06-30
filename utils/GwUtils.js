@@ -153,7 +153,7 @@ const GwUtils = {
         }
     },
     getGeoJSONFeatures(styleName = null, data, styleOptions = null, ) {
-        if (isEmpty(data.features)) {
+        if (isEmpty(data?.features)) {
             return [];
         }
 

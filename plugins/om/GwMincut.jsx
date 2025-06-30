@@ -129,7 +129,7 @@ class GwMincut extends React.Component {
         const rootLayer = this.props.layers.find(l => l.type === "wms");
         const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
         if (layer) {
-            this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path, 'both');
+            this.props.changeLayerProperty(rootLayer.id, "visibility", visible, path, 'both');
             return true;
         }
         return false;

@@ -204,7 +204,7 @@ class GwEpaSelector extends React.Component {
                 const rootLayer = this.props.layers.find(l => l.type === "wms");
                 const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
                 if (layer) {
-                    this.props.changeLayerProperty(rootLayer.uuid, "visibility", true, path, 'both');
+                    this.props.changeLayerProperty(rootLayer.id, "visibility", true, path, 'both');
                     this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
                 }
             }).catch((e) => {
