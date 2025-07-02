@@ -63,6 +63,7 @@
     "appmenu.items.GwMincutManager",
     "appmenu.items.GwNonVisualObjectsManager",
     "appmenu.items.GwParcelFilter",
+    "appmenu.items.GwProfilePicker",
     "appmenu.items.GwPsector",
     "appmenu.items.GwPsectorManager",
     "appmenu.items.GwSelector",
@@ -92,6 +93,8 @@
     "searchbox.placeholder",
     "streetview.google",
     "streetview.streetview",
-    "streetview.title"
+    "streetview.title",
+    "tooltip.zoomlast",
+    "tooltip.zoomnext"
   ]
 }

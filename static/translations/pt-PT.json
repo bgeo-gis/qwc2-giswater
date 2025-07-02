@@ -12,6 +12,7 @@
         "GwMincutManager": "Gestor Mincut",
         "GwNonVisualObjectsManager": "",
         "GwParcelFilter": "",
+        "GwProfilePicker": "Perfil",
         "GwPsector": "",
         "GwPsectorManager": "",
         "GwSelector": "Selector",
@@ -22,7 +23,6 @@
         "GwInfoPoint": "Informações Giswater",
         "GwInfoDma": "Informações DMA",
         "GwInfoScada": "Informações Scada",
-        "GwProfilePicker": "Perfil",
         "GwFlowtracetrace": "Traçar fluxo",
         "GwFlowtraceexit": "Saída de fluxo",
         "GwMincutNetwork": "Mincut",
@@ -72,6 +72,10 @@
       "google": "",
       "streetview": "",
       "title": ""
+    },
+    "tooltip": {
+      "zoomlast": "",
+      "zoomnext": ""
     },
     "colorschemes": {
       "giswater": "Giswater",

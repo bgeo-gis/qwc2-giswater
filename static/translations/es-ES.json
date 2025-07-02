@@ -12,6 +12,7 @@
         "GwMincutManager": "Gestor de polígonos de corte",
         "GwNonVisualObjectsManager": "Gestor d'objectes no visuals",
         "GwParcelFilter": "Filtrar parcelas",
+        "GwProfilePicker": "Perfil longitudinal",
         "GwPsector": "Plan de sector",
         "GwPsectorManager": "Gestor de planes de sectores",
         "GwSelector": "Selector",
@@ -22,7 +23,6 @@
         "GwInfoPoint": "Giswater Info",
         "GwInfoDma": "Info DMA",
         "GwInfoScada": "Info Scada",
-        "GwProfilePicker": "Perfil longitudinal",
         "GwFlowtracetrace": "Aguas arriba",
         "GwFlowtraceexit": "Aguas abajo",
         "GwMincutNetwork": "Polígono de corte",
@@ -72,6 +72,10 @@
       "google": "Ruta en Google Maps",
       "streetview": "Vista de calle",
       "title": "Vista de calle"
+    },
+    "tooltip": {
+      "zoomlast": "",
+      "zoomnext": ""
     },
     "colorschemes": {
       "giswater": "Giswater",

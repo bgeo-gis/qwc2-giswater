@@ -12,6 +12,7 @@
         "GwMincutManager": "Мениджър на Mincut",
         "GwNonVisualObjectsManager": "Управление на невизуални обекти",
         "GwParcelFilter": "Филтриране на парцели",
+        "GwProfilePicker": "Профил",
         "GwPsector": "",
         "GwPsectorManager": "",
         "GwSelector": "Селектор",
@@ -22,7 +23,6 @@
         "GwInfoPoint": "Информация за Giswater",
         "GwInfoDma": "Информация за DMA",
         "GwInfoScada": "Информация за Scada",
-        "GwProfilePicker": "Профил",
         "GwFlowtracetrace": "Проследяване на потока",
         "GwFlowtraceexit": "Изход на потока",
         "GwMincutNetwork": "Mincut",
@@ -72,6 +72,10 @@
       "google": "",
       "streetview": "",
       "title": ""
+    },
+    "tooltip": {
+      "zoomlast": "",
+      "zoomnext": ""
     },
     "colorschemes": {
       "giswater": "Giswater",

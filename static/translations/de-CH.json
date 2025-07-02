@@ -12,6 +12,7 @@
         "GwMincutManager": "",
         "GwNonVisualObjectsManager": "",
         "GwParcelFilter": "",
+        "GwProfilePicker": "",
         "GwPsector": "",
         "GwPsectorManager": "",
         "GwSelector": "",
@@ -22,7 +23,6 @@
         "GwInfoPoint": "",
         "GwInfoDma": "",
         "GwInfoScada": "",
-        "GwProfilePicker": "",
         "GwFlowtracetrace": "",
         "GwFlowtraceexit": "",
         "GwMincutNetwork": "",
@@ -72,6 +72,10 @@
       "google": "",
       "streetview": "",
       "title": ""
+    },
+    "tooltip": {
+      "zoomlast": "",
+      "zoomnext": ""
     },
     "colorschemes": {
       "giswater": "",

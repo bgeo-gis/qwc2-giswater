@@ -12,6 +12,7 @@
         "GwMincutManager": "Mincut Manager",
         "GwNonVisualObjectsManager": "Nonvisual objects manager",
         "GwParcelFilter": "Filter parcels",
+        "GwProfilePicker": "Profile",
         "GwPsector": "Psector",
         "GwPsectorManager": "Psector manager",
         "GwSelector": "Selector",
@@ -22,7 +23,6 @@
         "GwInfoPoint": "Giswater Info",
         "GwInfoDma": "Info DMA",
         "GwInfoScada": "Info Scada",
-        "GwProfilePicker": "Profile",
         "GwFlowtracetrace": "Flow trace",
         "GwFlowtraceexit": "Flow exit",
         "GwMincutNetwork": "Mincut",
@@ -72,6 +72,10 @@
       "google": "Route in Google Maps",
       "streetview": "Street view",
       "title": "Street view"
+    },
+    "tooltip": {
+      "zoomlast": "",
+      "zoomnext": ""
     },
     "colorschemes": {
       "giswater": "Giswater",
