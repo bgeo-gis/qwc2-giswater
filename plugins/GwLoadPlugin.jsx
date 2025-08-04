@@ -12,8 +12,9 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash.isempty';
 import GwUtils from '../utils/GwUtils';
 import { processFinished, processStarted } from 'qwc2/actions/processNotifications';
-import { LayerRole, changeLayerProperty } from 'qwc2/actions/layers';
+import { LayerRole, changeLayerProperty, refreshLayer } from 'qwc2/actions/layers';
 import { setProjectData } from '../actions/project';
+import ConfigUtils from 'qwc2/utils/ConfigUtils';
 
 
 class GwLoadPlugin extends React.Component {
@@ -24,6 +25,7 @@ class GwLoadPlugin extends React.Component {
         processFinished: PropTypes.func,
         processStarted: PropTypes.func,
         changeLayerProperty: PropTypes.func,
+        refreshLayer: PropTypes.func,
         setProjectData: PropTypes.func,
         theme: PropTypes.object
     };
@@ -39,6 +41,7 @@ class GwLoadPlugin extends React.Component {
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
             this.makeRequest();
+            const mapproxy_auth_cfg = ConfigUtils.getConfigProp("mapproxy_auth");
 
             console.log("Layers: ", this.props.layers);
 
@@ -46,9 +49,15 @@ class GwLoadPlugin extends React.Component {
             this.props.layers.forEach((layer) => {
                 if (layer.role === LayerRole.THEME) {
                     const externalLayerMap = Object.entries(layer.externalLayerMap).reduce((acc, [layerName, externalLayer]) => {
+                        let url = externalLayer['url'];
+                        if (mapproxy_auth_cfg) {
+                            url = url.replace(mapproxy_auth_cfg['source'], mapproxy_auth_cfg['proxy']);
+                        }
+
                         acc[layerName] = {
                             ...externalLayer,
-                            queryLayers: [layerName]
+                            queryLayers: [layerName],
+                            url: url
                         };
                         return acc;
                     }, {});
@@ -57,6 +66,8 @@ class GwLoadPlugin extends React.Component {
                     this.props.changeLayerProperty(layer.id, 'externalLayerMap', externalLayerMap);
                 }
             });
+
+            this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
         }
     }
 
@@ -80,7 +91,7 @@ class GwLoadPlugin extends React.Component {
 
                 }
                 this.props.setProjectData(result.tiled);
-                this.setState({pendingRequests: false });
+                this.setState({ pendingRequests: false });
             }).catch((e) => {
                 console.log(e);
                 this.setState({ pendingRequests: false });
@@ -108,5 +119,6 @@ export default connect(loadplugin, {
     processFinished: processFinished,
     processStarted: processStarted,
     changeLayerProperty: changeLayerProperty,
+    refreshLayer: refreshLayer,
     setProjectData: setProjectData
 })(GwLoadPlugin);
