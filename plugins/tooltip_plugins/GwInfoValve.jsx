@@ -9,7 +9,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import isEmpty from 'lodash.isempty';
-import displayCrsSelector from 'qwc2/selectors/displaycrs';
 import { setCurrentTask } from 'qwc2/actions/task';
 import { LayerRole, refreshLayer, removeLayer, addLayerFeatures } from 'qwc2/actions/layers';
 import ConfigUtils from 'qwc2/utils/ConfigUtils';
@@ -30,7 +29,6 @@ class GwInfoValve extends React.Component {
     static propTypes = {
         addLayerFeatures: PropTypes.func,
         closePopup: PropTypes.func,
-        displaycrs: PropTypes.string,
         enabled: PropTypes.bool,
         layers: PropTypes.array,
         map: PropTypes.object,
@@ -294,16 +292,13 @@ class GwInfoValve extends React.Component {
     }
 }
 
-const selector = createSelector([state => state, displayCrsSelector], (state, displaycrs) => ({
+export default connect((state) => ({
     enabled: state.task.identifyEnabled,
     map: state.map,
-    displaycrs: displaycrs,
     theme: state.theme.current,
     layers: state.layers.flat,
     tiled: state.project.tiled,
-}));
-
-export default connect(selector, {
+}), {
     setCurrentTask: setCurrentTask,
     refreshLayer: refreshLayer,
     processStarted: processStarted,
