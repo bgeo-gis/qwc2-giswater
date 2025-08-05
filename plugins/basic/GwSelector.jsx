@@ -83,7 +83,7 @@ class GwSelector extends React.Component {
             Object.entries(result.body.data.layersVisibility).map(([layerName, visible]) => {
                 const { layer, path } = GwUtils.findLayer(rootLayer, layerName);
                 if (layer) {
-                    this.props.changeLayerProperty(rootLayer.uuid, "visibility", visible, path);
+                    this.props.changeLayerProperty(rootLayer.id, "visibility", visible, path);
                 }
             });
         }
