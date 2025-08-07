@@ -274,6 +274,12 @@ class GwTableWidgetV3 extends React.Component {
                 sx: { cursor: 'pointer' },
             });
             inputProps.state = { rowSelection };
+
+            inputProps.onRowSelectionChange = (updater) => {
+                this.setState((prevState) => ({
+                    rowSelection: typeof updater === "function" ? updater(prevState.rowSelection) : updater
+                }));
+            };
         }
 
         if (inputProps.enableRowActions) {
@@ -338,31 +344,34 @@ class GwTableWidgetV3 extends React.Component {
 
         if (inputProps.enableExporting) {
             const multipleRowSelection = tableParams.multipleRowSelection;
-            inputProps.renderBottomToolbarCustomActions = ({ table }) => (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <ThemeProvider theme={exportButtonTheme}>
-                        <Button
-                            color="primary"
-                            onClick={handleExportData}
-                            startIcon={<FileDownloadIcon />}
-                            variant="contained"
-                        >
-                            Export All Data
-                        </Button>
-                        <Button
-                            disabled={!table.getIsSomeRowsSelected()}
-                            onClick={() => handleExportRows(table.getSelectedRowModel().flatRows)}
-                            startIcon={<FileDownloadIcon />}
-                            variant="contained"
-                        >
-                            Export Selected Rows
-                        </Button>
-                    </ThemeProvider>
-                    <IconButton onClick={() => table.resetColumnFilters()}>
-                        <FilterAltOff />
-                    </IconButton>
-                </div>
-            );
+            inputProps.renderBottomToolbarCustomActions = ({ table }) => {
+                const { rowSelection } = this.state;
+                return (
+                    <div key={JSON.stringify(rowSelection)} style={{ display: 'flex', gap: '0.5rem' }}>
+                        <ThemeProvider theme={exportButtonTheme}>
+                            <Button
+                                color="primary"
+                                onClick={handleExportData}
+                                startIcon={<FileDownloadIcon />}
+                                variant="contained"
+                            >
+                                Export All Data
+                            </Button>
+                            <Button
+                                disabled={table.getSelectedRowModel().flatRows.length === 0}
+                                onClick={() => handleExportRows(table.getSelectedRowModel().flatRows)}
+                                startIcon={<FileDownloadIcon />}
+                                variant="contained"
+                            >
+                                Export Selected Rows
+                            </Button>
+                        </ThemeProvider>
+                        <IconButton onClick={() => table.resetColumnFilters()}>
+                            <FilterAltOff />
+                        </IconButton>
+                    </div>
+                );
+            };
         }
 
         return (
