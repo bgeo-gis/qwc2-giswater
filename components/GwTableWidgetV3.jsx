@@ -143,6 +143,15 @@ class GwTableWidgetV3 extends React.Component {
                         );
                     }
                 }
+                if (header !== undefined && !header.Cell) {
+                    header.Cell = ({ cell }) => {
+                        const value = cell.getValue();
+                        if (typeof value === "boolean") {
+                            return value ? "true" : "false";
+                        }
+                        return value ?? "";
+                    };
+                }
 
                 if (header !== undefined) {
                     cols.push(header);
