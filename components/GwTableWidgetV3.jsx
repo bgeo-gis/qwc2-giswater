@@ -157,9 +157,9 @@ class GwTableWidgetV3 extends React.Component {
 
         const csvOptions = {
             filename: filename,
-            fieldSeparator: ',',
+            fieldSeparator: ';',
             quoteStrings: '"',
-            decimalSeparator: '.',
+            decimalSeparator: ',',
             showLabels: true,
             useBom: true,
             useKeysAsHeaders: false,
