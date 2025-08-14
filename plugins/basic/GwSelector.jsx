@@ -89,7 +89,7 @@ class GwSelector extends React.Component {
         }
     }
     panToResult = (result) => {
-        if (!isEmpty(result) && result.body?.data?.geometry) {
+        if (!isEmpty(result) && result.body?.data?.geometry && result.body?.form?.currentTab !== "tab_network_state") {
             const x1 = result.body.data.geometry.x1;
             const y1 = result.body.data.geometry.y1;
             const x2 = result.body.data.geometry.x2;
