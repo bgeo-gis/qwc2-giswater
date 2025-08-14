@@ -101,6 +101,7 @@ class GwSelector extends React.Component {
             }
             this.props.zoomToExtent(extent, this.props.map.projection);
         }
+        this.props.refreshLayer(layer => layer.role === LayerRole.THEME);
     };
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
