@@ -1,0 +1,44 @@
+.cog-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1em;
+}
+
+.file-controls {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 5px;
+    align-content: end;
+    flex-wrap: wrap;
+}
+
+.animation-controls {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.slider-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+
+.controls-row {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+
+.controls > * {
+    height: 100%;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
