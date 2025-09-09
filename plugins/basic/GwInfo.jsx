@@ -37,6 +37,7 @@ class GwInfo extends React.Component {
         click: PropTypes.object,
         // currentIdentifyTool: PropTypes.string,
         enabled: PropTypes.bool,
+        enableFallthroughInfo: PropTypes.bool,
         currentTask: PropTypes.string,
         dockable: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         identifyResult: PropTypes.object,
@@ -62,6 +63,7 @@ class GwInfo extends React.Component {
     };
 
     static defaultProps = {
+        enableFallthroughInfo: true,
         minHeight: 500,
         initialWidth: 480,
         initialHeight: 600,
@@ -545,6 +547,7 @@ class GwInfo extends React.Component {
     identifyPoint = (prevProps) => {
         const clickPoint = this.queryPoint(prevProps);
         if (clickPoint) {
+            this.clearResults();
             if (this.props.onClose) {
                 this.props.onClose();
             }
@@ -578,7 +581,8 @@ class GwInfo extends React.Component {
                 pendingRequests = true;
                 axios.get(requestUrl + "fromcoordinates", { params: params }).then(response => {
                     const result = response.data;
-                    if ((isEmpty(result) || !result.form_xml) && !this.props.projectData.tiled) {
+                    if ((isEmpty(result) || !result.form_xml) && !this.props.projectData.tiled && this.props.enableFallthroughInfo) {
+                        console.log("FALLTHROUGH INFO");
                         this.onToolClose();
                         this.props.setCurrentTask("Identify", 'Point', null, { pos: clickPoint, exitTaskOnResultsClose: true });
                         return;
