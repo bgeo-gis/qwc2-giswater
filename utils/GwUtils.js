@@ -211,7 +211,7 @@ const GwUtils = {
                 ...feature,
                 crs: crs,
                 styleName: styleName,
-                styleOptions: featureMatch ? newStyle : styleOptions
+                styleOptions: featureMatch ? newStyle : (feature.styleOptions || styleOptions)
             };
         });
         return features;
