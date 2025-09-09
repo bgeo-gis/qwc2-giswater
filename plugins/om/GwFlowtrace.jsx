@@ -140,14 +140,45 @@ class GwFlowtrace extends React.Component {
         this.props.removeLayer("temp_lines.geojson");
         this.props.removeLayer("temp_polygons.geojson");
 
+        // Read colors from external configuration or use default values
+        const standardLinesConfig = this.props.standardLinesStyle;
+        const standardPointsConfig = this.props.standardPointsStyle;
+
+        // Lines
+        const traceColor = standardLinesConfig.strokeColor.trace;
+        const exitColor = standardLinesConfig.strokeColor.exit;
+        const traceAltColor = standardLinesConfig.strokeColor.trace_alt || [255, 140, 0, 1];
+        const exitAltColor = standardLinesConfig.strokeColor.exit_alt || [255, 140, 0, 1];
+
+        // Points
+        const tracePointColor = standardPointsConfig.strokeColor.trace;
+        const exitPointColor = standardPointsConfig.strokeColor.exit;
+        const tracePointAltColor = standardPointsConfig.strokeColor.trace_alt || [255, 140, 0, 1];
+        const exitPointAltColor = standardPointsConfig.strokeColor.exit_alt || [255, 140, 0, 1];
+
         // Lines
         const lines = result.body.data.line;
-        const standardLinesConfig = this.props.standardLinesStyle;
         const standardLinesStyle = {
             ...standardLinesConfig,
-            strokeColor: this.state.mode === "trace" ? standardLinesConfig.strokeColor.trace : standardLinesConfig.strokeColor.exit
+            strokeColor: this.state.mode === "trace" ? traceColor : exitColor
         };
-        const lineFeatures = GwUtils.getGeoJSONFeatures("default", lines, standardLinesStyle);
+        // Process lines features according to stream_type
+        const processedLines = {
+            ...lines,
+            features: lines.features.map(f => {
+                const streamType = f.properties?.stream_type;
+                return {
+                    ...f,
+                    styleOptions: {
+                        ...standardLinesStyle,
+                        strokeColor: (!streamType || streamType === "mainstream")
+                            ? (this.state.mode === "trace" ? traceColor : exitColor)
+                            : (this.state.mode === "trace" ? traceAltColor : exitAltColor)
+                    }
+                };
+            })
+        };
+        const lineFeatures = GwUtils.getGeoJSONFeatures("default", processedLines, standardLinesStyle);
         if (!isEmpty(lineFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_lines.geojson",
@@ -159,18 +190,33 @@ class GwFlowtrace extends React.Component {
 
         // Points
         const points = result.body.data.point;
-        const standardPointsConfig = this.props.standardPointsStyle;
         const initPointConfig = this.props.initPointStyle;
         const standardPointsStyle = {
             ...standardPointsConfig,
-            strokeColor: this.state.mode === "trace" ? standardPointsConfig.strokeColor.trace : standardPointsConfig.strokeColor.exit
+            strokeColor: this.state.mode === "trace" ? tracePointColor : exitPointColor
         };
         const initPointStyle = {
             ...initPointConfig,
             strokeColor: this.state.mode === "trace" ? initPointConfig.strokeColor.trace : initPointConfig.strokeColor.exit
         };
         const initPointArray = [[nodeId], initPointStyle];
-        const pointFeatures = GwUtils.getGeoJSONFeatures("default", points, standardPointsStyle, initPointArray);
+        // Process points features according to stream_type
+        const processedPoints = {
+            ...points,
+            features: points.features.map(f => {
+                const streamType = f.properties?.stream_type;
+                return {
+                    ...f,
+                    styleOptions: {
+                        ...standardPointsStyle,
+                        strokeColor: (!streamType || streamType === "mainstream")
+                            ? (this.state.mode === "trace" ? tracePointColor : exitPointColor)
+                            : (this.state.mode === "trace" ? tracePointAltColor : exitPointAltColor)
+                    }
+                };
+            })
+        };
+        const pointFeatures = GwUtils.getGeoJSONFeatures("default", processedPoints, standardPointsStyle, initPointArray);
         if (!isEmpty(pointFeatures)) {
             this.props.addLayerFeatures({
                 id: "temp_points.geojson",
