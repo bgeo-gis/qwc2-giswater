@@ -8,10 +8,12 @@ import PropTypes from 'prop-types';
 
 import { setCurrentTask } from 'qwc2/actions/task';
 import TileLayer from 'ol/layer/WebGLTile';
+import GwUtils from 'qwc2-giswater/utils/GwUtils';
 import GeoTIFF from 'ol/source/GeoTIFF.js';
 import { transformExtent } from 'ol/proj';
 import { fromUrl } from 'geotiff';
 import colormap from 'colormap';
+import axios from 'axios';
 
 import './style/DrAnimation.css';
 
@@ -24,7 +26,9 @@ function getColorStops(name, steps, reverse) {
     }
     for (let i = 0; i < steps; i++) {
         const x = i * delta;
-        const alpha = Math.min(1, Math.max(i / (steps * 0.1), 0.2));
+        // const alpha = Math.min(1, Math.max(i / (steps * 0.1), 0.2));
+        const alpha = 1.0
+        // const alpha = 1.0;
         colors[i][3] = alpha;
         stops[i * 2] = x;
         stops[i * 2 + 1] = colors[i];
@@ -35,16 +39,20 @@ function getColorStops(name, steps, reverse) {
 const style = {
     variables: {
         index: 1,
-        nodata: 0,
+        nodata: -9999,
+        min: 0.2,
+        max: 5,
     },
     color: [
         'case',
         ['==', ['band', ['var', 'index']], ['var', 'nodata']],
         'rgba(0,0,0,0.0)',
+        ['<', ['band', ['var', 'index']], ['var', 'min']],
+        'rgba(0,0,0,0.0)',
         [
             'interpolate',
             ['linear'],
-            ['band', ['var', 'index']],
+            ['/', ['-', ['band', ['var', 'index']], ['var', 'min']], ['-', ['var', 'max'], ['var', 'min']]],
             ...getColorStops('jet', 16, false),
         ]
     ]
@@ -59,13 +67,26 @@ function padToNumber(value, reference) {
 class DrAnimation extends React.Component {
     static propTypes = {
         active: PropTypes.bool,
+        initialHeight: PropTypes.number,
+        initialWidth: PropTypes.number,
+        minHeight: PropTypes.number,
+        minWidth: PropTypes.number,
+    };
+    static defaultProps = {
+        initialWidth: 325,
+        initialHeight: 225,
+        minWidth: 325,
+        minHeight: 200,
     };
 
     state = {
         numFrames: null,
         currentFrame: 1,
-        frameDuration: 50,
+        frameDuration: 150,
         isPlaying: false,
+        resultList: null,
+        minValue: .2,
+        maxValue: 5,
     }
 
     layer = null;
@@ -74,6 +95,15 @@ class DrAnimation extends React.Component {
     animationRequest = null;
 
     componentDidUpdate(prevProps, prevState) {
+        const requestUrl = GwUtils.getServiceUrl("ibergis");
+        if (this.props.active !== prevProps.active && this.props.active === true) {
+            const params = {
+                theme: this.props.theme.title,
+            }
+            axios.get(requestUrl + "getresultlist", { params: params }).then((result) => {
+                this.setState({ resultList: result.data });
+            })
+        }
         if (this.state.currentFrame !== prevState.currentFrame) {
             this.layer?.updateStyleVariables({
                 index: this.state.currentFrame,
@@ -95,6 +125,7 @@ class DrAnimation extends React.Component {
                 { url: url },
             ],
             interpolate: false,
+            normalize: false,
         });
         this.layer = new TileLayer({
             style: style,
@@ -122,6 +153,7 @@ class DrAnimation extends React.Component {
             tiff.getImage().then((image) => {
                 console.log(image.getGDALNoData())
                 const bands = image.getSamplesPerPixel()
+                console.log("Number of bands:", bands);
 
                 const alphaBand = bands - 1;
                 this.layer.updateStyleVariables({
@@ -204,16 +236,17 @@ class DrAnimation extends React.Component {
             return null;
         }
         return (
-            <ResizeableWindow icon="camera" key="DrAnimation"
+            <ResizeableWindow icon="iberg" key="DrAnimation"
                 onClose={() => {
                     this.onClose();
                     this.props.setCurrentTask(null);
                 }} title="Drain Animation Viewer"
-                initialWidth={400} initialHeight={200}
+                initialWidth={this.props.initialWidth} initialHeight={this.props.initialHeight}
+                minWidth={this.props.minWidth} minHeight={this.props.minHeight}
             >
                 <div className="cog-container" role="body">
                     <div className="file-controls">
-                        <label className="file-input-button">
+                        {/* <label className="file-input-button">
                             <input
                                 type="file"
                                 id="file"
@@ -226,14 +259,32 @@ class DrAnimation extends React.Component {
                                     this.handleFile(url);
                                 }}
                             />
-                        </label>
-                        <button
-                            className="sample-file-button"
-                            // HACK: the /bgeo is dependent on the tenant, the file should probably go somewhere else
-                            onClick={() => this.handleFile('/bgeo/assets/data/cog.tif')}
+                        </label> */}
+                        <select style={{ width: '100%' }} className="sample-file-button"
+                            onChange={(e) => {
+                                const url = e.target.value;
+                                if (url) {
+                                    this.handleFile(url);
+                                }
+                            }}
                         >
-                            Load Sample
-                        </button>
+                            <option value="">Select Result</option>
+                            {this.state.resultList?.map((result) => (
+                                <option
+                                    key={result}
+                                    value={encodeURI(`giswater/ibergis/getresult?theme=${this.props.theme.title}&path=${result}`)}
+                                >
+                                    {result}
+                                </option>
+                            ))}
+                        </select>
+                        {/* <button */}
+                        {/*     className="sample-file-button" */}
+                        {/*     // HACK: the /giswater is dependent on the tenant, the file should probably go somewhere else */}
+                        {/*     onClick={() => this.handleFile('/giswater/assets/data/cog.tif')} */}
+                        {/* > */}
+                        {/*     Load Sample */}
+                        {/* </button> */}
                     </div>
 
                     {this.state.numFrames > 0 && (
@@ -299,16 +350,47 @@ class DrAnimation extends React.Component {
                                     <label>Delay (ms): </label>
                                     <input
                                         type="number"
-                                        min="10"
+                                        min="50"
                                         max="1000"
                                         step="10"
                                         value={this.state.frameDuration}
                                         onChange={(e) => {
-                                            const frameDuration = Math.max(50, Number(e.target.value));
+                                            const frameDuration = Number(e.target.value);
                                             this.setState({ frameDuration });
                                         }}
                                         className="frame-duration-input"
                                     />
+                                </div>
+                                <div className="value-range-control">
+                                    <label>Value Range:</label>
+                                    <div className="value-inputs">
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            min="0"
+                                            max="100"
+                                            value={this.state.minValue}
+                                            onChange={(e) => {
+                                                const minValue = parseFloat(e.target.value);
+                                                this.setState({ minValue });
+                                                this.layer?.updateStyleVariables({ min: minValue });
+                                            }}
+                                            className="min-value-input"
+                                        />
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            min="0"
+                                            max="100"
+                                            value={this.state.maxValue}
+                                            onChange={(e) => {
+                                                const maxValue = parseFloat(e.target.value);
+                                                this.setState({ maxValue });
+                                                this.layer?.updateStyleVariables({ max: maxValue });
+                                            }}
+                                            className="max-value-input"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -321,6 +403,7 @@ class DrAnimation extends React.Component {
 
 export default connect(state => ({
     active: state.task.id === "DrAnimation",
+    theme: state.theme.current,
 }), {
     setCurrentTask: setCurrentTask
 })(DrAnimation);
